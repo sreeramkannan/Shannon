@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Source</title>
+    <meta name="description" content="">
+    <meta name="author" content="Sreeram Kannan">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/twitter/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Shannon</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+      	
+      	<li><a href="/about.html">About</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download.html">Download</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/faq.html">FAQ</a></li>
+      	
+      
+    
+  
+    
+  
+    
+      
+      	
+      	<li><a href="/kallisto_about.html">About</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/kallisto_download.html">Download</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/kallisto_faq.html">FAQ</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/license.html">License</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/manual.html">Manual</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li class="active"><a href="/source.html" class="active">Source</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/starting.html">Getting Started</a></li>
+      	
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content">
+        
+<div class="page-header">
+  <h1>Source </h1>
+</div>
+
+<div class="row-fluid">
+  <div class="span12">
+    
+<p>The <strong>Shannon</strong> GitHub repository is <a href="https://github.com/sreeramkannan/shannon">here</a>. Source code can also be downloaded from the <a href="download.html">download page</a>. Currently, <strong>Shannon</strong> can be built on Linux and Mac.</p>
+
+<p>If building on Mac, we suggest using a package manager such as <a href="http://brew.sh">Homebrew</a> to download dependencies. Homebrew is easily installed by copying and pasting the command below at a terminal prompt:</p>
+
+<p><code>ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</code></p>
+
+<p>Other dependencies are either included, or can be installed using package managers on the system.</p>
+
+<h4 id="requirements">Requirements:</h4>
+
+<ul>
+  <li>A 64-bit operating system</li>
+  <li>Python 2.7 or greater</li>
+  <li><strong>Metis</strong>
+    <ul>
+      <li>See <a href="http://glaros.dtc.umn.edu/gkhome/metis/metis/download">here</a> for instructions on installing metis.</li>
+    </ul>
+  </li>
+  <li><strong>CVXOPT</strong>
+    <ul>
+      <li>See <a href="http://cvxopt.org/install/index.html">here</a> for installing. The following command will work
+   pip install cvxopt</li>
+    </ul>
+  </li>
+  <li><strong>Jellyfish</strong>
+    <ul>
+      <li>See <a href="http://www.genome.umd.edu/jellyfish.html">here</a> for installing.</li>
+    </ul>
+  </li>
+  <li><strong>GNU-Parallel</strong>
+    <ul>
+      <li>See <a href="https://www.gnu.org/software/parallel/">here</a> for installing.</li>
+    </ul>
+  </li>
+  <li><strong>Quorum</strong>
+    <ul>
+      <li>See <a href="http://www.genome.umd.edu/quorum.html">here</a> for installing.</li>
+    </ul>
+  </li>
+</ul>
+
+<h4 id="download">Download</h4>
+
+<p><strong>Shannon</strong> is hosted on GitHub. The source code can be obtained by cloning the repository as follows:</p>
+
+<p><code>git clone https://github.com/sreeramkannan/Shannon.git</code></p>
+
+<h4 id="test">Test</h4>
+
+<p>The <strong>Shannon</strong> package comes with a small test transcriptome and read files that can be used to test that the package was compiled and installed correctly. The <a href="starting.html">Getting started</a> page provides a complete description of how to run <strong>Shannon</strong> on these files.</p>
+
+
+  </div>
+</div>
+
+
+      </div>
+      <hr>
+      <footer>
+        <p>&copy; 2015 Sreeram Kannan
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+
+
+  </body>
+</html>
+

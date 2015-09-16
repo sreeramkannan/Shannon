@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Manual</title>
+    <meta name="description" content="">
+    <meta name="author" content="Sreeram Kannan">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/twitter/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Shannon</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+      	
+      	<li><a href="/about.html">About</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download.html">Download</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/faq.html">FAQ</a></li>
+      	
+      
+    
+  
+    
+  
+    
+      
+      	
+      	<li><a href="/kallisto_about.html">About</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/kallisto_download.html">Download</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/kallisto_faq.html">FAQ</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/license.html">License</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li class="active"><a href="/manual.html" class="active">Manual</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/source.html">Source</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/starting.html">Getting Started</a></li>
+      	
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content">
+        
+<div class="page-header">
+  <h1>Manual </h1>
+</div>
+
+<div class="row-fluid">
+  <div class="span12">
+    
+<pre><code>###Usage
+
+For single-ended reads,
+
+Usage: python shannon.py running_directory read_file  [options]
+
+For paired-end reads,
+
+Usage: python shannon.py running_directory read_pair1 read_pair2  [options]
+
+The running_directory mentions the name of a directory where Shannon can run. This directory should be empty or non-existent while starting the run. 
+
+The reads should be in fasta format. 
+
+</code></pre>
+
+<h3 id="options">Options</h3>
+
+<p>The string [options] can be either empty or one of the following:</p>
+
+<p>–compare reference_file_name</p>
+
+<p>This option is used to compare the produced output to the refernece and create a log. To run this option blat has to be installed.</p>
+
+<p>-p nJobs</p>
+
+<p>This option is used in order to specify the number of parallel jobs. Needs GNU parallel installed.</p>
+
+<pre><code>
+###Output 
+
+The main output is in running_directory/shannon.fasta which contains the list of reconstructed transcripts in fasta format.
+
+There is a log file in running_directory/log.txt 
+
+The output of the --compare option is in running_directory/compare_log.txt
+
+The directory running_directory/TEMP contains intermediate running files and can be deleted after the run.
+
+</code></pre>
+<p>###Requirements</p>
+
+<p>Memory: Please reserve atleast 1GB / 1 million single-end reads.</p>
+
+<p>Cores: The program is partially multi-threaded and needs GNU parallel to run.</p>
+
+<p>Disk Space: The program will use upto 5 times the amount of space required for storing the reads (in FASTA format). Please ensure you have this amount of space before running.</p>
+
+<h4 id="version">version</h4>
+
+<p><code>python shannon.py version</code> displays the current version of the software.</p>
+
+  </div>
+</div>
+
+
+      </div>
+      <hr>
+      <footer>
+        <p>&copy; 2015 Sreeram Kannan
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+
+
+  </body>
+</html>
+

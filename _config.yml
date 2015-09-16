@@ -8,12 +8,12 @@ highlighter: pygments
 # Themes are encouraged to use these universal variables
 # so be sure to set them if your theme uses them.
 #
-title : kallisto
-tagline: ultrafast (seriously) abundance estimation
+title : Shannon
+tagline: Sensitive Transcriptome Assembly
 author :
-  name : Pachter Lab
-  email : blah@email.test
-  github : pachterlab
+  name : Sreeram Kannan
+  email : ksreeram@uw.edu
+  github : sreeramkannan
   twitter : username
   feedburner : feedname
 
@@ -25,7 +25,7 @@ author :
 # Else if you are pushing to username.github.io, replace with your username.
 # Finally if you are pushing to a GitHub project page, include the project name at the end.
 #
-production_url : http://pachterlab.github.io/kallisto
+production_url : http://sreeramkannan.github.io/Shannon
 
 # All Jekyll-Bootstrap specific configurations are namespaced into this hash
 #
@@ -54,7 +54,7 @@ JB :
   #   - Only the following values are falsy: ["", null, false]
   #   - When setting BASE_PATH it must be a valid url.
   #     This means always setting the protocol (http|https) or prefixing with "/"
-  BASE_PATH : http://pachterlab.github.io/kallisto
+  BASE_PATH : http://sreeramkannan.github.io/Shannon
 
   # By default, the asset_path is automatically defined relative to BASE_PATH plus the enabled theme.
   # ex: [BASE_PATH]/assets/themes/[THEME-NAME]

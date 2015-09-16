@@ -1,0 +1,308 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Local build without root</title>
+    <meta name="description" content="">
+    <meta name="author" content="Sreeram Kannan">
+
+    <!-- Enable responsive viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/twitter/bootstrap/css/bootstrap.2.2.2.min.css" rel="stylesheet">
+    <link href="/assets/themes/twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+  -->
+
+    <!-- atom & rss feed -->
+    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
+    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
+
+  </head>
+
+  <body>
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container-narrow">
+          <a class="brand" href="/">Shannon</a>
+          <ul class="nav">
+            
+            
+            
+
+
+  
+    
+      
+      	
+      	<li><a href="/about.html">About</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download.html">Download</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/faq.html">FAQ</a></li>
+      	
+      
+    
+  
+    
+  
+    
+      
+      	
+      	<li><a href="/kallisto_about.html">About</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/kallisto_download.html">Download</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/kallisto_faq.html">FAQ</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/license.html">License</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/manual.html">Manual</a></li>
+      	
+      
+    
+  
+    
+      
+    
+  
+    
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/source.html">Source</a></li>
+      	
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/starting.html">Getting Started</a></li>
+      	
+      
+    
+  
+
+
+
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-narrow">
+
+      <div class="content">
+        
+<div class="page-header">
+  <h1>Local build without root </h1>
+</div>
+
+<div class="row-fluid">
+  <div class="span12">
+    
+<p>This tutorial is for building <strong>kallisto</strong> locally without root access. If you
+have root access and a package manager, please see <a href="source.html">the other
+tutorial</a>.</p>
+
+<h4 id="requirements">Requirements:</h4>
+
+<p>We will assume you have the following installed:</p>
+
+<ul>
+  <li>A C++11 compatible compiler such as &gt;= g++-4.8 (might work on g++-4.7, though
+untested)
+    <ul>
+      <li>Since this is very system specific, it is usually best to ask your
+administrator to install this. If not, you should search how to install
+it locally on your system.</li>
+    </ul>
+  </li>
+  <li><strong>zlib</strong> which is installed on most machines.</li>
+  <li><strong>make</strong> which is also installed on most machines.</li>
+</ul>
+
+<h3 id="preliminaries">Preliminaries</h3>
+
+<p>Since we will be installing things to your home directory, you should add
+<code>$HOME/bin</code> to your PATH if you haven’t already. This ensures that your shell
+knows where to look for binaries (cmake, kallisto, etc.). For this current
+session, run the following from your terminal:</p>
+
+<p><code>
+export PATH=$HOME/bin:$PATH
+</code></p>
+
+<p>Afterwards, place the same code into your shell startup file (e.g. one of ~/.bashrc, ~/.zshrc, etc.).</p>
+
+<p>We’ll assume all downloads are in <code>~/Downloads</code>. Make sure to change to the
+downloads directory before downloading each one of the source archives
+(*.tar.gz files)</p>
+
+<h3 id="building-and-installing-cmake">Building and installing CMake</h3>
+
+<p>The easiest way to install CMake is from source. Head over to the <a href="http://www.cmake.org/download/">CMake
+downloads page</a> and get the latest “Unix/Linux
+Source” *.tar.gz file. Make sure to set the <code>--prefix</code> flag correctly,
+otherwise you won’t have permissions to install files at the default location.</p>
+
+<p><code>tar -xf cmake*.tar.gz</code></p>
+
+<p><code>cd cmake*</code></p>
+
+<p><code>./configure --prefix=$HOME</code></p>
+
+<p><code>make</code></p>
+
+<p><code>make install</code></p>
+
+<p>You should now have the most up-to-date installation of cmake. Check the
+version by typing:</p>
+
+<p><code>
+cmake --version
+</code></p>
+
+<h3 id="building-and-installing-hdf5">Building and installing HDF5</h3>
+
+<p>Download ‘configure’ version of <a href="https://www.hdfgroup.org/HDF5/release/obtainsrc.html#conf">HDF5</a>:</p>
+
+<p><code>wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.15-patch1.tar.gz</code></p>
+
+<p>Extract the tarball and move to the directory:</p>
+
+<p><code>tar -xf hdf5-1.8.*</code></p>
+
+<p><code>cd hdf5-1.8.*</code></p>
+
+<p>Now, run <code>configure</code> with the following options:</p>
+
+<p><code>./configure --disable-parallel --without-szlib --without-pthread --prefix=$HOME</code></p>
+
+<p>Compile and install:</p>
+
+<p><code>make</code></p>
+
+<p><code>make install</code></p>
+
+<p>All of the important HDF5 tools will be at <code>$HOME/bin</code> and libraries/include
+files at: <code>$HOME/lib</code> and <code>$HOME/include</code>.</p>
+
+<h3 id="building-and-installing-kallisto">Building and installing kallisto</h3>
+
+<p>Download the latest source tarball <a href="https://github.com/pachterlab/kallisto/releases">from
+GitHub</a>, extract, and change
+directories:</p>
+
+<p><code>wget ...</code> (this is the GitHub ‘Source code (tar.gz)’ link)</p>
+
+<p><code>tar -xf v0.4*</code></p>
+
+<p><code>cd kallisto-*</code></p>
+
+<p>Make a build directory and move to it</p>
+
+<p><code>mkdir build</code></p>
+
+<p><code>cd build</code></p>
+
+<p>Since we put everything in <code>$HOME</code>, CMake is smart enough to look there and the
+following should work pretty seamlessly. Make sure you run CMake with the
+following command to install the binaries in <code>$HOME</code>:</p>
+
+<p><code>cmake -DCMAKE_INSTALL_PREFIX=$HOME ..</code></p>
+
+<p>Next, build and install:</p>
+
+<p><code>make</code></p>
+
+<p><code>make install</code></p>
+
+<p>You will now have <code>kallisto</code> in <code>$HOME/bin/kallisto</code>.</p>
+
+  </div>
+</div>
+
+
+      </div>
+      <hr>
+      <footer>
+        <p>&copy; 2015 Sreeram Kannan
+          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
+          and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
+        </p>
+      </footer>
+
+    </div>
+
+    
+
+
+  </body>
+</html>
+
