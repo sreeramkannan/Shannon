@@ -1,2 +1,0 @@
-# Shannon
-RNA-Seq
