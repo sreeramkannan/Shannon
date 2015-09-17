@@ -4,10 +4,6 @@ http://sreeramkannan.github.io/Shannon/atom.xml
 http://sreeramkannan.github.io/Shannon/download.html
 http://sreeramkannan.github.io/Shannon/faq.html
 http://sreeramkannan.github.io/Shannon/index.html
-http://sreeramkannan.github.io/Shannon/kallisto_about.html
-http://sreeramkannan.github.io/Shannon/kallisto_download.html
-http://sreeramkannan.github.io/Shannon/kallisto_faq.html
-http://sreeramkannan.github.io/Shannon/kallisto_pseudobam.html
 http://sreeramkannan.github.io/Shannon/license.html
 http://sreeramkannan.github.io/Shannon/local_build.html
 http://sreeramkannan.github.io/Shannon/manual.html
