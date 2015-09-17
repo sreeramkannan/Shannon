@@ -1,15 +1,15 @@
 import operator, pdb, os
-from Bio.Seq import Seq
-from Bio.Alphabet import generic_dna
+#from Bio.Seq import Seq
+#from Bio.Alphabet import generic_dna
 
 def reverse_complement(s):
     '''Find the reverse complement of a DNA string using biopython interface'''
-    '''replacements = [('A', 't'), ('T', 'a'), ('C', 'g'), ('G', 'c')]
+    replacements = [('A', 't'), ('T', 'a'), ('C', 'g'), ('G', 'c')]
     for ch1, ch2 in replacements:
         bases = re.sub(ch1, ch2, s.upper())
-        return bases[::-1].upper()'''
-    d = Seq(s,generic_dna)
-    return str(d.reverse_complement())
+        return bases[::-1].upper()
+    '''d = Seq(s,generic_dna)
+    return str(d.reverse_complement())'''
 
 def check_palindromes(directory,filename):
     f = open(directory+'temp.dict','w')
