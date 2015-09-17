@@ -22,9 +22,9 @@ Other dependencies are either included, or can be installed using package manage
 - __Metis__ 
     - See [here](http://glaros.dtc.umn.edu/gkhome/metis/metis/download) for instructions on installing metis.
 - __CVXOPT__ 
-    - See [here](http://cvxopt.org/install/index.html) for installing. The following command will work
-     pip install cvxopt 
-- __Jellyfish__ 
+    - See [here](http://cvxopt.org/install/index.html) for installing. The following command will work:
+     `pip install cvxopt` 
+- __Jellyfish__ v2.0 or higher. 
     - See [here](http://www.genome.umd.edu/jellyfish.html) for installing.
 - __GNU-Parallel__
 	- See [here](https://www.gnu.org/software/parallel/) for installing.
