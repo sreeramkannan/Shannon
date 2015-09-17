@@ -26,7 +26,7 @@ sample_name = "SPombe_test"
 run_extension_corr = True
 hyp_min_weight = 3
 hyp_min_length = 75
-partition_size = 500
+partition_size = 5000
 use_partitioning = True
 
 # For kmers_for_component
@@ -36,7 +36,7 @@ overload = 2
 K = 24
 penalty = 5
 
-run_parallel = 1
+run_parallel = False
 compare_ans = False
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -52,12 +52,21 @@ if '--compare' in n_inp:
     ref_file = n_inp[ind1+1]
     n_inp = n_inp[:ind1]+n_inp[ind1+2:]    
 
-
+if '-p' in n_inp:
+    ind1 = n_inp.index('-p')
+    nJobs = int(n_inp[ind1+1])
+    n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
+    run_parallel = True
+     
 if len(n_inp)>1:
-    comp_directory_name = sys.argv[1]
-    reads_files = [sys.argv[2]]
+    comp_directory_name = n_inp[1]
+    reads_files = [n_inp[2]]
     if len(n_inp)>3:
-        reads_files.append(sys.argv[3])
+        reads_files.append(n_inp[3])
+else:
+    with open('manual.md','r') as fin:
+        print fin.read()   
+    sys.exit()
 
 
 if len(reads_files) == 1:
@@ -125,15 +134,15 @@ if run_jellyfish:
     K_value = K
     run_jfs = ' '
     if double_stranded:
-        run_jfs += ' --both-strands '
+        run_jfs += ' -C '
     run_cmd('rm '+sample_name_input+'algo_input/jelly*')  #Remove old jellyfish files
     #run_cmd(jellyfish_dir+' count -m ' + str(K_value)+ run_jfs+ ' -o ' + base_dir+sample_name+'algo_input/jellyfish_output -s 20000000 -c 4 -t 32 ' +reads_string)
-    run_cmd(jellyfish_dir+' count -m ' + str(K_value+1) + run_jfs+ ' -o ' + sample_name_input+'algo_input/jellyfish_p1_output -s 20000000 -c 4 -t 32 ' +reads_string)
+    run_cmd(jellyfish_dir+' count -m ' + str(K_value+1) + run_jfs+ ' -o ' + sample_name_input+'algo_input/jellyfish_p1_output.jf -s 20000000 -c 4 -t 32 ' +reads_string)
 
-    if os.path.isfile(sample_name_input+'algo_input/jellyfish_p1_output_1'):
+    '''if os.path.isfile(sample_name_input+'algo_input/jellyfish_p1_output_1'):
         run_cmd(jellyfish_dir+' merge -o ' + sample_name_input+'algo_input/jellyfish_p1_output.jf ' + sample_name_input+'algo_input/jellyfish_p1_output\_*')
     else:
-        run_cmd('mv ' + sample_name_input+'algo_input/jellyfish_p1_output_0 ' +sample_name_input+'algo_input/jellyfish_p1_output.jf')
+        run_cmd('mv ' + sample_name_input+'algo_input/jellyfish_p1_output_0 ' +sample_name_input+'algo_input/jellyfish_p1_output.jf')'''
 
     #run_cmd(jellyfish_dir+' dump -c -L ' + str(jellyfish_kmer_cutoff) + ' ' + base_dir+sample_name+'algo_input/jellyfish_output.jf > ' +base_dir+sample_name+'algo_input/kmer.dict')
     run_cmd(jellyfish_dir+' dump -c -t -L ' + str(jellyfish_kmer_cutoff) + ' ' + sample_name_input+'algo_input/jellyfish_p1_output.jf > ' +sample_name_input+'algo_input/k1mer.dict_org')
@@ -259,7 +268,7 @@ else:
     ds_string = "  "
 
 if run_parallel:
-    run_cmd("parallel -j 10 python main_server_WWY_p11_edit1.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " ::: " + main_server_parameter_string)
+    run_cmd("parallel -j " + str(nJobs) + " python main_server_WWY_p11_edit1.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " ::: " + main_server_parameter_string)
 else:
     for param_str in main_server_parameter_string.split():
 	run_cmd("python main_server_WWY_p11_edit1.py " + param_str + " --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str)
@@ -338,7 +347,7 @@ run_cmd('mkdir '+ comp_directory_name + '/TEMP')
 run_cmd('mv ' + comp_directory_name + '/* ' + comp_directory_name + '/TEMP')
 run_cmd('mv ' + comp_directory_name + '/TEMP/before_sp_log.txt ' + comp_directory_name + '/log.txt')
 run_cmd('mv ' +  comp_directory_name + "/TEMP/" + sample_name + "_allalgo_output/reconstructed.fasta " + comp_directory_name + '/shannon.fasta')
-run_cmd('mv ' +  comp_directory_name + "/TEMP/*output.txt " +comp_directory_name + '/terminal_output.txt') 
+run_cmd('more ' +  comp_directory_name + "/TEMP/*output.txt > " +comp_directory_name + '/terminal_output.txt') 
 
 if compare_ans:
    run_cmd('mv ' +   comp_directory_name + "/TEMP/" + sample_name + "_allalgo_output/reconstr_log.txt "  + comp_directory_name + '/compare_log.txt')  
