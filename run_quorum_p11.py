@@ -19,6 +19,7 @@ if len(n_inp)>2:
         reads_files.append(sys.argv[3])
 
 #pdb.set_trace()        
+
         
 if len(reads_files) == 2:
     paired_end = True
@@ -35,11 +36,12 @@ def find_common_string(s1, s2):
         i += 1
     return s3
 
+run_cmd('mkdir ' + base_dir)
+
 if paired_end == False:
     # Run Quorum Normally
     base_file = base_dir + "/corrected_reads.fasta"
-    run_cmd("/home/sreeramkannan/Packages/quorum-1.0.0/quorum --prefix " + base_file + " " + reads_files[0])
-    
+    run_cmd("quorum --prefix " + base_file + " " + reads_files[0])    
 elif paired_end == True:  
     reads1_file = reads_files[0]
     reads2_file = reads_files[1]
@@ -90,7 +92,6 @@ elif paired_end == True:
                     else:
                         new_r2_file.write(line.replace(old_name, new_name))
                     i += 1
-    pdb.set_trace()
     base_file = base_dir + "/quorum_output"    
     run_cmd("/home/sreeramkannan/Packages/quorum-1.0.0/quorum  --prefix " + base_file + " " +  new_reads1_file + " " + new_reads2_file)
     

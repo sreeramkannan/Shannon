@@ -73,23 +73,20 @@ if len(reads_files) == 1:
     paried_end = False
 elif len(reads_files) == 2:
     paired_end = True
+
+run_quorum = False
+if reads_files[0][-1] == 'q': #Fastq mode
+    run_quorum = True
     
 paired_end_flag = ""
 if paired_end:
     paired_end_flag = " --paired_end "
     
-if paired_end:
-	reads_string = reads_files[0] + ' ' + reads_files[1]
-else:	
-	reads_string = reads_files[0]
-
     
 jellyfish_dir = ' jellyfish'	
 jellyfish_kmer_cutoff = 1
 
 # For extension correction
-
-
 
 sample_name = comp_directory_name.split('/')[-1] + "_"
 new_directory_name = comp_directory_name
@@ -109,7 +106,17 @@ randomize = False
 if use_partitioning == False:
     partition_size = 100000000000000000000000000000000000000000000000000000000000000000
     comp_size_threshold = partition_size
-    
+
+pdb.set_trace()
+#Run Quorum now
+if run_quorum:
+    run_cmd('python run_quorum_p11.py ' + comp_directory_name + ' ' + '\t'.join(reads_files))
+    if paired_end:
+	reads_files = [comp_directory_name + '/corrected_reads_1.fasta',comp_directory_name + '/corrected_reads_2.fasta']
+    else:
+	reads_files = [comp_directory_name + '/corrected_reads.fasta']
+
+reads_string = ' '.join(reads_files)    
 
 #og_algo_input = './S15_SE_algo_input' #'./WingWongTest_K24_algo_input' #'./S15_SE_algo_input'
 #og_algo_output = './S15_SE_algo_output' #'./WingWongTest_K24_algo_output' #'./S15_SE_algo_output'
@@ -227,13 +234,13 @@ for comp in new_components:
     run_cmd("mkdir " + dir_base + "algo_output")
     #run_cmd("cp " + base_directory_name + "/reads_c" + str(comp) + ".fasta " + dir_base + "algo_input/reads.fasta")
     if paired_end:
-        run_cmd("cp " + base_directory_name + "/reads_c" + str(comp) + "_1.fasta " + dir_base + "algo_input/reads_1.fasta")
-        run_cmd("cp " + base_directory_name + "/reads_c" + str(comp) + "_2.fasta " + dir_base + "algo_input/reads_2.fasta")
+        run_cmd("mv " + base_directory_name + "/reads_c" + str(comp) + "_1.fasta " + dir_base + "algo_input/reads_1.fasta")
+        run_cmd("mv " + base_directory_name + "/reads_c" + str(comp) + "_2.fasta " + dir_base + "algo_input/reads_2.fasta")
     else:
-        run_cmd("cp " + base_directory_name + "/reads_c" + str(comp) + ".fasta " + dir_base + "algo_input/reads.fasta")
+        run_cmd("mv " + base_directory_name + "/reads_c" + str(comp) + ".fasta " + dir_base + "algo_input/reads.fasta")
 
-    run_cmd("cp " + base_directory_name + "/component" + comp +  r1_new_kmer_tag + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
-    run_cmd("cp " + base_directory_name + "/component" + comp +  r1_new_kmer_tag + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
+    run_cmd("mv " + base_directory_name + "/component" + comp +  r1_new_kmer_tag + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
+    run_cmd("mv " + base_directory_name + "/component" + comp +  r1_new_kmer_tag + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
     #run_cmd("cp " + og_algo_output + "/reference.fasta " + dir_base + "algo_output")
     main_server_parameter_string = main_server_parameter_string + dir_base + " " 
     #run_cmd("python main_server_WWY_Kayvon.py " + dir_base + " run_alg")
@@ -245,13 +252,13 @@ if use_second_iteration:
         run_cmd("mkdir " + dir_base + "algo_output")
         #run_cmd("cp " + base_directory_name + "/reads_r2_c" + str(comp)+".fasta " + dir_base + "algo_input/reads.fasta")
         if paired_end:
-            run_cmd("cp " + base_directory_name + "/reads_r2_c" + str(comp)+"_1.fasta " + dir_base + "algo_input/reads_1.fasta")
-            run_cmd("cp " + base_directory_name + "/reads_r2_c" + str(comp)+"_2.fasta " + dir_base + "algo_input/reads_2.fasta")
+            run_cmd("mv " + base_directory_name + "/reads_r2_c" + str(comp)+"_1.fasta " + dir_base + "algo_input/reads_1.fasta")
+            run_cmd("mv " + base_directory_name + "/reads_r2_c" + str(comp)+"_2.fasta " + dir_base + "algo_input/reads_2.fasta")
         else:
-            run_cmd("cp " + base_directory_name + "/reads_r2_c" + str(comp)+".fasta " + dir_base + "algo_input/reads.fasta")        
+            run_cmd("mv " + base_directory_name + "/reads_r2_c" + str(comp)+".fasta " + dir_base + "algo_input/reads.fasta")        
         
-        run_cmd("cp " + base_directory_name + "/component" + comp +  r2_new_kmer_tag + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
-        run_cmd("cp " + base_directory_name + "/component" + comp +  r2_new_kmer_tag + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
+        run_cmd("mv " + base_directory_name + "/component" + comp +  r2_new_kmer_tag + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
+        run_cmd("mv " + base_directory_name + "/component" + comp +  r2_new_kmer_tag + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
         #run_cmd("cp " + og_algo_output + "/reference.fasta " + dir_base + "algo_output")
         main_server_parameter_string = main_server_parameter_string + dir_base + " " 
         #run_cmd("python main_server_WWY_Kayvon.py " + dir_base + " run_alg")
