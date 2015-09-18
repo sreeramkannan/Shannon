@@ -107,7 +107,6 @@ if use_partitioning == False:
     partition_size = 100000000000000000000000000000000000000000000000000000000000000000
     comp_size_threshold = partition_size
 
-pdb.set_trace()
 #Run Quorum now
 if run_quorum:
     run_cmd('python run_quorum_p11.py ' + comp_directory_name + ' ' + '\t'.join(reads_files))
