@@ -236,7 +236,7 @@ def main():
             compute_fringes = True
         elif arg == '-c':
             cpp = True
-	elif arg == '--extract-cc':
+	elif arg == '--extract_cc':
 	    extract_cc = True
 	elif len(arg)>=8 and arg[:6] == "--kmer":
 	    K_value = int(arg[7:])
