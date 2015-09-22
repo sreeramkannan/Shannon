@@ -1,17 +1,7 @@
 import time, sys
 from mbgraph import *
-K_value = 24
-import pdb
 
-def is_number(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
-
-
-def extract_reads(filename,cc_extract):
+def extract_reads(filename, weighted):
     """Extract all reads from fasta file FILENAME
     and return them as a list of (weight, string) tuples.
     """
@@ -21,7 +11,7 @@ def extract_reads(filename,cc_extract):
         for line in f:
             if line[0] == '>':
                 data = line.split()
-                if len(data) > 1 and cc_extract and is_number(data[-1]):
+                if weighted:
                     last_weight = float(data[-1])
                 else:
                     last_weight = 1.0
@@ -29,12 +19,12 @@ def extract_reads(filename,cc_extract):
                 reads.append((last_weight, line[:-1].upper()))
     return reads
 
-def load_reads(filename, double_stranded, cc_extract=False):
+def load_reads(filename, double_stranded, weighted):
     """Load FASTA reads.
     """
     print("Loading reads.")
     print(time.asctime())
-    for read in extract_reads(filename, cc_extract):
+    for read in extract_reads(filename, weighted):
         Read.add_read(read, double_stranded)
 def load_mated_reads(file_1, file_2, double_stranded):
     #Does not allow weighted reads.
@@ -88,7 +78,7 @@ def load_jellyfish(node_file, edge_file):
     """Loads condensed files from Jellyfish.
     """
     print(time.asctime())
-    print("Loading nodes from kmer files.")
+    print("Loading nodes from K-mer files.")
 
     nodes = {}
     with open(node_file) as f:
@@ -104,7 +94,7 @@ def load_jellyfish(node_file, edge_file):
             k1, k2 = bases[:-1], bases[1:]
             weight = Read.K - 1
             e = nodes[k1].link_to(nodes[k2], int(weight))
-            e.copy_count = round(float(prevalence))
+            e.copy_count = int(prevalence)
 
 def setup(read_file):
     """Perform some setup functions.
@@ -112,9 +102,6 @@ def setup(read_file):
     with open(read_file) as f:
         f.readline()
         Read.L = len(f.readline()) - 1
-    Read.K = K_value
-    #with open(kmer_file) as f:
-    #    Read.K = len(f.readline().split()[0])
     Node.SIZE_THRESHOLD = Read.L
     clear()
 
@@ -150,6 +137,19 @@ def run(output_dir, error_correction = False, compute_fringes = False):
 
     log("Finding approximate copy counts.")
     Node.find_approximate_copy_counts()
+    log("Finding known paths.")
+    known_paths()
+    Read.find_mate_pairs()
+
+    construct_reads()
+    log("Rebridging graph.")
+    Read.find_bridging_reads()
+    Node.bridge_all()
+    Node.condense_all()
+
+    log("Finding copy counts.")
+    Node.find_approximate_copy_counts()
+    Node.disregard_loops()
     log("Finding known paths.")
     known_paths()
     Read.find_mate_pairs()
@@ -226,7 +226,8 @@ def main():
     error_correction = False
     compute_fringes = False
     cpp = False
-    extract_cc = False
+    weighted = False
+
     for arg in arguments[1:]:
         if arg == '-d':
             double_stranded = True
@@ -236,10 +237,10 @@ def main():
             compute_fringes = True
         elif arg == '-c':
             cpp = True
-	elif arg == '--extract_cc':
-	    extract_cc = True
-	elif len(arg)>=8 and arg[:6] == "--kmer":
-	    K_value = int(arg[7:])
+        elif arg == '-w':
+            weighted = True
+        elif arg[:7] == "--kmer=":
+            Read.K = int(arg[7:])
         else:
             names.append(arg)
 
@@ -247,12 +248,12 @@ def main():
     read_files = names[2:-1]
 
     setup(read_files[0])
-    if len(read_files) == 1:
-        load_reads(read_files[0], double_stranded,extract_cc)
-    elif len(read_files) == 2:
+    if len(files) == 1:
+        load_reads(read_files[0], double_stranded, weighted)
+    elif len(files) == 2:
         load_mated_reads(read_files[0], read_files[1], double_stranded)
     else:
-        load_reads(read_files[0], double_stranded,extract_cc)
+        load_reads(read_files[0], double_stranded)
         load_mated_reads(read_files[1], read_files[2], double_stranded)
 
     if cpp:

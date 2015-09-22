@@ -1,4 +1,3 @@
-from fuzzy_dict import FuzzyDict
 import trie
 import re, time, doctest
 
@@ -13,10 +12,10 @@ class Read(object):
 
     #Dictionary of all reads as bases:Read object
     reads = {}
-    fuzzy_reads = FuzzyDict()
     known_paths = set()
+    mate_paths = set()
 
-    MATE_PAIR_LENGTH = 200
+    MATE_PAIR_LENGTH = 500
     MATE_PAIR_MIN_LENGTH = 0
     MATED_READS = False
 
@@ -48,7 +47,6 @@ class Read(object):
         If DOUBLE, also add the reverse complement of this read.
         """
         copy_count, bases = read
-        #if len(bases) < Read.L: return
         #If already in reads, only change copy count.
         if bases in Read.reads:
             read = Read.reads[bases]
@@ -112,13 +110,6 @@ class Read(object):
                         xnode.link_read(read, start)
 
     @staticmethod
-    def add_known_path(nodes):
-        """Add a known path, represented as a tuple of nodes, to the list.
-        If already in the list, disregard.
-        """
-        Read.known_paths.add(tuple(nodes))
-
-    @staticmethod
     def find_mate_pairs():
         """Find any certain paths in the graph and add them to the list of
         known paths.
@@ -143,7 +134,8 @@ class Read(object):
         for node1, node2 in mate_nodes:
             paths = node1.find_mate_path(len(node1.bases) - 1, node2, 0)
             if len(paths) == 1 and len(paths[0]) > 2:
-                Read.add_known_path(paths[0])
+                Read.known_paths.add(tuple(paths[0]))
+                Read.mate_paths.add(tuple(paths[0]))
 
     def mate_pair_check(self):
         """Iff this read is the first of a mate pair, and both reads have
@@ -155,13 +147,6 @@ class Read(object):
             if link[0] is link[1]: return
             if link[1] in link[0].successors(): return
             return link
-
-    @staticmethod
-    def init_fuzzy_reads():
-        """Populate the fuzzy read dictionary with all the reads.
-        """
-        for bases, read in Read.reads.items():
-            Read.fuzzy_reads[bases] = read
 
     def __str__(self):
         return self.bases
@@ -1358,6 +1343,7 @@ def known_paths():
     """Generate all known paths by laying reads onto graph.
     """
     #Record K-mers for all nodes
+    Read.known_paths = set()
     kmers = {}
     for node in Node.nodes:
         for i in range(len(node.bases) - Read.K + 1):
@@ -1373,7 +1359,7 @@ def known_paths():
             for path in search_sequence(read, start_node, start_i):
                 Read.reads[read].nodes = path
                 if len(path) > 2:
-                    Read.add_known_path(path)
+                    Read.known_paths.add(tuple(path))
 def search_sequence(seq, node, i):
     """Returns a list of all node-paths starting from NODE at index I
     and matching sequence SEQ.
@@ -1395,6 +1381,19 @@ def compare(s1, s2):
     """
     length = min(len(s1), len(s2))
     return s1[:length] == s2[:length]
+
+def read_for_path(path):
+    bases = [path[0].bases]
+    for i in range(len(path) - 1):
+        u, v = path[i], path[i+1]
+        for edge in u.out_edges:
+            if edge.out_node == v:
+                bases.append(v.bases[edge.weight:])
+                break
+    return ''.join(bases)
+def construct_reads():
+    for path in Read.mate_paths:
+        Read.add_read(read_for_path(path), False)
 
 def clear():
     Read.reads = {}
