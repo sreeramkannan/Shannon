@@ -15,7 +15,7 @@ class Read(object):
     known_paths = set()
     mate_paths = set()
 
-    MATE_PAIR_LENGTH = 500
+    MATE_PAIR_LENGTH = 200
     MATE_PAIR_MIN_LENGTH = 0
     MATED_READS = False
 
