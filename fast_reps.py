@@ -119,8 +119,12 @@ def find_reps(infile, outfile,ds):
                 else:
                     rmer_to_contig[rmer]= Set([curr_name])
     with open(outfile,'w') as out_file:
+	contig_no = 0
         for contig_name in contigs:
+	    contig_no +=1
             duplicate_suspect = duplicate_check(contigs,contig_name, ds)
+	    if contig_no % 1000 == 0:
+		print("written " + str(contig_no) + " sequences")
             if not duplicate_suspect:
                 out_file.write('>' + contig_name+'\n')
                 out_file.write('>'+contigs[contig_name]+'\n')
