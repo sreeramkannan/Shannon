@@ -108,7 +108,39 @@ def duplicate_check(contig, r = 12, f = 0.5):
         else:
             return False
            
-        
+def trim_polyA(contig):
+    '''Trim polyA tails if atleast last minLen bases are polyA or first minLen bases are polyT'''
+    minLen = 12; startLen = 0; endLen = 0; startPt = 0
+    maxMiss = 1; startMiss = 0; endMiss = 0; endPt = 0
+    for i in range(len(contig)):
+        if contig[i] != 'T':
+            startMiss+=1;
+        else:
+            startPt = startLen  + 1
+        if startMiss > maxMiss:
+            break
+        startLen +=1
+    
+    totLen = len(contig)
+    
+
+    for j in range(len(contig)):
+        if contig[totLen-1-j] != 'A':
+            endMiss +=1;
+        else:
+            endPt = endLen +1
+        if endMiss > maxMiss:
+            break;
+        endLen +=1
+
+    if startLen < minLen:
+        startLen = 0
+ 
+    if endLen < minLen:
+        endLen = 0
+ 
+    return contig[startPt:totLen-endPt]
+
         
 def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold):
     f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
@@ -138,7 +170,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
         tot_kmer = right_kmer_no + left_kmer_no + 1;
         avg_wt = tot_wt/max(1,tot_kmer);
         contig = ''.join(reversed(left_extension)) + start_kmer + ''.join(right_extension)
-        
+        contig = trim_polyA(contig)
         r = 12
         duplicate_suspect = duplicate_check(contig, r) #Check whether this contig is significantly represented in a earlier contig. 
         #pdb.set_trace()
