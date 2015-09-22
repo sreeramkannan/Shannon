@@ -102,9 +102,13 @@ def duplicate_check(contigs, contig_name, ds, f = 0.9):
         
 def find_reps(infile, outfile,ds):
     contigs = {}
+    contig_no = 0 
     for line in open(infile):
         if line[0]=='>':
             temp = line.strip().split(); curr_name = temp[0][1:]
+            contig_no += 1
+            if contig_no % 1000 == 0:
+                print ("processed " + str(contig_no) + " sequences")
             continue
         else:
             curr_contig = line.strip()
