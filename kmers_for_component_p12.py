@@ -207,7 +207,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                             #read_id_rem = "\t".join(rlines[read_ind-1].strip().split()[1:])
                             read = rlines[read_ind]
                             #reads_part_file.write(read_id + "_reversed \t" + read_id_rem + "\n")  
-                            reads_part_file.write(reversed_read_name + "\n")  
+                            reads_part_file.write(reversed_read_name )  
                             reads_part_file.write(reverse_complement(read) + " \n")
         
 
@@ -331,13 +331,13 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                                     id1 = r1lines[read_ind-1].strip().split()[0]
                                     id1_rem = "\t".join(r1lines[read_ind-1].strip().split()[1:])
                                     read1 = r1lines[read_ind]
-                                    reads_part_file2.write(id1 + "_reversed\t" + id1_rem + "\n")  
+                                    reads_part_file2.write(id1 + "_reversed\t" + id1_rem )  
                                     reads_part_file2.write(reverse_complement(read1) + " \n")
 
                                     id2 = r2lines[read_ind-1].strip().split()[0]
                                     id2_rem = "\t".join(r2lines[read_ind-1].strip().split()[1:])
                                     read2 = r2lines[read_ind]
-                                    reads_part_file1.write(id2 + "_reversed \t" + id2_rem + "\n")  
+                                    reads_part_file1.write(id2 + "_reversed \t" + id2_rem)  
                                     reads_part_file1.write(reverse_complement(read2) + " \n")
        
         f_log.write(str(time.asctime()) + ": " + "reads partititoned " + "\n")        
