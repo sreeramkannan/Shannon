@@ -202,8 +202,8 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                             reads_part_file.write(rlines[read_ind])
                     if comp in comp2reads_reversed: 
                         for read_ind in comp2reads_reversed[comp]:
-                            read_id = rlines[read_ind-1].split()[0]
-                            read_id_rem = "\t".join(rlines[read_ind-1].split()[1:])
+                            read_id = rlines[read_ind-1].strip().split()[0]
+                            read_id_rem = "\t".join(rlines[read_ind-1].strip().split()[1:])
                             read = rlines[read_ind]
                             reads_part_file.write(read_id + "_reversed \t" + read_id_rem + "\n")  
                             reads_part_file.write(reverse_complement(read) + " \n")
@@ -219,9 +219,9 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
             r2lines = readfile2.readlines()
             j = 0
             for line1 in r1lines:
-                read1 = line1.split()[0] ## shouldn't this be line.split()[1]
+                read1 = line1.strip().split()[0] ## shouldn't this be line.split()[1]
                 line2 = r2lines[j]
-                read2 = line2.split()[0]
+                read2 = line2.strip().split()[0]
                 read1_reversed = reverse_complement(read1)
                 read2_reversed = reverse_complement(read2)
                 current_comps = Counter()               
@@ -326,14 +326,14 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                             if comp in comp2reads_reversed: 
                                 for read_ind in comp2reads_reversed[comp]:
                                     # I flipped the order of the reads in pair for reverse complement
-                                    id1 = r1lines[read_ind-1].split()[0]
-                                    id1_rem = "\t".join(r1lines[read_ind-1].split()[1:])
+                                    id1 = r1lines[read_ind-1].strip().split()[0]
+                                    id1_rem = "\t".join(r1lines[read_ind-1].strip().split()[1:])
                                     read1 = r1lines[read_ind]
                                     reads_part_file2.write(id1 + "_reversed\t" + id1_rem + "\n")  
                                     reads_part_file2.write(reverse_complement(read1) + " \n")
 
-                                    id2 = r2lines[read_ind-1].split()[0]
-                                    id2_rem = "\t".join(r2lines[read_ind-1].split()[1:])
+                                    id2 = r2lines[read_ind-1].strip().split()[0]
+                                    id2_rem = "\t".join(r2lines[read_ind-1].strip().split()[1:])
                                     read2 = r2lines[read_ind]
                                     reads_part_file1.write(id2 + "_reversed \t" + id2_rem + "\n")  
                                     reads_part_file1.write(reverse_complement(read2) + " \n")
