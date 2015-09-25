@@ -169,7 +169,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
 
 
                     if double_stranded:
-                        current_comps_reversed = {}
+                        current_comps_reversed = Counter()
                         rc_read = reverse_complement(read)
                         i = 0
                         while i < len(rc_read) - (K+1):
@@ -228,7 +228,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                 read2 = line2.split()[0]
                 read1_reversed = reverse_complement(read1)
                 read2_reversed = reverse_complement(read2)
-                current_comps = {}                
+                current_comps = Counter()               
                 i = 0
                 while i < len(read1) - (K+1):
                     k1mer = read1[i:i+(K+1)]
@@ -275,7 +275,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                     ## You will have to add both reads in the pair in the right direction if either read is added to the comp.
                     
                 if double_stranded:
-                    i = 0; current_comps_reversed = {}
+                    i = 0; current_comps_reversed = Counter()
                     while i < len(read1_reversed) - (K+1):
                         k1mer = read1_reversed[i:i+(K+1)]
                         if k1mer in k1mers2component:
