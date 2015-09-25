@@ -26,7 +26,7 @@ sample_name = "SPombe_test"
 run_extension_corr = True
 hyp_min_weight = 3
 hyp_min_length = 75
-partition_size = 5000
+partition_size = 500
 use_partitioning = True
 
 # For kmers_for_component
