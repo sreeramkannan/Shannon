@@ -248,9 +248,9 @@ def main():
     read_files = names[2:-1]
 
     setup(read_files[0])
-    if len(files) == 1:
+    if len(read_files) == 1:
         load_reads(read_files[0], double_stranded, weighted)
-    elif len(files) == 2:
+    elif len(read_files) == 2:
         load_mated_reads(read_files[0], read_files[1], double_stranded)
     else:
         load_reads(read_files[0], double_stranded)
