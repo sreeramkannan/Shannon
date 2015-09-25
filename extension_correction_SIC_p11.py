@@ -106,7 +106,7 @@ def duplicate_check(contig, r = 12, f = 0.5):
                 a[i:i+r] = 1
 
     if 1: 
-        if sum(a)/float(len(contig)) > f:
+        if sum(a) > f*float(len(contig)):
             return True
         else:
             return False
