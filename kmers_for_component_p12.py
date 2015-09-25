@@ -260,7 +260,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                 k1mer = read2_reversed[-K:]
                 if k1mer in k1mers2component:
                     #pdb.set_trace()
-                    comp =  
+                    comp =  k1mers2component[k1mer][0]
                     for each in comp:
                         current_comps[each] +=1
                     
