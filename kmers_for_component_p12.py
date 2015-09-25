@@ -4,12 +4,12 @@ import re
 import pdb,math
 import os
 import os.path
-
+from collections import Counter
 
 def run_cmd(s1):
     print(s1); os.system(s1) 
 
-class Counter():
+class LocalCounter():
     '''Used for printing the number of kmers processed'''
     def __init__(self, name, report_length):
         self.name = name
@@ -141,7 +141,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
             j = 0
             for line in rlines:
                 if line.split()[0][0] != ">":
-                    current_comps = {}
+                    current_comps = Counter()
                     read = line.split()[0]
                     i = 0
                     while i < len(read) - (K+1):
@@ -149,14 +149,16 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                         if k1mer in k1mers2component:
                             #pdb.set_trace()
                             comp = k1mers2component[k1mer]
-                            current_comps[comp] = current_comps.get(comp,0)+1
+                            for each in comp:
+                                current_comps[each] +=1
 
                         i += K
                     k1mer = read[-K:]
                     if k1mer in k1mers2component:
                         #pdb.set_trace()
                         comp = k1mers2component[k1mer]
-                        current_comps[comp] = current_comps.get(comp,0)+1
+                        for each in comp:
+                            current_comps[each] +=1
                     if current_comps:
                         comp = max(current_comps.iterkeys(), key=(lambda key: current_comps[key]))
                         if comp in comp2reads:
@@ -175,14 +177,18 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                             if k1mer in k1mers2component:
                                 #pdb.set_trace()
                                 comp = k1mers2component[k1mer]
-                                current_comps_reversed[comp] = current_comps_reversed.get(comp,0)+1
+                                for each in comp:
+                                    current_comps_reversed[each] +=1
                             i += K
                             
                         k1mer = rc_read[-K:]
                         if k1mer in k1mers2component:
                             #pdb.set_trace()
                             comp = k1mers2component[k1mer]
-                            current_comps_reversed[comp] = current_comps_reversed.get(comp,0)+1
+                            for each in comp:
+                                current_comps_reversed[each] +=1
+
+                            
                     if current_comps_reversed:
                         comp = max(current_comps_reversed.iterkeys(), key=(lambda key: current_comps_reversed[key]))    
                         if comp in comp2reads_reversed:
@@ -229,28 +235,35 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                     if k1mer in k1mers2component:
                         #pdb.set_trace()
                         comp = k1mers2component[k1mer];
-                        current_comps[comp] = current_comps.get(comp,0)+1
+                        for each in comp:
+                            current_comps[each] +=1
+                        
                     i += K
                     
                 k1mer = read1[-K:]
                 if k1mer in k1mers2component:
                     #pdb.set_trace()
                     comp = k1mers2component[k1mer]
-                    current_comps[comp] = current_comps.get(comp,0)+1
+                    for each in comp:
+                        current_comps[each] +=1
                 i = 0
                 while i < len(read2_reversed) - (K+1):
                     k1mer = read2_reversed[i:i+(K+1)]
                     if k1mer in k1mers2component:
                         #pdb.set_trace()
                         comp = k1mers2component[k1mer]
-                        current_comps[comp] = current_comps.get(comp,0)+1
+                        for each in comp:
+                            current_comps[each] +=1
+                        
                     i += K
                     
                 k1mer = read2_reversed[-K:]
                 if k1mer in k1mers2component:
                     #pdb.set_trace()
                     comp = k1mers2component[k1mer]
-                    current_comps[comp] = current_comps.get(comp,0)+1
+                    for each in comp:
+                        current_comps[each] +=1
+                    
                 if current_comps:
                     comp = max(current_comps.iterkeys(), key=(lambda key: current_comps[key]))
                     if comp in comp2reads:
@@ -268,28 +281,34 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                         if k1mer in k1mers2component:
                             #pdb.set_trace()
                             comp = k1mers2component[k1mer]
-                            current_comps_reversed[comp] = current_comps_reversed.get(comp,0) + 1
+                            for each in comp:
+                                current_comps_reversed[each] += 1
+                            
                         i += K
                         
                     k1mer = read1_reversed[-K:]
                     if k1mer in k1mers2component:
                         #pdb.set_trace()
                         comp = k1mers2component[k1mer]; 
-                        current_comps_reversed[comp] = current_comps_reversed.get(comp,0) + 1
+                        for each in comp:
+                            current_comps_reversed[each] += 1
                     i = 0            
                     while i < len(read2) - (K+1):
                         k1mer = read2[i:i+(K+1)]
                         if k1mer in k1mers2component:
                             #pdb.set_trace()
                             comp = k1mers2component[k1mer]
-                            current_comps_reversed[comp] = current_comps_reversed.get(comp,0) + 1
+                            for each in comp:
+                                current_comps_reversed[each] += 1
+                            #current_comps_reversed[comp] = current_comps_reversed.get(comp,0) + 1
                         i += K
                         
                     k1mer = read2[-K:]
                     if k1mer in k1mers2component:
                         #pdb.set_trace()
                         comp = k1mers2component[k1mer]
-                        current_comps_reversed[comp] = current_comps_reversed.get(comp,0) + 1
+                        for each in comp:
+                            current_comps_reversed[each] += 1
 
                 
                     if current_comps_reversed:
@@ -334,7 +353,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
        
         f_log.write(str(time.asctime()) + ": " + "reads partititoned " + "\n")        
         
-        c2 = Counter("k1mer Streaming", 10**6)
+        c2 = LocalCounter("k1mer Streaming", 10**6)
 
         # Cycles through k1mer file and adds k1mer weights to k1mers2component dictionary
         with open(kmer_directory + "/k1mer.dict" , 'r') as f:
@@ -402,7 +421,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
 
         f_log.write(str(time.asctime()) + ": " + "kmers2component dictionary created " + "\n")
                             
-        c2 = Counter("kmer Streaming", 10**6)
+        c2 = LocalCounter("kmer Streaming", 10**6)
 
         # gets kmer weights from kmer file and adds them to kmers2component
         with open(kmer_directory + "/kmer.dict" , 'r') as f:
