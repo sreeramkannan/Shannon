@@ -162,9 +162,9 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                     if current_comps:
                         comp = max(current_comps.iterkeys(), key=(lambda key: current_comps[key]))
                         if comp in comp2reads:
-                            comp2reads.add(j)
+                            comp2reads[comp].add(j)
                         else:
-                            comp2reads=set(); comp2reads.add(j)
+                            comp2reads[comp]=set(); comp2reads[comp].add(j)
 
 
 
@@ -267,9 +267,9 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                 if current_comps:
                     comp = max(current_comps.iterkeys(), key=(lambda key: current_comps[key]))
                     if comp in comp2reads:
-                        comp2reads.add(j)
+                        comp2reads[comp].add(j)
                     else:
-                        comp2reads=set(); comp2reads.add(j)
+                        comp2reads[comp]=set(); comp2reads[comp].add(j)
  
 
                     ## You will have to add both reads in the pair in the right direction if either read is added to the comp.
