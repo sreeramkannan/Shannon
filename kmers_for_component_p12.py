@@ -157,11 +157,12 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                         #pdb.set_trace()
                         comp = k1mers2component[k1mer]
                         current_comps[comp] = current_comps.get(comp,0)+1
-                    comp = max(current_comps.iterkeys(), key=(lambda key: current_comps[key]))
-                    if comp in comp2reads:
-                        comp2reads.add(j)
-                    else:
-                        comp2reads=set(); comp2reads.add(j)
+                    if current_comps:
+                        comp = max(current_comps.iterkeys(), key=(lambda key: current_comps[key]))
+                        if comp in comp2reads:
+                            comp2reads.add(j)
+                        else:
+                            comp2reads=set(); comp2reads.add(j)
 
 
 
@@ -182,7 +183,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                             #pdb.set_trace()
                             comp = k1mers2component[k1mer]
                             current_comps_reversed[comp] = current_comps_reversed.get(comp,0)+1
-                    if 1:
+                    if current_comps_reversed:
                         comp = max(current_comps_reversed.iterkeys(), key=(lambda key: current_comps_reversed[key]))    
                         if comp in comp2reads_reversed:
                                 comp2reads_reversed[comp].add(j)
@@ -250,7 +251,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                     #pdb.set_trace()
                     comp = k1mers2component[k1mer]
                     current_comps[comp] = current_comps.get(comp,0)+1
-                if 1:
+                if current_comps:
                     comp = max(current_comps.iterkeys(), key=(lambda key: current_comps[key]))
                     if comp in comp2reads:
                         comp2reads.add(j)
@@ -291,7 +292,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                         current_comps_reversed[comp] = current_comps_reversed.get(comp,0) + 1
 
                 
-                    if 1:
+                    if current_comps_reversed:
                         comp = max(current_comps_reversed.iterkeys(), key=(lambda key: current_comps_reversed[key]))
                         if comp in comp2reads_reversed:
                                 comp2reads_reversed[comp].add(j)
