@@ -15,13 +15,19 @@ def load_kp1mers(infile):
             weight = int(weight)
             #weight = float(weight) ## usually int(weight)
             kp1mers.append((kp1mer, weight))
-
+    if not kp1mers:
+        return None, None
     K = len(kp1mers[0][0]) - 1
     return kp1mers, K
 
 def convert(infile, outfile):
     print "{:s}: Starting..".format(time.asctime())
     kp1mers, K = load_kp1mers(infile)
+    if kp1mers is None:
+        print('NULL kp1mers file')
+        with open(outfile,'w') as f:
+            f.write()
+        return
     print "{:s}: {:d} K+1-mers loaded.".format(time.asctime(), len(kp1mers))
 
     kmers = collections.Counter()
