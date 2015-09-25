@@ -202,10 +202,12 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                             reads_part_file.write(rlines[read_ind])
                     if comp in comp2reads_reversed: 
                         for read_ind in comp2reads_reversed[comp]:
-                            read_id = rlines[read_ind-1].strip().split()[0]
-                            read_id_rem = "\t".join(rlines[read_ind-1].strip().split()[1:])
+                            reversed_read_name=rlines[read_ind-1].split()[0]+'_reversed'+'\t' +'\t'.join(rlines[read_ind].split()[1:])
+                            #read_id = rlines[read_ind-1].strip().split()[0]
+                            #read_id_rem = "\t".join(rlines[read_ind-1].strip().split()[1:])
                             read = rlines[read_ind]
-                            reads_part_file.write(read_id + "_reversed \t" + read_id_rem + "\n")  
+                            #reads_part_file.write(read_id + "_reversed \t" + read_id_rem + "\n")  
+                            reads_part_file.write(reversed_read_name + "\n")  
                             reads_part_file.write(reverse_complement(read) + " \n")
         
 
