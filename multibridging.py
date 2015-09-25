@@ -94,7 +94,7 @@ def load_jellyfish(node_file, edge_file):
             k1, k2 = bases[:-1], bases[1:]
             weight = Read.K - 1
             e = nodes[k1].link_to(nodes[k2], int(weight))
-            e.copy_count = int(prevalence)
+            e.copy_count = round(float(prevalence))
 
 def setup(read_file):
     """Perform some setup functions.
@@ -228,7 +228,7 @@ def main():
     cpp = False
     weighted = False
     Read.K = 24 #default
-    
+
     for arg in arguments[1:]:
         if arg == '-d':
             double_stranded = True
