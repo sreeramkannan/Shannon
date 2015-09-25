@@ -9,7 +9,7 @@ import tester
 from set_exp import set_exp 
 from filter_trans import filter_trans
 
-from kmers_for_component_p11_edit1 import kmers_for_component
+from kmers_for_component_p12 import kmers_for_component
 from weight_updated_graph_f import weight_updated_graph
 from process_concatenated_fasta_f import process_concatenated_fasta
     
