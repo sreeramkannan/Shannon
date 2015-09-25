@@ -14,15 +14,13 @@ import copy,random, numpy
 import pdb
 import sys, time
 from path_decompose_sparse import path_decompose
-#from path_decompose_deterministic import path_decompose
 import os
 from time import sleep
 
 sys.setrecursionlimit(100000)
-#numpy.random.seed(0)
 solvers.options['show_progress'] = False
 solvers.options['msg_lev'] = 'GLP_MSG_OFF'
-worry_abt_unique =0
+worry_abt_unique =0  ## Determines whether the algorithm will make effort to find unique sparsest flow when decomposing a node.
 use_norm = 'l1' #Options 'l1' or 'l2'
 unit_normalization = False
 restored_normalization = True
@@ -58,7 +56,6 @@ nodes_file = sample_name+'intermediate/nodes' + comp + '.txt'
 single_nodes_file = sample_name+'intermediate/single_nodes.txt'
 KnownPathsFile = sample_name+'intermediate/paths' + comp + '.txt'
 reconstr_file = sample_name_out+'algo_output/reconstructed_comp_' +str(comp) + '.fasta'
-#reconstr_Y_file = sample_name_out+'algo_output/reconstructed_comp_' +str(comp) + '_Y' + '.fasta'
 reconstr_Y_file = sample_name_out+'algo_output/reconstructed' + '.fasta'
 use_file =1 #whether you want to read from files or not
 
@@ -66,17 +63,16 @@ if not os.path.exists(sample_name_out+'algo_output'):
     run_cmd('mkdir ' + sample_name_out+'algo_output')
 
 
-#!@  for changed lines
 
-hash_to_node = {}
-node_to_hash = {}
-known_paths = []
+hash_to_node = {}      ## Map: hash value => corresponding node.
+node_to_hash = {}      ## Map: node => node's hash value.
+known_paths = []       ## A list of known paths.
 known_paths_str = []
-paths_for_node = {}
+paths_for_node = {}    ## Map: node => known_paths that the node is involved in.
 
 
 def single_nodes_to_fasta(): 
-    #single_nodes_file,reconstr_file
+    ## The function outputs individual nodes without any edges as reconstructed transcripts.
     with open(reconstr_file, 'a') as reconstFile:
         i = 0
         for lines in open(single_nodes_file):
@@ -86,7 +82,8 @@ def single_nodes_to_fasta():
             i+=1
 
 
-def ParseKnownPathsFile(KnownPathsFile, graph):
+def ParseKnownPathsFile(KnownPathsFile, graph): 
+    ## This function builds the known_paths and paths_for_node data structures.
     f = open(KnownPathsFile, 'r')
     lines = f.readlines()
     i = 0
@@ -100,25 +97,10 @@ def ParseKnownPathsFile(KnownPathsFile, graph):
             tmp_string = ""
             prev_node = None
             j = 0
-            #pdb.set_trace()
-            #for node1 in graph.nodes:
-            #    paths_for_node[node1] = []
             for hashcode in tokens:
-                #pdb.f() 
+
                 node = hash_to_node[hashcode]
                 nodes_in_path.append(node)
-                '''if j == 0:
-                    tmp_string = tmp_string + node.string
-                else:    
-                    iedge = None
-                    for each in node.in_edges:
-                        if each[0] is prev_node: 
-                            iedge = each
-                    
-                    if iedge != None:
-                        tmp_string = tmp_string + node.string[iedge[1]:]
-                if prev_node != None:
-                    tmp_string = tmp_string + prev_node.string[iedge[1]:]'''
                 if paths_for_node.get(node) == None:
                     paths_for_node[node]=[i-1]
                 else:
@@ -128,20 +110,16 @@ def ParseKnownPathsFile(KnownPathsFile, graph):
                     
                     
             known_paths.append(nodes_in_path)
-            #known_paths_str.append(tmp_string)
             
         i += 1
     f.close()
 
-    #print(known_paths)
-    #pdb.set_trace() 
-    '''print('list of paths')
-    for each in known_paths:
-        print(each[0],each[1],each[2])'''
-
 
 # must be called first
 def ParseNodeFile(NodeFile, graph):
+    ## Builds node_to_hash and hash_to_node.
+    ## NodeFile: The file with all the nodes.
+    ## graph: the graph object we are using.
     f=open(NodeFile,'r')
     lines = f.readlines()
     i = 0
@@ -164,6 +142,9 @@ def ParseNodeFile(NodeFile, graph):
     f.close()
 
 def ParseEdgeFile(EdgeFile, graph):
+    ## Adds each edge to list of connections for both nodes involved.  *EHC
+    ## EdgeFile: The file with all the edges.
+    ## graph: the graph object we are using.
     f = open(EdgeFile, 'r')
     lines = f.readlines()
     i = 0
@@ -180,45 +161,47 @@ def ParseEdgeFile(EdgeFile, graph):
 
 
 def intersect(a, b, c ):
+    ## Returns the intersection of the three lists.  
      return list(set(a) & set(b) & set(c))
      
 def intersect5(a, b, c, d, e):
+    ## Returns the intersection of the five lists.  
      return list(set(a) & set(b) & set(c) & set(d) & set(e))
      
-class Edge(object):
+class Edge(object):  ## Edge object (used for building copycount filter matrices).
     def __init__(self, start_node, end_node, overlap_weight, weight, L):
-        self.start = start_node
-        self.end = end_node
-        self.overlap_weight = overlap_weight
-        self.weight = weight
-        self.L = L
+        self.start = start_node  ## The starting node in the edge.
+        self.end = end_node  ## The ending node in the edge.
+        self.overlap_weight = overlap_weight  ## How much the connected nodes overlap.
+        self.weight = weight  ## The copycount for the edge.
+        self.L = L  ## The normalization used for error term in copycount filtering. 
 
-class Node(object):
+class Node(object):  ## Node object (used universally)
     def __init__(self, node_string, node_weight, L,name):
-        self.string = node_string
-        self.in_edges = []
-        self.out_edges = []
-        self.name = name
-        self.weight = (node_weight)
-        self.L = (L)
-        self.DNA_start_pos = None
-        self.DNA_end_pos = None
-    def set_string(self, node_string):
+        self.string = node_string  ## The sequence of bases that the node represents.
+        self.in_edges = []  ## A list of edges in which this node object is the end node.
+        self.out_edges = []  ## A list of edges in which this node object is the start node.
+        self.name = name  ## Hash value for the node.
+        self.weight = (node_weight)  ## The copycount for the node.
+        self.L = (L)  ## The normalization used for the error term in copycount filtering.  
+        self.DNA_start_pos = None  ## Start position in the reference DNA at which this node has bases from 
+        self.DNA_end_pos = None  ## Start position in the reference DNA at which this node has bases from.
+    def set_string(self, node_string):  ## This is the sequence on the node.
         self.string = node_string
     def add_in_edge(self, node, overlap_weight, weight, L):
         self.in_edges.append([node, overlap_weight, weight, L])
     def add_out_edge(self, node, overlap_weight, weight, L):
         self.out_edges.append([node, overlap_weight, weight, L])
 
-class Graph(object):
+class Graph(object):    ## Graph object (used universally)
     def __init__(self):
-        self.start = None
-        self.end = None
+        self.start = None    ## Node with no in-edges
+        self.end = None      ## Node with no out-edges
         self.nodes = []
-        self.tobereduced = []
+        self.tobereduced = []  ## list of nodes with more than one in-edge
         self.paths = []
         #for matrix
-        self.edges = []
+        self.edges = []    ## This is used for building the matrix with the node's in/out edge information.
         #for edge filter
         self.edges2 = []
         self.edge_weights = []
@@ -226,11 +209,11 @@ class Graph(object):
         self.normalization = []
         self.penalization = []
         #for unique solution determination
-        self.no_unique_solution = False
-        self.paths=[]
-        self.paths_Y = []
-        self.og_nodes = {}
-        self.constituent_nodes = {}
+        self.no_unique_solution = False      ## Is there a unique sparsest flow for each decomposed node in the graph?
+        self.paths=[]       ## known paths in graph
+        self.paths_Y = []   
+        self.og_nodes = {}  ## original nodes in graph before sparse flow is run
+        self.constituent_nodes = {}  ## dictionary with nodes as keys and nodes that were condensed to form node as values
 
 
     def add_node(self, node):
@@ -240,14 +223,10 @@ class Graph(object):
     def add_edge(self, start_node, end_node, overlap_weight, weight, L):
         start_node.out_edges.append([end_node, overlap_weight, weight, L])
         end_node.in_edges.append([start_node, overlap_weight, weight, L])
-    def findStartAndEnd(self):
-        for node in self.nodes:
-            if len(node.out_edges) > 0 and len(node.in_edges) == 0:
-                self.start = node
-            if len(node.out_edges) == 0 and len(node.in_edges) > 0:
-                self.end = node
 
     def findStartAndEnd2(self):
+        ## Adds a dummy node labeled start_node that has an out edge to all original nodes with in degree 0.
+        ## Adds a dummy node labeled end_node that has an in edge to all original nodes with out degree 0.  
         start_node = Node("Start_", 0, 0,'S')
         end_node = Node("_End", 0, 0,'E')
 
@@ -268,6 +247,11 @@ class Graph(object):
         self.end = end_node
 
     def findStartAndEnd3(self):
+        '''Adds a dummy node labeled start_node that has an out edge of weight 0 to all original nodes with in degree 0,
+        and an out edge of wight -1 to all other origianl nodes.
+        Adds a dummy node labeled end_node that has an in edge to all original nodes with out degree 0,
+        and an in edge of wight -1 to all other origianl nodes.        
+        '''
         start_node = Node("Start_", 0, 0, 'S')
         end_node = Node("_End", 0, 0,'E')
 
@@ -298,6 +282,7 @@ class Graph(object):
 
 
     def printNodes(self):
+        ##  Prints out each node with all in-edges and out-edges on the same line.
         print('Nodes:\n' , [[e.name, e.weight, e.L ] for e in self.nodes])
         print('\n')
         for each in self.nodes:
@@ -314,14 +299,15 @@ class Graph(object):
 
 
     def printNodesSmall(self):
+        ##  Prints out each node with with it's out edges on the same line.
         for each in self.nodes:
             if len(each.out_edges) != 0:
                 list_out = [[each.out_edges[i][0].name] for i in range(0, len(each.out_edges))]
-                #list_in = [[each.in_edges[i][0].name,  each.in_edges[i][1], each.in_edges[i][2], each.in_edges[i][3]] for i in range(0, len(each.in_edges))]
                 print(each.name,"   out edges:", list_out)
 
 
     def findEdges(self):
+        ## finds all edges in the graph and updates all the relevant data structures.
         for node in self.nodes:
             for edge in node.out_edges:
                 new_edge = Edge(node, edge[0], edge[1], edge[2], edge[3])
@@ -331,42 +317,12 @@ class Graph(object):
                 self.edges2.append(edge_info)
                 self.edge_weights.append(edge[2])
 
-    #def findNodeWeights(self):
-    #    for node in self.nodes:
-    #        self.node_weights.append(node.weight)
-
-    def bigFunction(self, *arg):
-        if len(arg) == 0:
-            return 0
-        if len(arg) == 1:
-            totalcost = 0
-            i = 0
-            for weight in self.edge_weights:
-                totalcost += (abs(weight - arg[0][i]))**2
-                i += 1
-
-            diff_array = []
-            i = 0
-            for weight in self.edge_weights:
-                diff_array[i] = 2 * abs((weight - arg[0][i]))
-                i += 1
-
-            return (totalcost, diff_array)
-
-
-        if len(arg) == 2:
-            doublediff_array = []
-            i = 0
-            for weight in self.edge_weights:
-                total += 2*arg[1]
-
-            return(total)
 
     def filter_update(self, new_edge_weights):
-
+        # updates all edge weights after filtering
         for node in self.nodes:
-            node.out_edges = [] #.clear()
-            node.in_edges = [] #.clear()
+            node.out_edges = []
+            node.in_edges = [] 
         i = 0
         for edge in self.edges2:
             edge[0].out_edges.append([edge[1], edge[2], new_edge_weights[i], edge[4]])
@@ -374,6 +330,12 @@ class Graph(object):
             i += 1
 
     def filter_update_incnodes(self, new_weights,m,n):
+        '''Updates all the nodes and edges in the graph with the new copycount information generated from the 
+        minimum cost flow filter.  
+        new_weights : the new copycount values
+        m : the number of edges
+        n : the number of nodes
+        '''
         i = 0
         for edge in self.edges2:
             if overwrite_normalization:
@@ -386,35 +348,30 @@ class Graph(object):
         ct = 0
         for node in self.nodes:
             if node is not self.start and node is not self.end:
-                node.out_edges = [] #.clear()
+                node.out_edges = [] 
 
-                node.in_edges = [] #.clear()
+                node.in_edges = [] 
                 node.weight=new_weights[m+ct]
                 ct +=1
 
     def search(self):
+        '''Searches for all nodes in the graph that have more than one in edge OR more than one out edge and adds them to
+        to the list of nodes to be reduced by path_decompose.  
+        If use_Y_paths is on, only sends nodes to path_decompose if the node has one in edge and more than one out edge
+        Sorts nodes in topological order.
+        '''
         del self.tobereduced[:]
         for node in self.nodes:
             if (len(node.in_edges)!=0)  and (len(node.out_edges)!=0) and (node is not self.start) and (node is not self.end):
-                #if len(node.in_edges) >1  or len(node.out_edges) >1: #Search for any Y nodes
                 if len(node.in_edges) >1 or len(node.out_edges)>1: #SEARCH FOR any Y nodes
                     if use_Y_paths and len(node.in_edges)<=1:  #Search for left-Y NODES and X-nodes
                         continue
                     self.tobereduced.append(node)
-                #print("to be reduced:", node.string)
-        #pdb.set_trace()
         self.tobereduced.sort(key=lambda x: int(x.name.split("_")[0]), reverse=False)
 
-    def search_prepend(self):
-        for node in self.nodes:
-            if ((len(node.in_edges) == len(node.out_edges) == 1) != True) and node is not self.start and node is not self.end and self.tobereduced.__contains__(node) != True:
-                temp = [node]
-                temp.extend(self.tobereduced)
-                self.tobereduced = temp
-                print("to be reduced:", node.string)
-        
             
     def algorithm2(self):
+        # Runs sparse flow algorithm on graph to simplify graph such that all nodes have an in-degree of 1.
         done = False
         cycle_limit = 1
         in_practice_wau = worry_abt_unique
@@ -426,8 +383,7 @@ class Graph(object):
         ## If wau == True, you need to worry about condensing.
         while not done:
             in_practice_wau = worry_abt_unique if algo_iteration<cycle_limit else 0   
-            #all_resolved = True
-            new_node_list = copy.copy(self.nodes)
+            new_node_list = copy.copy(self.nodes) # Algorithm will construct new list of nodes for each iteration through all nodes
             
             for node in self.nodes:
                 if node == self.start or node == self.end:
@@ -438,34 +394,31 @@ class Graph(object):
                 else:
                     if len(node.in_edges)<=1 and len(node.out_edges)<=1:
                         continue
-                #print('in_edges'+str(node.in_edges))
                 node_iter += 1; 
                 sys.stdout.write('\r')
                 sys.stdout.write('comp: ' + str(comp) + ', algo_iter: ' + str(algo_iteration)  + ', node_iter: ' +  str(node_iter) + ', node_name: ' +str(node.name)+ ', m: ' + str(len(node.in_edges)) + ', n: ' + str(len(node.out_edges)))
                 sys.stdout.flush(); 
                 if 1:
                     if 1:
-                        new_nodes = []
-                        inedges = []
-                        outedges = []
-                        inedge_vector = []
-                        outedge_vector = []
-                        inedge_cc = []
-                        outedge_cc = []
+                        new_nodes = []  ## list of new nodes produced from decomposition of the current node.
+                        inedges = []  ## A vector that contains the connected node of each in-edge.
+                        outedges = []  ## A vector that contains the connected node of each out-edge.
+                        inedge_vector = []  ## A vector that contains the copycounts of each in-edge.
+                        outedge_vector = []  ## A vector that contains the copycounts of each in-edge.
+                        inedge_cc = []  ##  A vector that should contain the copycounts of each in node, but currently contains the overlap of the sequence.
+                        outedge_cc = []  ##  A vector that should contain the copycounts of each out node, but currently contains the overlap of the sequence.
 
-                        #print('Before running an iter:')
-                        #pdb.set_trace()
 
-                        incoming_edge_attributes = {}
-                        outgoing_edge_attributes = {}
+                        incoming_edge_attributes = {}  ## A dictionay that contains the overlap and normalization information for each in edge.
+                        outgoing_edge_attributes = {}  ## A dictionay that contains the overlap and normalization information for each out edge.
                		if len(node.in_edges) == 0:
-			    print('Hanging Node!'); #pdb.set_trace()
+			    print('Hanging Node!'); 
                             node.in_edges.append([self.start, 0, node.weight, 0])
                             self.start.out_edges.append([node, 0, node.weight, 0])
                             self.start.weight += float(node.weight)
 
                         if len(node.out_edges) == 0:
-                            print('Hanging Node!'); #pdb.set_trace()
+                            print('Hanging Node!'); 
                             node.out_edges.append([self.end, 0, node.weight, 0])
                             self.end.in_edges.append([node, 0, node.weight, 0])
                             self.end.weight += float(node.weight)
@@ -483,6 +436,8 @@ class Graph(object):
                             outgoing_edge_attributes[out_edge[0]] = [out_edge[1], out_edge[3]]
 			
 			P = matrix(1.,(len(node.in_edges), len(node.out_edges)))
+            
+                        #  This section of code determines which known paths will be considered when decomposing this node
                         path_bridge_dict = {}
                         paths_for_all = []        
                         if node in paths_for_node:
@@ -495,13 +450,8 @@ class Graph(object):
                             for (n,out_node) in enumerate(outedges):
                                 path_bridge_dict[(m, n)] = paths_for_all    
 
-                        # Edited from here
-
-                        #Speed up using dictionaries for which nodes are in one of the paths...
                         if paths_for_node.get(node) != None:
-                            #m=0
                             for (m,in_node) in enumerate(inedges):
-                                #n=0
                                 if paths_for_node.get(in_node) == None:
                                     continue
                                 for (n,out_node) in enumerate(outedges):
@@ -515,27 +465,20 @@ class Graph(object):
                                     if len(node_paths) == 0:
                                         continue
                                     
-                                    #if '_' in in_node.name and len(paths_for_node[in_node]) != 0:
-                                        #pdb.set_trace()
                                     cand_paths = intersect5(paths_for_node[self.constituent_nodes[in_node][-1]], node_paths, paths_for_node[self.constituent_nodes[out_node][0]], paths_for_node[in_node], paths_for_node[out_node])
                                     l_node = self.constituent_nodes[in_node]
                                     r_node = self.constituent_nodes[out_node]
                                     c_node = self.constituent_nodes[node]
                                     for cp in cand_paths:
                                         node_list = known_paths[cp] #for this path
-                                        #i = 0
                                         if self.constituent_nodes[node][0] in node_list and self.constituent_nodes[node][-1] in node_list:
                                             tmp1 = [node_list.index(n1) for n1 in self.constituent_nodes[node]]
-                                            #pdb.set_trace()
                                             node_good = True
                                             for (i, each) in enumerate(tmp1):
                                                 if i != 0:
                                                     if prev+1 != each:
                                                         node_good = False
                                                 prev = each    
-                                            
-                                            #if len(l_node+r_node+c_node) != 3:
-                                                #pdb.set_trace()
                                             
                                             
                                             if node_good == True:
@@ -544,8 +487,6 @@ class Graph(object):
                                                 r_good = True 
                                                 l_check  = min(tmp1[0], len(self.constituent_nodes[in_node]))
                                                 r_check  = min(len(node_list)-tmp1[-1]-1, len(self.constituent_nodes[out_node]))
-                                                #if l_check >1 or r_check >1:
-                                                    #pdb.set_trace()
                                                 for y in range(0, l_check):
                                                     if node_list[tmp1[0]-1-y].string != l_node[-1-y].string:
                                                         l_good = False
@@ -555,27 +496,13 @@ class Graph(object):
                                                 if r_good and l_good:
                                                     P[m, n] = 0 
                                                     path_bridge_dict[(m, n)].append(cp)
-                                                    #pdb.set_trace()
                                                 
                                         
-                                        
-                                        # for (i,temp_node) in enumerate(node_list):
-                                            # if i>0 and i<(len(node_list)-1):
-                                                #if temp_node.string is node and node_list[i-1] is in_node and node_list[i+1] is out_node:
-                                                # if temp_node.string == node.string and node_list[i-1].string == l_node.string and node_list[i+1].string is r_node.string:
-                                                    # l_good = True
-                                                    # r_good = True
-                                                    # l_check  = min(i-1, len(self.constituent_nodes[in_node])-1)
-                                                    # r_check  = min(len(node_list)-i-2, len(self.constituent_nodes[in_node])-1)
-                                                    # P[m,n]=0
-                                                    #pdb.set_trace()
-
+                        #  This line decomposes the node                
                         output = path_decompose(inedge_vector, outedge_vector, inedge_cc, outedge_cc, overwrite_normalization, P,use_GLPK, path_sparsity)
                         
 
-                        if output[1] == 1 and in_practice_wau:
-                            #pdb.set_trace()
-                            continue 
+
 
                         temp_matrix = output[0]
                         m = len(inedge_vector)
@@ -583,25 +510,19 @@ class Graph(object):
                         in_node_flow = numpy.sum(temp_matrix, 1)
                         out_node_flow = numpy.sum(temp_matrix, 0)
                         
-                        ## Make sure you are building new nodes correctly 
                         nodes_to_eliminate = [node]
+                        
+                        # This section of the code builds the new nodes formed during decomposition, and implicitly condenses the 1x1 nodes
                         for i in range(0, m):
                             for j in range(0, n):
-                                #pdb.set_trace()
                                 curr_edge_cc = temp_matrix[i][j]
                                 if curr_edge_cc != 0:
-                                    #pdb.set_trace()
                                     in_node_out_deg = len(inedges[i].out_edges)
                                     out_node_in_deg = len(outedges[j].in_edges)
-                                    #pdb.set_trace()
-                                    #print(i, j, node.name)
-                                    #if node.name == '8':
-                                    #    pdb.set_trace() 
                                     
                                     in_1new = in_node_flow[i] == temp_matrix[i][j]
                                     out_1new = out_node_flow[j] == temp_matrix[i][j]
                                     if in_node_out_deg == 1 and in_1new and out_node_in_deg == 1 and out_1new:
-                                        #pdb.set_trace()
                                         in_node = inedges[i]
                                         out_node = outedges[j]
                                         out_attr = outgoing_edge_attributes[outedges[j]]  
@@ -617,29 +538,16 @@ class Graph(object):
                                             out_edge[0].add_in_edge(new_node, out_edge[1], out_edge[2], out_edge[3])
                                         
                                         self.nodes.append(new_node)
-                                        # for path1 in paths_for_node.get(node):
-                                            # path1_n = known_paths[path1]
-                                            # ind1 = path1_n.index(node.name)
-                                            # path1_n.insert(ind1, new_node)
-                                            # path1_n.remove(node)
-                                            # path1_n.remove(in_node)
-                                            # path1_n.remove(out_node)
                                         self.constituent_nodes[new_node] = self.constituent_nodes[in_node]+self.constituent_nodes[node]+self.constituent_nodes[out_node]
-                                        #paths_for_node[new_node] = copy.deepcopy(paths_for_node.get(node))  ## Think about what to do here
                                         new_nodes.append(new_node)
                                         new_node_list.append(new_node)
                                         
-                                        #pdb.set_trace()
                                         nodes_to_eliminate.append(in_node)
                                         nodes_to_eliminate.append(out_node)
                                         
                                         paths_for_node[new_node] = path_bridge_dict[(i, j)]
-                                        #time_of_decomp[in_node] = (algo_iteration, node, i , j)
-                                        #time_of_decomp[out_node] = (algo_iteration, node, i , j)
-                                        #pdb.set_trace()
                                         
                                     elif in_node_out_deg == 1 and in_1new and not (out_node_in_deg == 1 and out_1new):
-                                        #pdb.set_trace()
                                         in_node = inedges[i]
                                         out_node = outedges[j]
                                         out_attr = outgoing_edge_attributes[outedges[j]]  
@@ -653,27 +561,16 @@ class Graph(object):
                                         outedges[j].add_in_edge(new_node, out_attr[0], temp_matrix[i][j], out_attr[1])
                                         
                                         self.nodes.append(new_node)
-                                        # for path1 in paths_for_node.get(node):
-                                            # path1_n = known_paths[path1]
-                                            # ind1 = path1_n.index(node.name)
-                                            # path1_n.insert(ind1, new_node)
-                                            # path1_n.remove(node)
-                                            # path1_n.remove(in_node)
                                         self.constituent_nodes[new_node] = self.constituent_nodes[in_node]+self.constituent_nodes[node]
-                                        #paths_for_node[new_node] = copy.deepcopy(paths_for_node.get(node))
                                         new_nodes.append(new_node)
                                         new_node_list.append(new_node)
                                     
-                                        #pdb.set_trace()
                                         nodes_to_eliminate.append(in_node)
                                         
                                         paths_for_node[new_node] = path_bridge_dict[(i, j)]
-                                        #time_of_decomp[in_node] = (algo_iteration, node, i , j)
-                                        #pdb.set_trace()
                                         
 
                                     elif not (in_node_out_deg == 1 and in_1new) and out_node_in_deg == 1 and out_1new:
-                                        #pdb.set_trace()
                                         in_node = inedges[i]
                                         out_node = outedges[j]
                                         out_attr = outgoing_edge_attributes[outedges[j]]  
@@ -688,24 +585,14 @@ class Graph(object):
                                         
                                         
                                         self.nodes.append(new_node)
-                                        # for path1 in paths_for_node.get(node):
-                                            # path1_n = known_paths[path1]
-                                            # ind1 = path1_n.index(node.name)
-                                            # path1_n.insert(ind1, new_node)
-                                            # path1_n.remove(node)
-                                            # path1_n.remove(out_node)
                                             
                                         self.constituent_nodes[new_node] = self.constituent_nodes[node]+self.constituent_nodes[out_node]
-                                        #paths_for_node[new_node] = copy.deepcopy(paths_for_node.get(node))
                                         new_nodes.append(new_node)
                                         new_node_list.append(new_node)
                                     
-                                        #pdb.set_trace()
                                         nodes_to_eliminate.append(out_node) 
                                         
                                         paths_for_node[new_node] = path_bridge_dict[(i, j)]
-                                        #time_of_decomp[out_node] = (algo_iteration, node, i , j)
-                                        #pdb.set_trace()
 
                                     else: 
                                         out_attr = outgoing_edge_attributes[outedges[j]]  
@@ -719,33 +606,20 @@ class Graph(object):
                                         
                                         if len(new_node.out_edges) ==0:
                                             print('woohoo')
-                                            #raw_input()
                                         self.nodes.append(new_node)
-                                        # for path1 in paths_for_node.get(node):
-                                            # path1_n = known_paths[path1]
-                                            # ind1 = path1_n.index(node.name)
-                                            # path1_n.insert(ind1, new_node)
-                                            # path1_n.remove(node)
 
-                                        #paths_for_node[new_node] = copy.deepcopy(paths_for_node.get(node))
                                         self.constituent_nodes[new_node] = self.constituent_nodes[node]
                                         new_nodes.append(new_node)
                                         new_node_list.append(new_node)
                                         
                                         paths_for_node[new_node] = path_bridge_dict[(i, j)]
-                                        #pdb.set_trace()
-                                    #if len(paths_for_node[new_node]) != 0:
-                                        #pdb.set_trace()
                         
                         ## For each node that was condensed into a new node, delete all it's connections.
-                        #pdb.set_trace()
                         for old_node in nodes_to_eliminate:
                             for edge in old_node.in_edges:
                                 in_node_temp = edge[0]
                                 for oedge in in_node_temp.out_edges:
                                     if oedge[0] is old_node:
-                                    #if oedge[0].string == node.string:
-                                        #if oedge not in 
                                         in_node_temp.out_edges.remove(oedge)
 
                             for edge in old_node.out_edges:
@@ -757,20 +631,14 @@ class Graph(object):
                             old_node.out_edges = []
                             if old_node not in self.nodes:
                                 'alert'
-                                #pdb.set_trace()
                             else:    
-                                #if old_node not in new_node_list:
-                                #    pdb.set_trace()
                                 new_node_list.remove(old_node)
-                        #pdb.set_trace()
-                        #self.printNodesSmall()
-                        #print(" ")
-                        #print(" ")          
-            self.nodes = new_node_list
-            self.search()
+            self.nodes = new_node_list # update node list after each iteration through all nodes
+            self.search() # checks to see if any more nodes need to be reduced
             if len(self.tobereduced) == 0:
                 done = True
             else:
+                # This is to ensure nodes are run through topologically
                 self.nodes.remove(self.start)
                 self.nodes.remove(self.end)
                 self.nodes.sort(key=lambda x: int(x.name.split("_")[0]), reverse=False)
@@ -778,15 +646,22 @@ class Graph(object):
                 self.nodes.insert(0, self.start)
                 
             algo_iteration += 1
-        sys.stdout.write('\n')                            
+        sys.stdout.write('\n')               
+
+        
     def read_paths_recursive(self,node,str_till_now,overlap,prev_weight):
+        '''Reads all paths in graph recursively
+        node:  Current node
+        str_till_now:  The string seen before this node.
+        overlap:  THe amount of bases of overlap between the last node in the path and the current node.
+        prev_weight:  The wieght of thw last node in the path.  
+        '''
         curr_str=str_till_now+node.string[overlap:]
         if curr_str[-4:] == '_End':
             curr_str = curr_str[:-4]    
 
         if len(node.out_edges) == 0: ## This assumes all paths end at the _END node.
             self.paths_Y.append([curr_str,prev_weight])
-            #write_str_till_now #Need to write
             return
         prev_weight = node.weight
         for (i,each) in enumerate(node.out_edges):
@@ -797,6 +672,9 @@ class Graph(object):
 
 
     def read_Y_paths(self):
+        ''' Uses read_paths_recursive to find all paths if the graph only has Y nodes 
+        (a Y node is a node with at most 1 in edge AND 0 or more out edges).
+        '''
         with open(reconstr_Y_file, 'a') as pathfile:
             self.search()
             if len(self.tobereduced) != 0:
@@ -813,34 +691,28 @@ class Graph(object):
 
 
     def read_paths(self):
+        ## reads paths in the case when there are only 1x1 nodes (ndoes with at most one in edge AND at most one out edge).
         with open(reconstr_file, 'a') as pathfile:
             self.search()
             if len(self.tobereduced) != 0:
                 print('wth')
-                #raw_input()
-            #pathfile.write("ID1\tID2\tEtc.\n")
+
             
             print("number of paths", len(self.start.out_edges))
-            #pdb.set_trace()
             for (i,each) in enumerate(self.start.out_edges):
-                #print("i am now in ",i)
-                string = ''  # self.start.string
+                string = ''  
                 weight = each[2]
                 overlap = int(each[1])
-                #print(overlap)
                 node = each[0]
-                #print(node.string[0:50])
                 seen_nodes = [node]
                 while len(node.out_edges) != 0:
                     
                     if len(node.in_edges) > 1:
                         'hi'
-                        #print('wait a minute')
                     if node not in self.nodes:
                         print('bad boy')
                         pdb.set_trace()
                     string += node.string[overlap:]
-                    #string += node.string[:]
 
 
                     if node.out_edges[0][0] not in seen_nodes:
@@ -851,80 +723,25 @@ class Graph(object):
                         pdb.set_trace()
                         print('BEWARE:there are still some loops')
                         break
-                    #overlap = int(node.out_edges[0][1])
-                    #print(node.string[0:50])
                 
-                #pdb.set_trace()
                 string += node.string[overlap:]
-                #string += node.string[:]
                 if string[-4:] == '_End':
                     string = string[:-4]    
                 self.paths.append([string, weight])
                 pathfile.write('>'+sample_name + 'Reconst_'+comp+'_'+str(i)+"\t"+str(weight))
                 pathfile.write("\n"+string+"\n") #with weights
-                #i = i+1
 
 
-    '''def repair(self):
-        for node in self.nodes:
-            start_node = self.start
-            end_node = self.end
-            if len(node.in_edges) == 0:
-                node.in_edges.append([start_node, 0, node.weight, 0])
-                start_node.out_edges.append([node, 0, node.weight, 0])
-
-            if len(node.out_edges) == 0:
-                node.out_edges.append([end_node, 0, node.weight, 0])
-                end_node.in_edges.append([node, 0, node.weight, 0])'''
 
 
-def buildMatrix(graph):
-    adjacency_matrix = []
-    node_indices = {}
-    node_indices_other = {}
-    edge_indices = {}
-    edge_indices_other = {}
-    graph.findEdges()
-    #node_count = 0
-    #graph.node_weights=[]
-    for (node_count,node) in enumerate(graph.nodes):
-        if node is not graph.start and node is not graph.end:
-            node_indices[node_count] = node
-            node_indices_other[node] = node_count
-            #node_count += 1
-    #edge_count = 0
-    for (edge_count,edge) in enumerate(graph.edges):
-        edge_indices[edge_count] = edge
-        edge_indices_other[edge] = edge_count
-        #edge_count += 1
-    #print(node_count,edge_count)
-    A = matrix(0.,(node_count,edge_count))
-    #print(A)
-    #matrix_count = 0
-    #print(node_indices_other, edge_indices_other)
-    for edge in graph.edges:
-        if edge.start is not graph.start:
-            A[node_indices_other[edge.start], edge_indices_other[edge]] = -1.
-        if edge.end is not graph.end:
-            A[node_indices_other[edge.end], edge_indices_other[edge]] = 1.
-    #for node in graph.nodes:
-     #   if node is not graph.start and node is not graph.end:
-            #edge_array = [0]*len(edge_indices)
-      #      for edge in node.out_edges:
-                #index = edge_indices_other[edge]
-      #         A[node_indices_other[node],edge_indices_other[edge]] = -1
-                #edge_array[index] = -1
-      #      for edge in node.in_edges:
-      #         A[node_indices_other[node],edge_indices_other[edge]] = 1
-                #index = edge_indices_othere[edge]
-                #edge_array[index] = 1s
-        #define what goes in matrix
-        #adjacency_matrix[matrix_count] = edge_array
-    #print A
-    return A
 
 
 def buildMatrixIncNodes(graph):
+    '''This builds a matrix that wil be used to constrain the minimum cost flow filtering so that the each node has the 
+    amount of flow going in as the amount of flow going out, and the flow value on teh node is eual to the floow of the
+    edges leaving the node.  This function also builds the vector that has the normailzation information for each node and edge.  
+    graph: the current graph we're filtering.
+    '''
     adjacency_matrix = []
     node_indices = {}
     node_indices_other = {}
@@ -965,12 +782,7 @@ def buildMatrixIncNodes(graph):
             graph.penalization.append(0)
             node_count += 1
    
-    #print(node_count,edge_count)
-    #A = matrix(0.,(2*node_count,edge_count+node_count))  
     A = spmatrix(0.,[],[],(2*node_count,edge_count+node_count))  
-    #print(A)
-    #matrix_count = 0
-    #print(node_indices_other, edge_indices_other)
     for edge in graph.edges:
         if edge.start is not graph.start:
             A[node_indices_other[edge.start], edge_indices_other[edge]] = -1.
@@ -988,16 +800,16 @@ def buildMatrixIncNodes(graph):
 
 
 def filter_copycounts_inc_nodes(graph):
+    '''This fucntion runs the minimum cost flow algorithm to filter the copycounts of the graph.  
+    it has the option of either minimizing the normalized l1 norm of the error between the original copycounts and the 
+    new copycounts, or minimizing the normalized l2 norm of the error between the original copycounts and the new copycounts.
+    '''
     pen_constant = 10 #set this to 1 so that something like 1/10th of the flow is likely to flow through non-existent edges
     (A) = buildMatrixIncNodes(graph)
-    #print(A)
-    #print(A.size)
     [ta,tb]=A.size
     n = int(ta/2)
     m = int(tb)-n
     I = spmatrix(1.0, range(m+n), range(m+n))
-    #print(graph.edge_weights)
-    #graph.findNodeWeights()
     x = []
     for each in graph.edge_weights:
         x.append(float(each))
@@ -1007,7 +819,6 @@ def filter_copycounts_inc_nodes(graph):
     c = matrix(x,(m+n,1))
     L = matrix(graph.normalization,(m+n,1))
     penality = matrix(graph.penalization,(m+n,1))
-    #pdb.set_trace()
     L_th = sum(L)/len(L)*0.001;
 
     for ctr in range(m+n):
@@ -1015,16 +826,13 @@ def filter_copycounts_inc_nodes(graph):
         if L[ctr]<L_th:
             x_mat[ctr]=0
 
-    #d = matrix(map(float,graph.node_weights),(n,1))  # Assumes existence of node_weights
-    #print(c)
-    #print(type(c))
     pen_cost = 1e10  #set ridiculously large number to force penalization to zero
     if run_penalized:
         q = -c+pen_cost*penality 
     else:
         q = -c
     G = -I
-    #h = - matrix(0.,(m+n,1)) # zero matrix implies non-negativitiy constraint!
+
     h = - 0*x_mat # implies f>=0.1c
     dims = {'l': G.size[0], 'q': [], 's': []}
     b = matrix(0.,(2*n,1))
@@ -1038,11 +846,9 @@ def filter_copycounts_inc_nodes(graph):
         ## L1 norm cvx_opt 
         L_root = L**(.5)
         c_l1 = matrix([[x_mat*0, L_root]])
-        #A_l1 = matrix([[A], [A*0]])
         A_l1 = sparse([[A], [A*0]])
         b_l1 = b
         h_l1 = matrix([[h, x_mat, -x_mat]])
-        #G_l1 = matrix([[G, I, G], [0*I, G, G]])
         G_l1 = sparse([[G, I, G], [0*I, G, G]])
         print('Generated the matrices, running the solver:')
         if use_GLPK:
@@ -1057,7 +863,6 @@ def filter_copycounts_inc_nodes(graph):
     
     opt_val = sol['primal objective']
     
-    #pdb.set_trace() 
     
     #Run it penalized to obtain the final answer
     if run_penalized:
@@ -1078,18 +883,37 @@ def filter_copycounts_inc_nodes(graph):
     #print(y)
     return x
 
-
+def buildMatrix(graph):
+    # Same as buildMatrix_inc_nodes except doesn't use edge weights
+    # Currently not used
+    adjacency_matrix = []
+    node_indices = {}
+    node_indices_other = {}
+    edge_indices = {}
+    edge_indices_other = {}
+    graph.findEdges()
+    for (node_count,node) in enumerate(graph.nodes):
+        if node is not graph.start and node is not graph.end:
+            node_indices[node_count] = node
+            node_indices_other[node] = node_count
+    for (edge_count,edge) in enumerate(graph.edges):
+        edge_indices[edge_count] = edge
+        edge_indices_other[edge] = edge_count
+    A = matrix(0.,(node_count,edge_count))
+    for edge in graph.edges:
+        if edge.start is not graph.start:
+            A[node_indices_other[edge.start], edge_indices_other[edge]] = -1.
+        if edge.end is not graph.end:
+            A[node_indices_other[edge.end], edge_indices_other[edge]] = 1.
+    return A
 
 def filter_copycounts(graph):
+    # Same as filter_copycounts_inc_nodes except doesn't use edge weights
+    # Currently not used
     A = buildMatrix(graph)
-    #print(A)
-    #print(A.size)
     [n,m]=A.size
     I = spmatrix(1.0, range(m), range(m))
-    #print(graph.edge_weights)
     c = matrix(map(float,graph.edge_weights),(m,1))
-    #print(c)
-    #print(type(c))
     q = -c  #check if this is a row vector
     G = -I
     h = matrix(0.,(m,1)) # zero matrix
@@ -1098,60 +922,14 @@ def filter_copycounts(graph):
     x=solvers.coneqp(I, q, G, h, dims, A, b)['x']
     y = numpy.array(x)
     graph.filter_update(y)
-    #print(y)
     return x
 
 
-# node1 = Node("abc")
-# node2 = Node("def")
-# node3 = Node("ghi")
-# node4 = Node("jkl")
-# node5 = Node("mno")
-# node6 = Node("pqr")
-# node7 = Node("stu")
 
+# Script to run smoothing, aprse flow algorithm, and output transcripts
+# ------------------------------------------------------
 
-# graph1 = Graph()
-
-# graph1.add_node(node1)
-# graph1.add_node(node2)
-# graph1.add_node(node3)
-# graph1.add_node(node4)
-# graph1.add_node(node5)
-# graph1.add_node(node6)
-# graph1.add_node(node7)
-
-
-# sigma = 0.5
-
-# graph1.add_edge(node1, node2, 3+sigma*random.random())
-# graph1.add_edge(node1, node3, 2+sigma*random.random())
-# graph1.add_edge(node2, node4, 3+sigma*random.random())
-# graph1.add_edge(node3, node4, 2+sigma*random.random())
-# graph1.add_edge(node4, node5, 2+sigma*random.random())
-# graph1.add_edge(node4, node6, 3+sigma*random.random())
-# graph1.add_edge(node5, node7, 2+sigma*random.random())
-# graph1.add_edge(node6, node7, 3+sigma*random.random())
-##
-##
-##graph1.algorithm2()
-##for each in graph1.nodes:
-##    if len(each.out_edges) == 0:
-##        list1 = [[each.in_edges[i][0].string,  each.in_edges[i][1]] for i in range(0, len(each.in_edges))]
-##        print(each.string,"   out edges: None", "   in edges:",  list1)
-##    if len(each.in_edges) == 0:
-##        list1 = [[each.out_edges[i][0].string,  each.out_edges[i][1]] for i in range(0, len(each.out_edges))]
-##        print(each.string,"   out edges:", list1, "   in edges: None")
-##    if len(each.out_edges) != 0 and len(each.in_edges) != 0:
-##        print(each.string,"   out edges:", each.out_edges[0][0].string, each.out_edges[0][1], "   in edges:",  each.in_edges[0][0].string, each.in_edges[0][1])
-##graph1.read_paths()
-##print(graph1.paths)
-##
-##print("\n")
-##print("\n")
-
-
-
+    
 if comp == '-1':
     single_nodes_to_fasta()
     sys.exit(0)
@@ -1196,17 +974,11 @@ if use_smoothing:
 	new_edge_weights2 = filter_copycounts_inc_nodes(graph2)
 	graph2.filter_update(new_edge_weights2)
 print('after filtering')
-#raw_input()
 
 if debug_mode:
     graph2.printNodes()
     raw_input()
-#graph2.printNodesSmall()
 
-
-#graph2.printNodes()
-
-#raw_input()
 
 
 #DEBUG
@@ -1219,30 +991,23 @@ for node in graph2.nodes:
 
 
 
-#pdb.set_trace()
 t_start = time.time()
 graph2.algorithm2()
 t_elapsed = (time.time() - t_start)
 print('after running algorithm' + ' : ' + str(comp) +  " time taken: " + str(t_elapsed) )
-#pdb.set_trace() 
 print('after running algorithm')
 if debug_mode:
 	graph2.printNodes()
 
 
-#single_nodes_to_fasta()
 
 if use_Y_paths:
     graph2.read_Y_paths()
 else:
     graph2.read_paths()
-    #graph2.read_Y_paths()
 print("finished writing file")
 print("No unique solution: " + str(graph2.no_unique_solution)  + ' : ' + str(comp))
 
-#print(graph2.paths)
-#graph2.outputPaths()
-#pdb.set_trace()
 
 
 

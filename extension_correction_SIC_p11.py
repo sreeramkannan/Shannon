@@ -60,6 +60,7 @@ def load_kmers(infile, double_stranded):
     return kmers, K
 
 def extend(start, extended, unextended, traversed, kmers, K):
+    # extends k1mers in a specified direction to form contig
     last = unextended(start)
     tot_weight = 0; tot_kmer=0
     extension = []
@@ -76,15 +77,17 @@ def extend(start, extended, unextended, traversed, kmers, K):
         c2.increment()
 
 def extend_right(start, traversed, kmers, K):
+    # extends k1mers to right to form contig
     return extend(start, lambda last, b: last + b, lambda kmer: kmer[-(K - 1):],
         traversed, kmers, K)
 
 def extend_left(start, traversed, kmers, K):
+    # extends k1mers to left to form contig
     return extend(start, lambda last, b: b + last, lambda kmer: kmer[:K - 1],
         traversed, kmers, K)
 
 def duplicate_check(contig, r = 12, f = 0.5):
-    # To add: if rmer in the contig multiple times, only increment the dup-contig once for each time its in dup-contig
+    # decide whther to accept new contig by checking how similar it is to the current accepted contigs.
     dup_count = {}
     max_till_now = 0; max_contig_index = -1
     for i in range(0, len(contig)-r+1):
@@ -102,7 +105,7 @@ def duplicate_check(contig, r = 12, f = 0.5):
             if max_contig_index in rmer_to_contig[contig[i:i+r]]:
                 a[i:i+r] = 1
 
-    if 1: #for dup in dup_count:
+    if 1: 
         if sum(a)/float(len(contig)) > f:
             return True
         else:
@@ -140,11 +143,16 @@ def trim_polyA(contig):
         endLen = 0
  
     return contig[startPt:totLen-endPt]
-
+        
         
 def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold):
+    '''Runs contig based error correction: builds contigs, and only accepts k1mers from the accepted contigs.  
+    Then writes out groups of contigs called components where each components has no contigs in it that share kmers with
+    a contig in another component. Only output components with more than comp_size_threshold contigs seperately.
+    Also build a gpmetis input graph for each comonent above size threshold.
+    All the other contigs are outputtted in remaining_contigs.txt
+    '''
     f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
-    #pdb.set_trace()
     print "{:s}: Starting..".format(time.asctime())
     f_log.write("{:s}: Starting..".format(time.asctime()) + "\n")
     kmers, K = load_kmers(infile, double_stranded)
@@ -158,12 +166,13 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     contig_connections = {}
     components_numbers = {}
     contigs = ["buffer"]
-    #pdb.set_trace()
+    # finds k1mer with highest weight that that has not been used  in a contig
     while len(heaviest) > 0:
         start_kmer, _ = heaviest.pop()
         if start_kmer in traversed: continue
         traversed.add(start_kmer)
-
+        
+        # Builds contig
         [right_extension,right_kmer_wt,right_kmer_no] = extend_right(start_kmer, traversed, kmers, K)
         [left_extension,left_kmer_wt,left_kmer_no] = extend_left(start_kmer, traversed, kmers, K)
         tot_wt = right_kmer_wt + left_kmer_wt + kmers[start_kmer];
@@ -173,8 +182,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
         contig = trim_polyA(contig)
         r = 12
         duplicate_suspect = duplicate_check(contig, r) #Check whether this contig is significantly represented in a earlier contig. 
-        #pdb.set_trace()
-        # The line below is the hyperbola error correction.
+        # The line below is the hyperbola error correction that accepts or rejects new contig.
         if len(contig) >= min_length and len(contig)*math.pow(avg_wt,1/4.0) >= 2*min_length*math.pow(min_weight,1/4.0) and not duplicate_suspect:
             f1.write("{:s}\n".format(contig));  contig_index+=1
             contigs.append(contig)
@@ -187,12 +195,10 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
             # For graph partitioning
             C = K-1
 
-            #pdb.set_trace()
             for i in range(len(contig) - C +1):
                 if contig[i:i+C] in cmer_to_contig:
                     for contig2_index in cmer_to_contig[contig[i:i+C]]:
 
-                        #pdb.set_trace()
                         if contig2_index in contig_connections[contig_index] and contig2_index != contig_index:
                             contig_connections[contig_index][contig2_index] += 1
                         elif contig2_index != contig_index:
@@ -204,7 +210,6 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
                 else:
                     cmer_to_contig[contig[i:i+C]] = []
                 cmer_to_contig[contig[i:i+C]].append(contig_index)     
-                #pdb.set_trace()
                 
             # For error correction
             for i in range(len(contig) -r + 1):
@@ -221,7 +226,6 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
         for kmer in allowed:
             f.write("{:s}\t{:d}\n".format(kmer, int(kmers[kmer])))
      
-    #pdb.set_trace()
 
     # Depth First Search to find components of contig graph.
 
@@ -230,13 +234,11 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     contig2component = {}
     component2contig = {}
     seen_before = {}
-    # Some 
     for contig_index in contig_connections:
         if contig_index not in contig2component:
             component2contig[contig_index] = []
             stack1 = [contig_index]
             seen_before[contig_index] = True
-            #pdb.set_trace()
             while len(stack1) != 0:
                 curr = stack1.pop()
                 contig2component[curr] = contig_index
@@ -246,9 +248,9 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
                         stack1.append(connected)
                         seen_before[connected] = True
 
-    f_log.write(str(time.asctime()) + ": " + "After dfs " + "\n")                       
+    f_log.write(str(time.asctime()) + ": " + "After dfs " + "\n")    
+    
     # Finds all connections for Metis graph file.
-       
     connections_drawn = {}
     for component in component2contig:
         connections_drawn[component] = {}
@@ -259,15 +261,11 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
             key1 = tuple(key1)
             component = contig2component[contig]
             if key1 not in connections_drawn[component]:
-                # write to file here
                 connections_drawn[component][key1] = True
     f_log.write(str(time.asctime()) + ": " + "After Edges Loaded " + "\n")
     
-    #comp_size_threshold = 1000
-    #comp_directory_name = 'S15_SE_contig_partition2' #'NM_metis_test'
     
     # Build Metis Graph file.
-    #pdb.set_trace()
     new_comp_num = 1
     
     remaining_file_curr_size = 0
@@ -276,11 +274,9 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     non_comp_contigs = open(comp_directory_name+"/remaining_contigs"+str(remaining_file_num)+".txt", 'w')
     if 1:
         for component in component2contig:
-            #pdb.set_trace()
             if len(component2contig[component]) > comp_size_threshold:
                 with open(comp_directory_name+"/component" + str(new_comp_num) + ".txt" , 'w') as f:
                     num_nodes = len(component2contig[component])
-                    #pdb.set_trace()
                     num_edges = len(connections_drawn[component])
                     f.write(str(num_nodes) + "\t" + str(num_edges) + "\t" + "001" + "\n")
                     code = {}
@@ -289,7 +285,6 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
                         code[contig] = i
                         i += 1
                     for contig in component2contig[component]:
-                        #f.write(str(contig) + "\t")
                         for contig2 in contig_connections[contig]:
                             f.write(str(code[contig2]) + "\t" + str(contig_connections[contig][contig2]) + "\t")
                         f.write("\n")
@@ -301,7 +296,6 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
                 new_comp_num += 1
             else:
                 for contig_ind in component2contig[component]:
-                    #pdb.set_trace()
                     contig = contigs[contig_ind]
                     non_comp_contigs.write(contig + "\n")
                     
@@ -312,30 +306,24 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
                     non_comp_contigs = open(comp_directory_name+"/remaining_contigs"+str(remaining_file_num)+".txt", 'w')
                     remaining_file_curr_size = 0
 
-                    '''for i in range(len(contig) - K + 1):
-                        kmer = contig[i:i+K]
-                        non_comp_kmers.write(kmer + "\t" + str(int(kmers[kmer])) + "\n")'''
     
     f_log.write(str(time.asctime()) + ": " + "Metis Input File Created " + "\n")
-    f_log.close()
-    #pdb.set_trace()
-            
+    f_log.close()            
                 
                 
 
 def main():
+    # Runs error correction
     if len(sys.argv) == 1:
         arguments = ['asd', 'kmers.dict', 'allowed_kmers.dict', '1', '1', '-d']
     else:
         arguments = sys.argv
-    #pdb.set_trace()
     double_stranded = '-d' in arguments
     arguments = [a for a in arguments if len(a) > 0 and a[0] != '-'][1:]
 
     infile, outfile = arguments[:2]
     min_weight, min_length = int(arguments[2]), int(arguments[3])
     comp_directory_name, comp_size_threshold = arguments[4], int(arguments[5])
-    #pdb.set_trace()
     run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold)
 
 if __name__ == '__main__':

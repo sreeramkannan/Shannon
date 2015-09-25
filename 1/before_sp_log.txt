@@ -1,0 +1,3 @@
+Fri Sep 18 15:15:12 2015: Starting..
+Fri Sep 18 15:15:12 2015: gpmetis for partitioning 1 is complete -- 
+Fri Sep 18 15:15:12 2015: k1mers2component dictionary created 

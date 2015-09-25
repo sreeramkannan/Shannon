@@ -2,6 +2,7 @@
 #new_file = 'S15_SE_c1cat_rerun_rand_algo_output/reconstructed.fasta'
 
 def process_concatenated_fasta(file, new_file):
+    # Makes sure all transcripts names are unique so that blat can be run to compare output to reference
     f = open(file, 'r')
     new_f = open(new_file, 'w')
     lines = f.readlines()
