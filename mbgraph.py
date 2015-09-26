@@ -1393,7 +1393,7 @@ def read_for_path(path):
     return ''.join(bases)
 def construct_reads():
     for path in Read.mate_paths:
-        Read.add_read(read_for_path(path), False)
+        Read.add_read([1 read_for_path(path)], False)
 
 def clear():
     Read.reads = {}
