@@ -226,6 +226,7 @@ def main():
     compute_fringes = False
     cpp = False
     weighted = False
+    Read.K = 24
 
     for arg in arguments[1:]:
         if arg == '-d':
