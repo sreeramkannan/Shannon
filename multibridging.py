@@ -22,8 +22,7 @@ def extract_reads(filename, weighted):
 def load_reads(filename, double_stranded, weighted):
     """Load FASTA reads.
     """
-    print("Loading reads.")
-    print(time.asctime())
+    log("Loading reads.")
     for read in extract_reads(filename, weighted):
         Read.add_read(read, double_stranded)
 def load_mated_reads(file_1, file_2, double_stranded):
@@ -35,11 +34,11 @@ def load_mated_reads(file_1, file_2, double_stranded):
         r2.mate = r1
 
     #There must be a newline at the end of the file!
-    print("Loading mated reads.")
+    log("Loading mated reads.")
     Read.MATED_READS = True
     with open(file_1) as f1, open(file_2) as f2:
-        gen1 = (l[:-1].upper() for l in f1 if l[0] != '>')
-        gen2 = (l[:-1].upper() for l in f2 if l[0] != '>')
+        gen1 = (l[:-1].upper().strip() for l in f1 if l[0] != '>')
+        gen2 = (l[:-1].upper().strip() for l in f2 if l[0] != '>')
         for line1 in gen1:
             line2 = next(gen2)
             r1 = Read.add_read((1.0, line1), double_stranded)
@@ -57,8 +56,7 @@ def load_cpp(node_file, edge_file):
     """Loads condensed files from C++ implementation.
     FILES are the read files, NODES/EDGES are the node/edge files.
     """
-    print(time.asctime())
-    print("Loading nodes from C++ output.")
+    log("Loading nodes from C++ output.")
 
     nodes = {}
     with open(node_file) as f:
@@ -77,8 +75,7 @@ def load_cpp(node_file, edge_file):
 def load_jellyfish(node_file, edge_file):
     """Loads condensed files from Jellyfish.
     """
-    print(time.asctime())
-    print("Loading nodes from K-mer files.")
+    log("Loading nodes from K-mer files.")
 
     nodes = {}
     with open(node_file) as f:
@@ -111,21 +108,22 @@ def log(text):
 def run(output_dir, error_correction = False, compute_fringes = False):
     """Continues the algorithm starting with condensing, writing the results to OUTPUT_DIR.
     """
+    log("Condensing.")
     Node.condense_all()
-    print(str(len(Node.nodes)) + " nodes after condensing.")
+    log(str(len(Node.nodes)) + " nodes after condensing.")
 
     if error_correction:
         Node.destroy_suspicious()
-        print(str(len(Node.nodes)) + " nodes after destroying suspicious nodes.")
+        log(str(len(Node.nodes)) + " nodes after destroying suspicious nodes.")
         Node.collapse_all()
-        print(str(len(Node.nodes)) + " nodes after collapsing similar nodes.")
+        log(str(len(Node.nodes)) + " nodes after collapsing similar nodes.")
 
-    log("Bridging graph.")
     Read.find_bridging_reads()
+    log("Found bridging reads.")
     Node.bridge_all()
     Node.condense_all()
 
-    print(str(len(Node.nodes)) + " nodes after bridging.")
+    log(str(len(Node.nodes)) + " nodes after bridging.")
     log("Finding copy counts.")
     Node.find_approximate_copy_counts()
     Node.disregard_loops()
@@ -154,7 +152,7 @@ def run(output_dir, error_correction = False, compute_fringes = False):
     known_paths()
     Read.find_mate_pairs()
 
-    print(str(len(Node.nodes)) + " final nodes.")
+    log(str(len(Node.nodes)) + " final nodes.")
     log("Exporting graph.")
 
     output_components(output_dir)
@@ -217,8 +215,9 @@ def output_components(output_dir):
 def main():
     sys.setrecursionlimit(10000)
     if len(sys.argv) == 1:
-        arguments = ['', '-c', 'input/nodes.txt', 'input/edges.txt',
-                     'input/reads.fasta', 'output_aggressive']
+        arguments = ['', '-f', '-e', '-d',
+                     'input/kmer.dict', 'input/k1mer.dict', '--kmer=24',
+                     'input/r1_100k.fa', 'input/r2_100k.fa', 'output']
     else:
         arguments = sys.argv
     names = []
@@ -227,7 +226,6 @@ def main():
     compute_fringes = False
     cpp = False
     weighted = False
-    Read.K = 24 #default
 
     for arg in arguments[1:]:
         if arg == '-d':
@@ -249,6 +247,7 @@ def main():
     read_files = names[2:-1]
 
     setup(read_files[0])
+    log("Starting.")
     if len(read_files) == 1:
         load_reads(read_files[0], double_stranded, weighted)
     elif len(read_files) == 2:

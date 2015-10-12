@@ -1,5 +1,4 @@
-import trie
-import re, time, doctest
+import time, doctest
 
 CYCLE_DESTROY = True
 
@@ -15,7 +14,7 @@ class Read(object):
     known_paths = set()
     mate_paths = set()
 
-    MATE_PAIR_LENGTH = 200
+    MATE_PAIR_LENGTH = 500
     MATE_PAIR_MIN_LENGTH = 0
     MATED_READS = False
 
@@ -70,7 +69,7 @@ class Read(object):
         """
         replacements = [('A', 't'), ('T', 'a'), ('C', 'g'), ('G', 'c')]
         for ch1, ch2 in replacements:
-            bases = re.sub(ch1, ch2, bases)
+            bases = bases.replace(ch1, ch2)
         return bases[::-1].upper()
 
     def bridges(self, node, index):
@@ -407,12 +406,6 @@ class Node(object):
         to INDEX+self.bases-1 inclusive), link READ to this X-node.
         """
         self.reads.append((read, index))
-    def unlink_read(self, read_and_index):
-        """Given a tuple READ_AND_INDEX = (read, index) that bridges this
-        X-node at index, unlink it.
-        """
-        self.reads.remove(read_and_index)
-
     @staticmethod
     def remove_destroyed():
         Node.nodes = [n for n in Node.nodes if not hasattr(n, 'destroyed')]
@@ -437,8 +430,7 @@ class Node(object):
             edge.destroy()
         for edge in list(self.out_edges):
             edge.destroy()
-        for read in list(self.reads):
-            self.unlink_read(read)
+        self.reads = []
         self.destroy(False)
 
     def is_xnode(self):
@@ -490,14 +482,14 @@ class Node(object):
                 out_edge.condense(False)
                 condensed += 1
                 if condensed % 1000 == 0:
-                    pass #print(condensed)
+                    pass
         Node.remove_destroyed()
 
     @staticmethod
-    def bridged_xnodes(limit=None):
+    def bridged_xnodes():
         """Return a generator for all bridged X-nodes.
         """
-        for n in Node.all_xnodes(limit=limit):
+        for n in Node.all_xnodes():
             if n.is_bridged_xnode():
                 yield n
     def is_bridged_xnode(self):
@@ -514,54 +506,37 @@ class Node(object):
         if bridged_in == 0 and bridged_out == 0:
             return True
         elif bridged_in == 1 and bridged_out == 1:
-            #if len(self.reads) == 1 and len(self.reads[0][0].bases) > 200:
-            #    print 'Avoid super-bridge {}'.format(self.bases)
-            #    return False
             return True
         return False
 
     @staticmethod
-    def all_xnodes(limit=None):
+    def all_xnodes():
         """Return a generator for all existing X-nodes.
         """
-        if limit:
-            return (n for n in Node.nodes[-limit:] if n.is_xnode())
-        else:
-            return (n for n in Node.nodes if n.is_xnode())
+        return (n for n in Node.nodes if n.is_xnode())
     @staticmethod
     def bridge_all():
         """Continue bridging until no bridged X-nodes remain.
         """
-        bridged = None
-        while bridged is None or bridged > 0:
-            if bridged is not None:
-                bridged = bridged * 8
-            bridged = Node.bridge_some(bridged)
-        while Node.bridge_some(): pass
+        while True:
+            bridged = 0
+            to_bridge = list(Node.bridged_xnodes())
+            #print("{} to bridge".format(len(to_bridge)))
+            for node in to_bridge:
+                node.bridging_step()
+                bridged += 1
+            print("%s: Bridged %s nodes" % (time.asctime(), bridged))
+            Node.remove_destroyed()
+            if bridged == 0:
+                return
 
-    @staticmethod
-    def bridge_some(limit=None):
-        """Perform the bridging step on all bridged x-nodes which
-        exist at the start of this method.
-
-        Return number of bridged nodes.
-        """
-        bridged = 0
-        to_bridge = list(Node.bridged_xnodes(limit))
-        for node in to_bridge:
-            node.bridging_step()
-            bridged += 1
-        print("Bridged %s nodes: %s" % (bridged, time.asctime()))
-        Node.remove_destroyed()
-        return bridged
-
-    #@profile
     def bridging_step(node):
         """Perform the bridging step for a single node.
         """
         node.refresh_bridging_reads()
         assert len(node.reads) > 0
         assert len(node.in_edges) >= 2 and len(node.out_edges) >= 2
+        #print('  {}: Bridging length {} with {} bridges'.format(time.asctime(), len(node.bases), len(node.reads)))
 
         u_list, w_list = [], []
         v_back, v_forward, self_loop_weight = None, None, None
@@ -596,7 +571,6 @@ class Node(object):
             matched_u = [u for u in u_list if u.bases == bases]
             bases = read.bases[index:index+len(node.bases)+1]
             matched_w = [w for w in w_list if w.bases == bases]
-            node.unlink_read((read, index))
 
             if len(matched_u) != 1 or len(matched_w) != 1:
                 continue
@@ -610,6 +584,7 @@ class Node(object):
                 w.bridged = True
                 links[u] += 1
                 links[w] += 1
+        node.reads = []
 
         unbridged_u = [u for u in u_list if not u.bridged]
         unbridged_w = [w for w in w_list if not w.bridged]
@@ -1390,10 +1365,10 @@ def read_for_path(path):
             if edge.out_node == v:
                 bases.append(v.bases[edge.weight:])
                 break
-    return ''.join(bases)
+    return (0., ''.join(bases))
 def construct_reads():
     for path in Read.mate_paths:
-        Read.add_read([1, read_for_path(path)], False)
+        Read.add_read(read_for_path(path), False)
 
 def clear():
     Read.reads = {}
