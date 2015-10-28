@@ -12,7 +12,7 @@ def load_kp1mers(infile):
             if len(line) == 0: continue
             kp1mer, weight = line.split()
             kp1mer = kp1mer.upper()
-            weight = int(weight)
+            weight = int(float(weight))
             #weight = float(weight) ## usually int(weight)
             kp1mers.append((kp1mer, weight))
     if not kp1mers:
