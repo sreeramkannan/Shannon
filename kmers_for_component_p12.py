@@ -196,12 +196,22 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
 
             for comp in new_components:
                 with open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w') as reads_part_file:
+                    N_Kmers_comp = sum([len(new_components[comp][i])-K for i in range(len(new_components[comp]))]) #Number of Kmers in Component
+                    N_Reads_max = N_Kmers_comp; # Average Kmer appears 2*(L-K) times in the reads 
+                    n_reads = 0
                     if comp in comp2reads:
                         for read_ind in comp2reads[comp]:
+                            n_reads += 1
+                            if n_reads > N_Reads_max:
+                                break;
                             reads_part_file.write(rlines[read_ind-1])
                             reads_part_file.write(rlines[read_ind])
+                    n_reads = 0
                     if comp in comp2reads_reversed: 
                         for read_ind in comp2reads_reversed[comp]:
+                            n_reads += 1
+                            if n_reads > N_Reads_max:
+                                break;
                             reversed_read_name=rlines[read_ind-1].split()[0]+'_reversed'+'\t' +'\t'.join(rlines[read_ind].split()[1:])
                             #read_id = rlines[read_ind-1].strip().split()[0]
                             #read_id_rem = "\t".join(rlines[read_ind-1].strip().split()[1:])
@@ -210,8 +220,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                             reads_part_file.write(reversed_read_name )  
                             reads_part_file.write(reverse_complement(read) + " \n")
         
-
-        
+       
         elif paired_end == True:
             comp2reads = {}
             comp2reads_reversed = {}
@@ -317,16 +326,26 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
             for comp in new_components:
                 with open(directory_name+"/reads"+iter_tag+str(comp)+"_1.fasta", 'w') as reads_part_file1:
                     with open(directory_name+"/reads"+iter_tag+str(comp)+"_2.fasta", 'w') as reads_part_file2:
+                        N_Kmers_comp = sum([len(new_components[comp][i])-K for i in range(len(new_components[comp]))]) #Number of Kmers in Component
+                        N_Reads_max = N_Kmers_comp; # Each Kmer appears 2*(L-K) times
+                        n_reads = 0
                         if comp in comp2reads:
                             for read_ind in comp2reads[comp]:
+                                n_reads += 1
+                                if n_reads > N_Reads_max:
+                                    break;
                                 reads_part_file1.write(r1lines[read_ind-1])
                                 reads_part_file1.write(r1lines[read_ind])
                                 reads_part_file2.write(r2lines[read_ind-1])
                                 reads_part_file2.write(r2lines[read_ind])
 
+                        n_reads = 0 
                         if double_stranded:
                             if comp in comp2reads_reversed: 
                                 for read_ind in comp2reads_reversed[comp]:
+                                    n_reads += 1
+                                    if n_reads > N_Reads_max:
+                                        break;
                                     # I flipped the order of the reads in pair for reverse complement
                                     id1 = r1lines[read_ind-1].strip().split()[0]
                                     id1_rem = "\t".join(r1lines[read_ind-1].strip().split()[1:])
