@@ -18,7 +18,7 @@ sparsity=1
 start_loc = 89346673 - 100
 stop_loc = 89418584 + 100'''
 
-paired_end = 0
+paired_end = 1
 add_errors = 1
 double_stranded = 1
 fastq = 0
@@ -32,8 +32,8 @@ run_jellyfish =0
 run_extension_corr =0
 run_cpp = 0
 use_cpp = 0
-mb = 0
-sparse_flow = 0
+mb = 1
+sparse_flow = 1
 parallelize_sf = 0
 generate_ref = 0
 compare_ans = 0
@@ -52,11 +52,11 @@ run_oasis = 0
 run_express = 0
 
 compare_soap =0
-compare_oasis=1
-compare_trans=1
+compare_oasis=0
+compare_trans=0
 
 sensitivity = 0
-false_positive=1
+false_positive=0
 
 
 bowtie = 0 
@@ -138,7 +138,8 @@ def run_cmd(s1):
 #sample_name = 'Snyder_chr15_merged_'
 #sample_name = 'Snyder_group2/2Kmer_'
 #sample_name = 'SPombe_'
-sample_name = 'Snyder/PE_'
+sample_name = '../Runs/Fungi/Test2_'
+#sample_name = 'Snyder/PE_'
 #sample_name = 'Snyder/Analysis_'
 #sample_name = 'WW_Analysis_'
 #sample_name = 'Snyder/Quorum_'
@@ -269,9 +270,9 @@ if mb:
 	#print('python multibridging.py -f '+reads_file+'.fasta ' + sample_name + 'intermediate')
 	run_cmd('rm ./'+sample_output_name+'intermediate/*')
 	jf_s = ' '; cpp_s = ' ';
-	use_jellyfish = 0; #force set parameter for jellyfish
+	use_jellyfish = 1; use_cpp = 0 #force set parameter for jellyfish
 	if use_jellyfish:
-		jf_s = ' -j '+ './'+sample_name+'algo_input/kmer.dict '+'./'+sample_name+'algo_input/k1mer.dict '
+		jf_s = '  '+ './'+sample_name+'algo_input/kmer.dict '+'./'+sample_name+'algo_input/k1mer.dict '
 	if use_cpp:
 		cpp_s = '-c ' +base_dir+sample_name+'algo_input/nodes.txt '+base_dir+sample_name+'algo_input/edges.txt '
         if not paired_end:                
