@@ -45,7 +45,7 @@ compare_cufflinks = 0
 compare_soap =0
 compare_oasis=0
 compare_trans=0
-
+k1mer_to_kmer = 0
 false_positive=0
 
 
@@ -70,6 +70,7 @@ if len(n_inp)>1:
     sample_name = sys.argv[1]
     if '--run_alg' in n_inp:
         #run_cpp = 1
+	k1mer_to_kmer = 1
         mb = 1
         sparse_flow = 1
     if '--ds' in n_inp:
@@ -256,7 +257,7 @@ if run_extension_corr:
 			str_ec = ' '
 		run_cmd('python extension_correction_SIC.py ' + str_ec + sample_name+'algo_input/k1mer.dict_org ' +sample_name+'algo_input/k1mer.dict 3 75 12 0.5')
 
-if run_jellyfish or run_extension_corr:
+if k1mer_to_kmer or run_jellyfish or run_extension_corr:
 		run_cmd('python kp1mer_to_kmer.py ' + sample_name+'algo_input/k1mer.dict ' + sample_name+'algo_input/kmer.dict')
 
 
