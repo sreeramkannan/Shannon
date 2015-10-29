@@ -58,9 +58,28 @@ def find_representatives(file_in,file_out):
 	# 			fp_out.write('>'+tr+'\n')
 	# 			fp_out.write()
 
+def main():
+    if len(sys.argv) == 1:
+        arguments = ['asd', 'in_fasta', 'out_fasta', '-d']
+    else:
+        arguments = sys.argv
+    #pdb.set_trace()
+    ds = '-d' in arguments
+    arguments = [a for a in arguments if len(a) > 0 and a[0] != '-'][1:]
+
+    infile, outfile = arguments[:2]
+    #pdb.set_trace()
+    find_representatives(infile, outfile, ds)
+
+
+if __name__ == '__main__':
+    #c1 = Counter("Loading", 10**6)
+    #c2 = Counter("Correction", 10**6)
+    main()
+
 #find_representatives('./SRR/Shannon/shannon.fasta','./SRR/Shannon/shannon_short.fasta')
 #find_representatives('../Shannon/Alpha/Cancer/shannon.fasta','../Shannon/Alpha/Cancer/shannon_short.fasta')
-find_representatives('./Yeast/Shannon.fasta','./Yeast/Shannon_reps.fasta')
+#find_representatives('./Yeast/Shannon.fasta','./Yeast/Shannon_reps.fasta')
 
 #find_representatives('../josephhui/shannon/ww/analysis/reconstructed.fa','../josephhui/shannon/ww/analysis/reconstructed_trimed.fa')
 #find_representatives('./Quorum_20M_p20r2u1000/Quorum_20M_p20r2u1000_allalgo_output/reconstructed.fasta','./Quorum_20M_p20r2u1000/Quorum_20M_p20r2u1000_allalgo_output/reps.fasta')
