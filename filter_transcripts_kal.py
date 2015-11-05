@@ -78,7 +78,7 @@ def do_all(reconstr_per,fp_file,kal_file):
                 if ab_dict.get(name,0) > weight_cutoff[cutoff]:
                     tot_rec[cutoff] +=1
                     if code == '0':
-                        fp_rec[cutoff] =1
+                        fp_rec[cutoff] +=1
 
     print("Cutoff\t Recall \t Tot \t FP")
     for cutoff in cutoff_range:
