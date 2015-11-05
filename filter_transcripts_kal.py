@@ -80,6 +80,11 @@ def do_all(reconstr_per,fp_file,kal_file):
                     if code == '0':
                         fp_rec[cutoff] =1
 
+    print("Cutoff\t Recall \t Tot \t FP")
+    for cutoff in cutoff_range:
+        print(str(cutoff) + "\t" + str(recall[cutoff]) + "\t" + str(tot_rec[cutoff]) + "\t" + str(fp_rec[cutoff]))
+
+
 def main():
     if len(sys.argv) == 1:
         arguments = ['', 'reconstr_per.txt', 'reconstructed_fp.log', 'abundance.kal']
