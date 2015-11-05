@@ -1,4 +1,4 @@
-import sys
+import sys, pdb
 
 
 def do_all(reconstr_per,fp_file,kal_file):
@@ -28,7 +28,7 @@ def do_all(reconstr_per,fp_file,kal_file):
             weights.append((name, float(weight)))
             ab_dict[name] = [float(weight)]
     weights.sort(key = lambda x: x[1])
-    
+    pdb.set_trace()
     
     weight_cutoff = {}
     tr_rec_dict = {}
@@ -36,8 +36,8 @@ def do_all(reconstr_per,fp_file,kal_file):
     for cutoff in cutoff_range:
         weight_cutoff[cutoff] = weights[int(0.1*cutoff*len(weights))]
         tr_rec_dict[cutoff] = {}
-        for tr in ab_dict:
-            tr_rec_dict[cutoff][tr] = 0
+        # for tr in ab_dict:
+        #     tr_rec_dict[cutoff][tr] = 0
 
 
     f=open(reconstr_per,'r')
@@ -56,6 +56,7 @@ def do_all(reconstr_per,fp_file,kal_file):
                     #if rec_len>z[1]:
                     #    best_rec_dict[cutoff][org] = [rec,rec_len,tr_len,tr_ab/tr_len];
                     tr_rec_dict[cutoff][org] = 1
+    pdb.set_trace()
 
     recall = {}
     for cutoff in cutoff_range:
@@ -82,7 +83,7 @@ def do_all(reconstr_per,fp_file,kal_file):
     print("Cutoff\t Recall \t Tot \t FP")
     for cutoff in cutoff_range:
         print(str(cutoff) + "\t" + str(recall[cutoff]) + "\t" + str(tot_rec[cutoff]) + "\t" + str(fp_rec[cutoff]))
-
+    pdb.set_trace()
 
 def main():
     if len(sys.argv) == 1:
