@@ -25,9 +25,9 @@ def do_all(reconstr_per,fp_file,kal_file):
             name, tr_len, _, _, weight = line.split()
             if float(tr_len) < 200:
                 continue
-            weights.append((name, float(weight)))
-            ab_dict[name] = [float(weight)]
-    weights.sort(key = lambda x: x[1])
+            weights.append(float(weight))
+            ab_dict[name] = float(weight)
+    weights.sort()
     pdb.set_trace()
     
     weight_cutoff = {}
