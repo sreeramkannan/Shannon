@@ -12,8 +12,8 @@ def do_all(reconstr_per,fp_file,kal_file):
     #             hits += 1
     #     print('{} false positives for {}'.format(hits, cutoff))
     #     util.seqs_to_fasta('drop{}/transcripts.fa'.format(cutoff), transcripts)
-    len_threshold = 200
-    cutoff_range = range(10)
+    len_threshold = 200; div = float(20)
+    cutoff_range = range(int(div))
 
 
 
@@ -23,18 +23,17 @@ def do_all(reconstr_per,fp_file,kal_file):
         f.readline()
         for line in f:
             name, tr_len, _, _, weight = line.split()
-            if float(tr_len) < 200:
+            if float(tr_len) < len_threshold:
                 continue
             weights.append(float(weight))
             ab_dict[name] = float(weight)
     weights.sort()
-    pdb.set_trace()
     
     weight_cutoff = {}
     tr_rec_dict = {}
 
     for cutoff in cutoff_range:
-        weight_cutoff[cutoff] = weights[int(0.1*cutoff*len(weights))]
+        weight_cutoff[cutoff] = weights[int(1/div* cutoff*len(weights))]
         tr_rec_dict[cutoff] = {}
         # for tr in ab_dict:
         #     tr_rec_dict[cutoff][tr] = 0
@@ -56,7 +55,6 @@ def do_all(reconstr_per,fp_file,kal_file):
                     #if rec_len>z[1]:
                     #    best_rec_dict[cutoff][org] = [rec,rec_len,tr_len,tr_ab/tr_len];
                     tr_rec_dict[cutoff][org] = 1
-    pdb.set_trace()
 
     recall = {}
     for cutoff in cutoff_range:
@@ -75,7 +73,7 @@ def do_all(reconstr_per,fp_file,kal_file):
             name, code, length = line.split()
             if int(length) < len_threshold: continue
             for cutoff in cutoff_range:
-                if ab_dict.get(name,0) > weight_cutoff[cutoff]:
+                if ab_dict.get(name,0) >= weight_cutoff[cutoff]:
                     tot_rec[cutoff] +=1
                     if code == '0':
                         fp_rec[cutoff] +=1
@@ -83,7 +81,6 @@ def do_all(reconstr_per,fp_file,kal_file):
     print("Cutoff\t Recall \t Tot \t FP")
     for cutoff in cutoff_range:
         print(str(cutoff) + "\t" + str(recall[cutoff]) + "\t" + str(tot_rec[cutoff]) + "\t" + str(fp_rec[cutoff]))
-    pdb.set_trace()
 
 def main():
     if len(sys.argv) == 1:
