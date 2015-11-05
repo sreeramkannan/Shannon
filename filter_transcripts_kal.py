@@ -42,8 +42,7 @@ def do_all(reconstr_per,fp_file,kal_file):
 
     f=open(reconstr_per,'r')
     #lines = f.readlines()
-    best_rec_dict = {}
-    not_first_time = 0
+    #best_rec_dict = {}
     for line in f:
         '''if i<5:
             continue'''
