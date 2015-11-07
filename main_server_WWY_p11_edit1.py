@@ -70,7 +70,7 @@ if len(n_inp)>1:
     sample_name = sys.argv[1]
     if '--run_alg' in n_inp:
         #run_cpp = 1
-	k1mer_to_kmer = 1
+        #k1mer_to_kmer = 1
         mb = 1
         sparse_flow = 1
     if '--ds' in n_inp:

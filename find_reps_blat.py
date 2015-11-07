@@ -69,7 +69,7 @@ def main():
 
     infile, outfile = arguments[:2]
     #pdb.set_trace()
-    find_representatives(infile, outfile, ds)
+    find_representatives(infile, outfile)
 
 
 if __name__ == '__main__':

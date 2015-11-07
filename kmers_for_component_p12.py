@@ -392,7 +392,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
 
         f_log.write(str(time.asctime()) + ": " + "k1mers written to file " + "\n")
                        
-        return [components_broken, new_components]  #IMP: k1mers deleted.                
+        #return [components_broken, new_components]  #IMP: k1mers deleted.                
             
         del(k1mers2component)
         
