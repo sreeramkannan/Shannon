@@ -197,7 +197,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
             for comp in new_components:
                 with open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w') as reads_part_file:
                     N_Kmers_comp = sum([len(new_components[comp][i])-K for i in range(len(new_components[comp]))]) #Number of Kmers in Component
-                    N_Reads_max = N_Kmers_comp; # Average Kmer appears 2*(L-K) times in the reads 
+                    N_Reads_max = 1e11 #N_Kmers_comp; # Average Kmer appears 2*(L-K) times in the reads 
 		    print(N_Kmers_comp)
                     n_reads = 0
                     if comp in comp2reads:
@@ -328,7 +328,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                 with open(directory_name+"/reads"+iter_tag+str(comp)+"_1.fasta", 'w') as reads_part_file1:
                     with open(directory_name+"/reads"+iter_tag+str(comp)+"_2.fasta", 'w') as reads_part_file2:
                         N_Kmers_comp = sum([len(new_components[comp][i])-K for i in range(len(new_components[comp]))]) #Number of Kmers in Component
-                        N_Reads_max = N_Kmers_comp; # Each Kmer appears 2*(L-K) times
+                        N_Reads_max = 1e11 #N_Kmers_comp; # Each Kmer appears 2*(L-K) times
                         n_reads = 0
                         if comp in comp2reads:
                             for read_ind in comp2reads[comp]:
