@@ -1,22 +1,20 @@
 import os, pdb
 import sys, time
 import os.path, tester
-from set_exp import set_exp 
-from filter_trans import filter_trans
+#from set_exp import set_exp 
+#from filter_trans import filter_trans
+# This script is used to call all the the steps of the algorithm.
+
+# List of parameters
 
 L = 100
 N = 8743351
 
-#sn='SRR059162'
 sn='SRR453566'
 sparsity = 0.5
 start_loc = 1
 stop_loc = 120000000
 
-'''sn='ACAN'
-sparsity=1
-start_loc = 89346673 - 100
-stop_loc = 89418584 + 100'''
 
 paired_end = 0
 add_errors = 1
@@ -27,25 +25,25 @@ to_set_exp = 0
 generate_reads = 0
 trimmomatic = 0 #currently not enabled
 run_seecer =0
-run_jellyfish =0 
-run_extension_corr =0
-run_cpp = 0
-mb = 0
+run_jellyfish =0        # runs jellyfish to get kmers
+run_extension_corr =0   # runs contig based error correction to filter k1mers used to build kmer graph
+run_cpp = 0             # builds condensed kmer graph
+mb = 0                  # runs multibridging
 sparse_flow = 0
 parallelize_sf = 0
 generate_ref = 0
-compare_ans = 0
-run_trinity = 0
+compare_ans = 0         # compares reconstructed transcripts to reference transcripts to measure performance of assembler
+run_trinity = 0         # Runs a competing algorithm trinity     
 compare_trinity = 0
 plots = 0
 plots_express = 0
 run_rsem_eval = 0
-run_cuffinks = 0
+run_cuffinks = 0        # Runs a competing algorithm cufflinks
 compare_cufflinks = 0
 compare_soap =0
 compare_oasis=0
 compare_trans=0
-k1mer_to_kmer = 0
+
 false_positive=0
 
 
@@ -64,13 +62,15 @@ seecer_dir = ' /data/sreeramk/packages/SEECER-0.1.3/SEECER/bin/run_seecer.sh'
 K_value = 24
 blat = 1
 
+# ----------------------------------------------------------------------------------
+
+
+# Sets parameters from terminal
 sample_name = None
 n_inp = sys.argv
 if len(n_inp)>1:
     sample_name = sys.argv[1]
     if '--run_alg' in n_inp:
-        #run_cpp = 1
-        #k1mer_to_kmer = 1
         mb = 1
         sparse_flow = 1
     if '--ds' in n_inp:
@@ -81,7 +81,6 @@ if len(n_inp)>1:
         compare_ans = 1
     if '--kmer_size' in n_inp:
         K_value = int(n_inp[n_inp.index('--kmer_size')+1])
-        #pdb.set_trace()
         print(K_value)
     if '--dir_name'in n_inp:
         directory_name = n_inp[n_inp.index('--dir_name')+1]
@@ -91,7 +90,6 @@ if paired_end:
 	F = 350 #Fragment size
 	F_sd = 0 #Fragment size Standard Deviation
 	sn = sn+'_F_'+str(F)
-	#sn = sn + '_PE'
 	pairedend_string = ' -p ' + str(F) + ',' + str(F_sd) + ' '
 else:
 	F=L
@@ -115,53 +113,9 @@ else:
 def run_cmd(s1):
 	print(s1); os.system(s1)
 
-#sample_name = sn + '_L_'+str(L)+'_N_'+str(N)+'_'  #Always use underscore at end
-#sample_name = 'SRR059162_'
-#sample_name = 'SRR453566_bubble_'
-#sample_name = 'WW_chr1_'
-#sample_name = 'WW_NM_004930_'
-#sample_name = 'WW_NR_109896_'
-#sample_name = 'WW_NM_005427_'
-#sample_name = 'WingWongTest_K24_'
-#sample_name = 'WW_aggressive_'
-#sample_name = 'WingWong604_'
-#sample_name = 'WingWongTest_'
-#sample_name = 'OneHalf_gen5_ERR_L_100_N_1000000_'
-#sample_name = 'WingWongTest_K24_retreive_'
-#sample_name = 'Tebola_'
-#sample_name = 'Snyder/10M_1_'
-#sample_name = 'Ebola/Full_'
-#sample_name = 'D250_'
-#sample_name = 'OR_'
-#sample_name = 'Ebola_'
-#sample_name = 'WW_100_chr15_'
-#sample_name = 'WingWong_20M_'
-#sample_name = 'Snyder_chr15_'
-#sample_name = 'Snyder_chr15_'
-#sample_name = 'S15_Quorum_'
-#sample_name = 'S15_PE_'
+sample_output_name = sample_name
 
-
-
-#sample_name = 'Snyder_chr15_merged_'
-#sample_name = 'Snyder_group2/2Kmer_'
-#sample_name = 'Snyder/Quorum_'
-#sample_name = 'Snyder/QBlat_'
-#sample_name = 'S15_SE_c1_u1000_'
-#sample_name = 'S15_SE_c1p0_u1000_'
-#sample_name = 'S15_SE_c1p1_u1000_'
-#sample_name = 'S15_SE_c1cat_u1000_' 
-#sample_name = 'S15_SE_c1p0_rerun_'
-#sample_name = 'S15_SE_c1p1_rerun_'
-#sample_name = 'S15_SE_c1cat_rerun_'
-#sample_name = 'S15_SE_c1p0_rerun_rand_'
-#sample_name = 'S15_SE_c1p1_rerun_rand_'
-#sample_name = 'S15_SE_c1cat_rerun_rand_'
-
-
-sample_output_name = sample_name#  + 'Try_' 
-
-base_dir = '' #~/Full_Assembler/'
+base_dir = '' 
 bed_file=' ./Genome/GSE51861_isoform.bed'
 ref_file=' ./Genome/hg19.fa' # reference chromosome
 exp_file= sample_name + 'algo_input/random_out.exp'
@@ -188,9 +142,6 @@ if mb or sparse_flow:
 if generate_reads:
 	if to_set_exp:
 		set_exp(start_loc,stop_loc,sparsity,'loguniform',sample_name)
-	#print('python ./Read_Simulator/gensimreads.py ' + ds_string + ' -e ' + exp_file + ' -n ' + str(N)+ ' -l ' + str(L) + ' ' + bed_file + ' > ' + reads_file + '.bed')
-	#run_cmd('python ./Read_Simulator/gensimreads.py ' + ds_string + ' -e ' + exp_file + ' -n ' + str(N)+ ' -l ' + str(L) + pairedend_string + bed_file + ' > ' + reads_file + '.bed')
-	#print('python ./Read_Simulator/getseqfrombed.py ' + err_string + reads_file + '.bed ' +  ref_file + ' > ' + reads_file + '.fa')
 	run_cmd('python ./Read_Simulator/getseqfrombed.py ' + err_string + reads_file + '.bed ' + ref_file + ' > ' + reads_file + '.fa')
 
 	if paired_end:	
@@ -211,7 +162,6 @@ if trimmomatic:
 
 
 if run_seecer:
-	#run_cmd('bash ' + seecer_dir+ ' -t ' + base_dir+sample_name+'algo_input/seecer_tmp -k ' + str(K_value) + reads_string )
 	run_cmd('bash ' + seecer_dir+ ' -t ' + sample_name+'algo_input/seecer_tmp -k 16 ' + reads_string )
 	if paired_end:
 		run_cmd('mv '+sample_name+'algo_input/reads_1.fasta '+sample_name+'algo_input/reads_1_before_correction.fasta ')
@@ -229,22 +179,13 @@ if run_jellyfish:
 	if double_stranded:
 		run_jfs += ' --both-strands '
 	run_cmd('rm '+sample_name+'algo_input/jelly*')  #Remove old jellyfish files
-	#run_cmd(jellyfish_dir+' count -m ' + str(K_value)+ run_jfs+ ' -o ' + base_dir+sample_name+'algo_input/jellyfish_output -s 20000000 -c 4 -t 32 ' +reads_string)
 	run_cmd(jellyfish_dir+' count -m ' + str(K_value+1) + run_jfs+ ' -o ' + sample_name+'algo_input/jellyfish_p1_output -s 20000000 -c 4 -t 32 ' +reads_string)
-
-
-	#pdb.set_trace()
-	'''if os.path.isfile('./'+sample_name+'algo_input/jellyfish_output_1'):
-		run_cmd(jellyfish_dir+' merge -o '+ base_dir+sample_name+'algo_input/jellyfish_output.jf ' + base_dir+sample_name+'algo_input/jellyfish_output\_*')
-	else
-		run_cmd('mv ' + base_dir+sample_name+'algo_input/jellyfish_output_0 ' +base_dir+sample_name+'algo_input/jellyfish_output.jf')'''
 
 	if os.path.isfile(sample_name+'algo_input/jellyfish_p1_output_1'):
 		run_cmd(jellyfish_dir+' merge -o '+ sample_name+'algo_input/jellyfish_p1_output.jf ' + sample_name+'algo_input/jellyfish_p1_output\_*')
 	else:
 		run_cmd('mv ' + sample_name+'algo_input/jellyfish_p1_output_0 ' +sample_name+'algo_input/jellyfish_p1_output.jf')
 	
-	#run_cmd(jellyfish_dir+' dump -c -L ' + str(jellyfish_kmer_cutoff) + ' ' + base_dir+sample_name+'algo_input/jellyfish_output.jf > ' +base_dir+sample_name+'algo_input/kmer.dict')
 	run_cmd(jellyfish_dir+' dump -c -t -L ' + str(jellyfish_kmer_cutoff) + ' ' + sample_name+'algo_input/jellyfish_p1_output.jf > ' + sample_name+'algo_input/k1mer.dict_org')
 	if (not run_extension_corr) and double_stranded:
                 tester.double_strandify(sample_name+'algo_input/k1mer.dict_org', sample_name+'algo_input/k1mer.dict')
@@ -257,14 +198,13 @@ if run_extension_corr:
 			str_ec = ' '
 		run_cmd('python extension_correction_SIC.py ' + str_ec + sample_name+'algo_input/k1mer.dict_org ' +sample_name+'algo_input/k1mer.dict 3 75 12 0.5')
 
-if k1mer_to_kmer or run_jellyfish or run_extension_corr:
+if run_jellyfish or run_extension_corr:
 		run_cmd('python kp1mer_to_kmer.py ' + sample_name+'algo_input/k1mer.dict ' + sample_name+'algo_input/kmer.dict')
 
 
 if run_cpp:
         run_cmd('tr \'\\t\' \'\\n\' <' + sample_name+'algo_input/kmer.dict > ' + sample_name+'algo_input/kmer.dict_2l ') 
         run_cmd('tr \'\\t\' \'\\n\' <' + sample_name+'algo_input/k1mer.dict > ' + sample_name+'algo_input/k1mer.dict_2l ')
-        #run_cmd('tr \'  \' \'\\n\' <' + base_dir+sample_name+'algo_input/k1mer.dict > ' + base_dir+sample_name+'algo_input/k1mer.dict_2l ')
 	run_cmd('./condenser ' + sample_name+'algo_input/kmer.dict_2l '+sample_name+'algo_input/k1mer.dict_2l  ' + sample_name+'algo_input/'  + ' ' + str(K_value) + ' | tee ' + sample_name + '_cpp_terminal_output.txt')	
 
 with open(sample_name + '_terminal_output.txt', 'w') as f7:
@@ -272,7 +212,6 @@ with open(sample_name + '_terminal_output.txt', 'w') as f7:
 
     
 if mb:
-	#print('python multibridging.py -f '+reads_file+'.fasta ' + sample_name + 'intermediate')
 	run_cmd('rm '+sample_output_name+'intermediate/*')
 	jf_s = ' '; cpp_s = ' ';
 	use_jellyfish = 1; use_cpp = 0 #force set parameter for jellyfish
@@ -283,8 +222,6 @@ if mb:
         if not paired_end:                
 		run_cmd('python multibridging.py -f ' + mb_string + jf_s + cpp_s + reads_file+'.fasta ' + sample_output_name + 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # ' 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
 	else:
-		#run_cmd('pypy multibridging.py -f '+ mb_string + jf_s + cpp_s + reads_file+'_1.fasta '+reads_file+'_2.fasta ' + sample_output_name+ 'intermediate ') # 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
-		# stdbuf -oL  python filename | tee output_log.txt
 		run_cmd('python multibridging.py -f '+ mb_string + jf_s + cpp_s + reads_file+'_1.fasta '+reads_file+'_2.fasta ' + sample_output_name+ 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
 
 timer['after_mb'] = time.time()
@@ -296,7 +233,7 @@ if sparse_flow:
         run_cmd('rm '+sample_output_name+'algo_output/reconstructed_comp_*.fasta')
         run_cmd('rm '+sample_output_name+'algo_output/reconstructed.fasta')
         
-        run_cmd('python Algorithm_Fast_condense.py -1 '+ sample_output_name)
+        run_cmd('python algorithm_SF.py -1 '+ sample_output_name)
         ncomp = 0
         iteration_string = " "
         while os.path.isfile(sample_output_name + 'intermediate/nodes'+str(ncomp)+'.txt'):
@@ -304,18 +241,15 @@ if sparse_flow:
                 	ncomp +=1
                 	continue
                 print('Component:',ncomp)
-                #raw_input()
                 if not parallelize_sf:
-                        #os.system('python Algorithm_Fast_condense.py ' + str(ncomp) + ' '+ sample_output_name)
-                        # stdbuf -oL  python filename | tee output_log.txt
-                        os.system('python Algorithm_Fast_condense.py ' + str(ncomp) + ' '+ sample_output_name + ' | tee ' + sample_name + '_' + str(ncomp) + '_terminal_output.txt')
+                        os.system('python algorithm_SF.py ' + str(ncomp) + ' '+ sample_output_name + ' | tee ' + sample_name + '_' + str(ncomp) + '_terminal_output.txt')
                 iteration_string += str(ncomp) + " "
                 ncomp=ncomp+1
         
 	if parallelize_sf:
-		os.system('parallel python Algorithm_Fast_condense.py {} ' + sample_output_name+ " ::: " + iteration_string)
+		os.system('parallel python algorithm_SF.py {} ' + sample_output_name+ " ::: " + iteration_string)
         os.system("cat " + sample_output_name+'algo_output/reconstructed_comp_*.fasta' +  " >> " + reconstr_file)
-        filter_trans(sample_output_name+'algo_output/reconstructed.fasta', sample_output_name+'algo_output/reconstructed_short.fasta', 200)
+        #filter_trans(sample_output_name+'algo_output/reconstructed.fasta', sample_output_name+'algo_output/reconstructed_short.fasta', 200)
     
 if sparse_flow:
     if os.path.exists(directory_name+"/before_sp_log.txt"):
@@ -359,22 +293,16 @@ if compare_ans:
 	if not blat:
 		run_cmd('mummer -maxmatch -l 80 ' + reconstr + ' ' + curr_ref + ' > ' + reconstr_per)
 		tester.analyzer(reconstr_per,reconstr_log,exp_file,N)
-		#run_cmd('mummer -maxmatch -l 80 ' + curr_ref + ' ' + curr_ref + ' > ' + self_repeats)
 		run_cmd('mummer -maxmatch -l 80 ' + curr_ref + ' ' + reconstr + ' > ' + reconstr_rev_per)
 		tester.reverse_analyzer(reconstr_rev_per,reconstr_rev_log,reconstr,N)
 	else:
 		run_cmd('python parallel_blat.py ' + reconstr + ' ' + curr_ref + ' ' + reconstr_per)
-		#tester.analyzer_blat(reconstr_per,reconstr_log,exp_file,N)
 		tester.analyzer_blat_noExp(reconstr_per,reconstr_log,exp_file,N)
-		#tester.analyzer_blat_noExp( './' +sample_name+'algo_output/cufflinks_pacBio.psl','./' +sample_name+'algo_output/cufflinks_pacBio_log.txt',exp_file,N)
-		#run_cmd('blat ' + curr_ref + ' ' + reconstr + '  ' + reconstr_rev_per)
-		#tester.reverse_analyzer_blat(reconstr_rev_per,reconstr_rev_log,reconstr,N)
 	if false_positive:
 		tester.false_positive(reconstr,reconstr_per,reconstr_rev_log)	
 	
 
 
-#analyzer("./OneHalf3_L_100_N_1000000_algo_output/Trinity/trinity_rev_per_dual.txt","./OneHalf3_L_100_N_1000000_algo_output/Trinity/trinity_rev_log.txt","./OneHalf3_L_100_N_1000000_algo_output/Trinity/trinity.fasta",1000000)
 
 
 
@@ -405,10 +333,7 @@ if compare_trinity:
 		tester.reverse_analyzer(trinity_rev_per_dual,trinity_rev_log,trinity_fasta,N)
 	else:
 		run_cmd('python parallel_blat.py ' + trinity_fasta + ' ' + curr_ref + ' ' + trinity_per)
-		#tester.analyzer_blat(trinity_per,trinity_log,exp_file,N)
 		tester.analyzer_blat_noExp(trinity_per,trinity_log,exp_file,N)
-		#run_cmd('blat ' + curr_ref + ' ' + trinity_fasta + ' ' + trinity_rev_per)
-		#tester.reverse_analyzer_blat(trinity_rev_per,trinity_rev_log,trinity_fasta,N)
         if false_positive:
                 tester.false_positive(trinity_fasta,trinity_per,trinity_rev_log)
 	
@@ -506,7 +431,7 @@ if run_rsem_eval:
 	rsem_string = 'rsem-calculate-expression --no-qualities --calc-evaluation-score ' + str(r) + ' ' +str(p) + ' ' + str(L) + ' 0 '
 	out_dir = sample_name+'algo_output/'
 	
-	if 0: #os.path.exists(curr_ref):
+	if 0: 
 		run_cmd('rsem-prepare-reference --no-polyA '+curr_ref+  out_dir + 'true_ref')
 		run_cmd(rsem_string + read_file + out_dir + 'true_ref ' + out_dir + 'true_ref')
 	
@@ -514,7 +439,7 @@ if run_rsem_eval:
 		run_cmd('rsem-prepare-reference --no-polyA '+reconstr+ out_dir + 'our_rec')
 		run_cmd(rsem_string + read_file + out_dir + 'our_rec ' + out_dir + 'our_rec')
 	
-	if 0: #os.path.exists(trinity_fasta):
+	if 0: 
 		run_cmd('rsem-prepare-reference --no-polyA '+trinity_fasta+ out_dir + 'trinity')
 		run_cmd(rsem_string + read_file + out_dir + 'trinity ' + out_dir+ 'trinity')
 
@@ -522,8 +447,6 @@ if run_rsem_eval:
 	if os.path.exists(cufflinks_fasta):
 		run_cmd('rsem-prepare-reference --no-polyA '+cufflinks_fasta+ out_dir + 'cufflinks')
 		run_cmd(rsem_string + read_file + out_dir + 'cufflinks ' + out_dir+ 'cufflinks')
-	'''run_cmd('rsem-prepare-reference --no-polyA '+rec_short+ out_dir + 'our_short')
-	run_cmd(rsem_string + read_file + out_dir + 'our_short ' + out_dir + 'our_short')'''
 
 if plots:
 	reconstr_log = sample_name+'algo_output/reconstr_log.txt'
@@ -534,7 +457,6 @@ if plots:
 	tester.performance_plot(reconstr_log,trinity_log,plot_file,L,200,N)
         tester.performance_plot(sample_name+'algo_output/reconstr_log.txt',sample_name+'algo_output/Cufflinks/cufflinks_log.txt',sample_name+'algo_output/plot_our_cufflinks.txt',L,200,N)	
 
-	#tester.reverse_performance_plot(reconstr_rev_log,trinity_rev_log,plot_file,L,200,N)
 
 timer['after_comp'] = time.time()
 timer['for_comp'] = timer['after_comp'] - timer['after_generate_ref']
@@ -563,14 +485,9 @@ if plots_express:
 		oracle_fasta = curr_ref
 	if sim:
 		tester.performance_plot_express(oracle_fasta,exp_file,reconstr_log,trinity_log,cufflinks_log,plot_file,exp_file,'SIM',L,200,N,iso_low,iso_high,use_oracle)
-		#tester.performance_plot_express(oracle_fasta,exp_file,oasis_log,soap_log,trans_log,plot_file,exp_file,'SIM',L,200,N,iso_low,iso_high,use_oracle)
 
         else:
 		tester.performance_plot_express(oracle_fasta,num_isoform_file,reconstr_log,trinity_log,cufflinks_log,plotMain_file,express_file,'EXP',L,200,N,iso_low,iso_high,use_oracle)
-		#tester.performance_plot_express(oracle_fasta,num_isoform_file,oasis_log,soap_log,trans_log,plotOthers_file,express_file,'EXP',L,200,N,iso_low,iso_high,use_oracle)
-
-	#tester.performance_plot(reconstr_log,trinity_log,plot_file,L,200,N)
-	#tester.reverse_performance_plot(reconstr_rev_log,trinity_rev_log,plot_file,L,200,N)
 
 
 if extract_bam:
@@ -588,6 +505,3 @@ if oracle_set:
 	run_cmd('samtools view -bS reads_pacbio.sam > reads_pacbio.bam')
 	run_cmd('samtools depth reads_pacbio.bam ')
 
-
-# Running ALLPATHS-LG ECC
-# /usr/bin/allpathsLG/ErrorCorrectReads.pl PHRED_ENCODING=64 UNPAIRED_READS_IN=reads_trimmomatic.fastq READS_OUT=reads_allpaths.fastq THREADS=50 PLOIDY=1 KEEP_KMER_SPECTRA=1
