@@ -14,11 +14,11 @@ Shannon Version 0.0.0
 
 For single-ended reads,
 
-Usage: python shannon.py -o running_directory --single read_file  [options]
+Usage: python shannon.py -o running_directory \-\-single read_file  [options]
 
 For paired-end reads,
 
-Usage: python shannon.py -o running_directory --left read_pair1 --right read_pair2  [options]
+Usage: python shannon.py -o running_directory \-\-left read_pair1 \-\-right read_pair2  [options]
 
 The running_directory mentions the name of a directory where Shannon can run. This directory should be empty or non-existent while starting the run. 
 
