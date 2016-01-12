@@ -30,19 +30,19 @@ The reads should be in fasta or fastq format.
 
 The string [options] can be either empty or one or more of the following: 
 
--p nJobs
+`-p nJobs`
 
 This option is used in order to specify the number of parallel jobs. Needs GNU parallel installed. 
 
--K kmerSize
+`-K kmerSize`
 
 This option is used to set the Kmer size.
 
 
---partition partitionSize
+`--partition partitionSize`
 This option is used to set the maximum size of each partition.
 
---compare reference_file_name
+`--compare reference_file_name`
 
 This option is used to compare the produced output to the reference and create a log. To run this option blat has to be installed. 
 
