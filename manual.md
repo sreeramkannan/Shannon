@@ -14,11 +14,11 @@ Shannon Version 0.0.0
 
 For single-ended reads,
 
-Usage: python shannon.py -o running_directory --single read_file  [options]
+Usage: `python shannon.py -o running_directory --single read_file  [options]`
 
 For paired-end reads,
 
-Usage: python shannon.py -o running_directory --left read_pair1 --right read_pair2  [options]
+Usage: `python shannon.py -o running_directory --left read_pair1 --right read_pair2  [options]`
 
 The running_directory mentions the name of a directory where Shannon can run. This directory should be empty or non-existent while starting the run. 
 
@@ -52,13 +52,13 @@ This option is used to compare the produced output to the reference and create a
 
 ###Output 
 
-The main output is in running_directory/shannon.fasta which contains the list of reconstructed transcripts in fasta format.
+The main output is in `running_directory/shannon.fasta` which contains the list of reconstructed transcripts in fasta format.
 
-There is a log file in running_directory/log.txt 
+There is a log file in `running_directory/log.txt`
 
-The output of the --compare option is in running_directory/compare_log.txt
+The output of the `--compare` option is in `running_directory/compare_log.txt`
 
-The directory running_directory/TEMP contains intermediate running files and can be deleted after the run.
+The directory `running_directory/TEMP` contains intermediate running files and can be deleted after the run.
 
 ~~~
 ###Requirements
