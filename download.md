@@ -8,7 +8,7 @@ group: navigation
 
 #### Repository
 
-The __Shannon__ GitHub repository is [here](hhttps://github.com/sreeramkannan/Shannon).
+The __Shannon__ GitHub repository is [here](https://github.com/sreeramkannan/Shannon).
 
 
 #### Licence
