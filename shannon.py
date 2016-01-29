@@ -153,9 +153,9 @@ if use_partitioning == False:
 if run_quorum:
     run_cmd('python run_quorum.py ' + comp_directory_name + ' ' + '\t'.join(reads_files))
     if paired_end:
-	reads_files = [comp_directory_name + '/corrected_reads_1.fasta',comp_directory_name + '/corrected_reads_2.fasta']
+	reads_files = [comp_directory_name + '/corrected_reads_1.fa',comp_directory_name + '/corrected_reads_2.fa']
     else:
-	reads_files = [comp_directory_name + '/corrected_reads.fasta']
+	reads_files = [comp_directory_name + '/corrected_reads.fa']
 
 reads_string = ' '.join(reads_files)    
 

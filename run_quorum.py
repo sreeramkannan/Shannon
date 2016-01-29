@@ -37,7 +37,7 @@ def find_common_string(s1, s2):
 
 # In the non-paired end case, run Quorum normally
 if paired_end == False:
-    base_file = base_dir + "/corrected_reads.fasta"
+    base_file = base_dir + "/corrected_reads"
     run_cmd("/home/sreeramkannan/Packages/quorum-1.0.0/quorum --prefix " + base_file + " " + reads_files[0])
 
 # This id the paired end case.
@@ -91,8 +91,8 @@ elif paired_end == True:
     
     # Cycle through corrected reads and write reads to files accordingly
     with open(base_file + ".fa", 'r') as quorum_output: 
-        with open(base_dir + "/corrected_reads_1.fasta", 'w') as cr1:
-            with open(base_dir + "/corrected_reads_2.fasta", 'w') as cr2:
+        with open(base_dir + "/corrected_reads_1.fa", 'w') as cr1:
+            with open(base_dir + "/corrected_reads_2.fa", 'w') as cr2:
                 left_ends = {}
                 right_ends = {}
                 i = 0
