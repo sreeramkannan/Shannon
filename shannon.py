@@ -148,6 +148,9 @@ if use_partitioning == False:
     partition_size = 100000000000000000000000000000000000000000000000000000000000000000
     comp_size_threshold = partition_size
 
+run_cmd('mkdir ' + comp_directory_name)
+run_cmd('mkdir ' + sample_name_input+ "algo_input")
+
 
 #Run Quorum now
 if run_quorum:
@@ -175,8 +178,8 @@ reads_string = ' '.join(reads_files)
 #og_algo_output = "./Snyder/Full"
 
 # Creates output directory
-run_cmd('mkdir ' + comp_directory_name)
-run_cmd('mkdir ' + sample_name_input+ "algo_input")
+#run_cmd('mkdir ' + comp_directory_name)
+#run_cmd('mkdir ' + sample_name_input+ "algo_input")
 
 # Runs Jellyfish
 if run_jellyfish:
