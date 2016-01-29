@@ -47,9 +47,15 @@ compare_ans = False
 def run_cmd(s1):
         print(s1); os.system(s1)
 
-
+exit_now = False
 # Read input from terminal
 n_inp = sys.argv
+if '--help' in n_inp:
+    with open('manual.md','r') as fin:
+        print fin.read()
+    exit_now = True
+    sys.exit()
+
 if '--compare' in n_inp:
     ind1 = n_inp.index('--compare')
     compare_ans = True
@@ -79,9 +85,13 @@ if '-o' in n_inp:
     ind1 = n_inp.index('-o')
     comp_directory_name = n_inp[ind1+1]
     comp_directory_name=os.path.abspath(comp_directory_name)
-    n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
+    n_inp = n_inp[:ind1]+n_inp[ind1+2:]
+    if os.listdir(comp_directory_name):
+	print('ERROR: Output directory specified with -o needs to be an empty or non-existent directory')
+	exit_now = True
 else:
     print('ERROR: Output directory needed. Use -o flag, which is mandatory.')
+    exit_now = True
 
 reads_files = []
 
@@ -100,14 +110,20 @@ elif '--single' in n_inp:
     n_inp = n_inp[:ind1]+n_inp[ind1+2:]
 
 else:
+    print("ERROR: Need to specify single-ended reads with --single or specify both --left and --right for paired-ended reads.")
 # if len(n_inp)>1:
 #     comp_directory_name = n_inp[1]
 #     reads_files = [n_inp[2]]
 #     if len(n_inp)>3:
 #         reads_files.append(n_inp[3])
 # else:
-    with open('manual.md','r') as fin:
-        print fin.read()   
+
+
+    ''''with open('manual.md','r') as fin:
+        print fin.read()'''
+
+if exit_now:
+    print('Try running python shannon.py --help for a short manual')   
     sys.exit()
 
 
