@@ -6,8 +6,6 @@ import os
 import os.path
 import numpy as np
 import tester
-from set_exp import set_exp  
-from filter_trans import filter_trans
 
 reads_files = []
 paired_end = False
