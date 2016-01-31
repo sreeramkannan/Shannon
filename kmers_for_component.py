@@ -33,7 +33,7 @@ def reverse_complement(bases):
         bases = re.sub(ch1, ch2, bases)
     return bases[::-1].upper()
 
-def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file_extension, new_kmer_tag, graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end = False, second_iteration = False,  partition_size = 500, overload = 1.5, K = 24):
+def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file_extension, new_kmer_tag, graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end = False, second_iteration = False,  partition_size = 500, overload = 1.5, K = 24, gpmetis_path = ''):
     """This fuction runs gpmetis on the components above a threshold size.  It then creates a dictionary called 
     k1mers2component {k1mer : component}.  It then sends any reads that share a kmer with a component to that component.
     It then cycles through the k1mer file and outputs the k1mers along with their weights to a file for each component.
@@ -74,12 +74,12 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                 temp_string += "Component " + str(i) + ": " + str(Partitions) + " partitions, "  
                 if len(lines) >= 2:
                     if ufactor == 0:
-                        print("gpmetis " +directory_name+"/component" + str(i+1) + graph_file_extension + " " + str(Partitions))
-                        run_cmd("gpmetis " +directory_name+"/component" + str(i+1) +  graph_file_extension + " " + str(Partitions) )
+                        #print("gpmetis " +directory_name+"/component" + str(i+1) + graph_file_extension + " " + str(Partitions))
+                        run_cmd(gpmetis_path +directory_name+"/component" + str(i+1) +  graph_file_extension + " " + str(Partitions) )
                         components_broken[i] = Partitions
                     elif ufactor > 0:
-                        print("gpmetis " + " -ufactor="+str(ufactor) + " "+directory_name+"/component" + str(i+1) + graph_file_extension + " " + str(Partitions))
-                        run_cmd("gpmetis " + " -ufactor="+str(ufactor) + " "+directory_name+"/component" + str(i+1) + graph_file_extension + " " +str(Partitions))
+                        #print("gpmetis " + " -ufactor="+str(ufactor) + " "+directory_name+"/component" + str(i+1) + graph_file_extension + " " + str(Partitions))
+                        run_cmd(gpmetis_path + " -ufactor="+str(ufactor) + " "+directory_name+"/component" + str(i+1) + graph_file_extension + " " +str(Partitions))
                         components_broken[i] = Partitions          
         
         f_log.write(str(time.asctime()) + ": " + "gpmetis for partitioning " + str(int(second_iteration)+1) + " is complete -- " + temp_string + "\n")

@@ -10,11 +10,15 @@ import tester
 reads_files = []
 paired_end = False
 n_inp = sys.argv
-if len(n_inp)>2:
-    base_dir = sys.argv[1]
-    reads_files = [sys.argv[2]]
-    if len(n_inp)>3:
-        reads_files.append(sys.argv[3])
+quorum_path = sys.argv[1]
+if len(n_inp)>3:
+    base_dir = sys.argv[2]
+    reads_files = [sys.argv[3]]
+    if len(n_inp)>4:
+        reads_files.append(sys.argv[4])
+else:
+    print('Internal error in run_quorum.py. Report to developer.')
+
 
         
 if len(reads_files) == 2:

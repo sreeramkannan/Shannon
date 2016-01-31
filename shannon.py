@@ -7,15 +7,27 @@ import os.path
 import numpy as np
 import tester
 from filter_trans import filter_trans
+import test_suite
+import subprocess
 
 from kmers_for_component import kmers_for_component
 from weight_updated_graph import weight_updated_graph
 from process_concatenated_fasta import process_concatenated_fasta
+
+#Set Paths
+gpmetis_path = 'gpmetis'
+jellyfish_path = 'jellyfish'
+gnu_parallel_path = 'parallel'
+quorum_path = 'quorum'
+
+
+
     
 # For jellyfish
 double_stranded = True
 run_jellyfish = True
 paired_end = False # Automatically set if command line is used
+jellyfish_kmer_cutoff = 1
 
 # General, Can be read in from terminal
 reads_files = ['~/Full_Assembler/SPombe_algo_input/reads.fasta'] # ['./S15_SE_algo_input/reads.fasta']
@@ -47,7 +59,43 @@ compare_ans = False
 def run_cmd(s1):
         print(s1); os.system(s1)
 
-exit_now = False
+
+
+def test_install():
+	exit_now = False; print('Checking the various dependencies')
+	if test_suite.which(jellyfish_path):
+		print('Using jellyfish in ' + test_suite.which(jellyfish_path))
+		a=subprocess.check_output([jellyfish_path,'--version'])
+		if len(a) < 11:
+			print('Unable to automatically determine jellyfish version. Ensure that it is version 2.0.0 or greater')
+		else:
+			if a[10] != '2':
+				print('Jellyfish version does not seem to be greater than 2.0.0. Please ensure that it is version 2.0.0 or greater, continuing run...')
+
+	else:
+		print('Jellyfish not found. Set variable jellyfish_path correctly'); exit_now = True
+	if test_suite.which(gpmetis_path):
+		print('Using GPMETIS in ' + test_suite.which(gpmetis_path))
+	else:
+		print('GPMETIS not found in path. Set variable gpmetis_path correctly'); exit_now = True
+	if test_suite.which(gnu_parallel_path):
+		print('Using GNU Parallel in ') + test_suite.which(gnu_parallel_path)
+	else:
+		print('GNU Parallel not found in path. Set variable gnu_parallel_path correctly'); exit_now = True
+	if test_suite.which(quorum_path):
+		print('Using Quorum in ') + test_suite.which(quorum_path)
+	else:
+		print('Quorum not found in path. Set variable quorum_path correctly'); exit_now = True
+	return exit_now
+
+def print_message():
+	print('--------------------------------------------')
+	print('Shannon: RNA Seq de novo Assembly')
+	print('--------------------------------------------')
+
+
+print_message()
+exit_now = test_install()
 # Read input from terminal
 n_inp = sys.argv
 if '--help' in n_inp:
@@ -140,9 +188,6 @@ paired_end_flag = ""
 if paired_end:
     paired_end_flag = " --paired_end "
     
-    
-jellyfish_dir = ' jellyfish'
-jellyfish_kmer_cutoff = 1
 
 # For extension correction
 sample_name = comp_directory_name.split('/')[-1] + "_"
@@ -170,32 +215,13 @@ run_cmd('mkdir ' + sample_name_input+ "algo_input")
 
 #Run Quorum now
 if run_quorum:
-    run_cmd('python run_quorum.py ' + comp_directory_name + ' ' + '\t'.join(reads_files))
+    run_cmd('python run_quorum.py ' + quorum_path + ' ' + comp_directory_name + ' ' + '\t'.join(reads_files))
     if paired_end:
 	reads_files = [comp_directory_name + '/corrected_reads_1.fa',comp_directory_name + '/corrected_reads_2.fa']
     else:
 	reads_files = [comp_directory_name + '/corrected_reads.fa']
 
 reads_string = ' '.join(reads_files)    
-
-#og_algo_input = './S15_SE_algo_input' #'./WingWongTest_K24_algo_input' #'./S15_SE_algo_input'
-#og_algo_output = './S15_SE_algo_output' #'./WingWongTest_K24_algo_output' #'./S15_SE_algo_output'
-#og_algo_output = './SPombe_algo_input'
-#ref_file = './SPombe_algo_input/reference.fasta'
-
-
-#og_algo_input = '~/Full_Assembler/WW_NM_005427_algo_input'
-#og_algo_output = '~/Full_Assembler/WW_NM_005427_algo_output'
-#og_algo_input = './WingWongTest_K24_algo_input' #'./S15_SE_algo_input'
-#og_algo_output = './WingWongTest_K24_algo_output' #'./S15_SE_algo_output'
-#og_algo_input = './S15_SE_algo_input'
-#og_algo_output = './S15_SE_algo_output'
-#og_algo_input = "./Snyder/Full"
-#og_algo_output = "./Snyder/Full"
-
-# Creates output directory
-#run_cmd('mkdir ' + comp_directory_name)
-#run_cmd('mkdir ' + sample_name_input+ "algo_input")
 
 # Runs Jellyfish
 if run_jellyfish:
@@ -204,14 +230,9 @@ if run_jellyfish:
     if double_stranded:
         run_jfs += ' -C '
     run_cmd('rm '+sample_name_input+'algo_input/jelly*')  #Remove old jellyfish files
-    run_cmd(jellyfish_dir+' count -m ' + str(K_value+1) + run_jfs+ ' -o ' + sample_name_input+'algo_input/jellyfish_p1_output.jf -s 20000000 -c 4 -t 32 ' +reads_string)
+    run_cmd(jellyfish_path+' count -m ' + str(K_value+1) + run_jfs+ ' -o ' + sample_name_input+'algo_input/jellyfish_p1_output.jf -s 20000000 -c 4 -t 32 ' +reads_string)
 
-    '''if os.path.isfile(sample_name_input+'algo_input/jellyfish_p1_output_1'):
-        run_cmd(jellyfish_dir+' merge -o ' + sample_name_input+'algo_input/jellyfish_p1_output.jf ' + sample_name_input+'algo_input/jellyfish_p1_output\_*')
-    else:
-        run_cmd('mv ' + sample_name_input+'algo_input/jellyfish_p1_output_0 ' +sample_name_input+'algo_input/jellyfish_p1_output.jf')'''
-
-    run_cmd(jellyfish_dir+' dump -c -t -L ' + str(jellyfish_kmer_cutoff) + ' ' + sample_name_input+'algo_input/jellyfish_p1_output.jf > ' +sample_name_input+'algo_input/k1mer.dict_org')
+    run_cmd(jellyfish_path+' dump -c -t -L ' + str(jellyfish_kmer_cutoff) + ' ' + sample_name_input+'algo_input/jellyfish_p1_output.jf > ' +sample_name_input+'algo_input/k1mer.dict_org')
     if (not run_extension_corr) and double_stranded:
         tester.double_strandify(sample_name_input+'algo_input/k1mer.dict_org', sample_name_input+'algo_input/k1mer.dict')
     if (not run_extension_corr) and (not double_stranded):
@@ -226,7 +247,6 @@ if run_extension_corr:
         str_ec = ' -d '
     else: 
         str_ec = ' '
-    #run_cmd('python extension_correction_SIC.py ' + str_ec + base_dir+sample_name+'algo_input/k1mer.dict_org ' +base_dir+sample_name+'algo_input/k1mer.dict 3 75 12 0.5')
     run_cmd('python extension_correction.py ' + str_ec + sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold))
 
 # Gets kmers from k1mers
@@ -236,7 +256,7 @@ if run_jellyfish or run_extension_corr:
 
 # Runs gpmetis to partition components of size above "partition_size" into partitions of size "partition_size"
 # Gets k1mers, kmers, and reads for each partition
-[components_broken, new_components] = kmers_for_component(kmer_directory, reads_files, base_directory_name, r1_contig_file_extension, r1_new_kmer_tag, r1_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, False, partition_size, overload, K)
+[components_broken, new_components] = kmers_for_component(kmer_directory, reads_files, base_directory_name, r1_contig_file_extension, r1_new_kmer_tag, r1_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, False, partition_size, overload, K, gpmetis_path)
 
 # This counts remaining and non-remaining partitions for log.
 num_remaining = 0
@@ -327,7 +347,7 @@ else:
     ds_string = "  "
 
 if run_parallel:
-    run_cmd("parallel -j " + str(nJobs) + " python run_MB_SF.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " ::: " + main_server_parameter_string)
+    run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " python run_MB_SF.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " ::: " + main_server_parameter_string)
 else:
     for param_str in main_server_parameter_string.split():
 	run_cmd("python run_MB_SF.py " + param_str + " --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str)
