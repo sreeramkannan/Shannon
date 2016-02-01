@@ -38,15 +38,12 @@ This option is used in order to specify the number of parallel jobs. Needs GNU p
 
 This option is used to set the Kmer size.
 
-
 --partition partitionSize
 This option is used to set the maximum size of each partition.
 
 --compare reference_file_name
 
 This option is used to compare the produced output to the reference and create a log. To run this option blat has to be installed. 
-
-
 
 ~~~
 
