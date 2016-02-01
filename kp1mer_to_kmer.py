@@ -21,7 +21,7 @@ def load_kp1mers(infile):
     return kp1mers, K
 
 def convert(infile, outfile):
-    print "{:s}: Starting..".format(time.asctime())
+    print "{:s}: Creating Kmers from (K+1)-mers..".format(time.asctime())
     kp1mers, K = load_kp1mers(infile)
     if kp1mers is None:
         print('NULL kp1mers file')

@@ -248,7 +248,7 @@ def main():
     read_files = names[2:-1]
 
     setup(read_files[0])
-    log("Starting.")
+    log("Starting Multibridging.")
     if len(read_files) == 1:
         load_reads(read_files[0], double_stranded, weighted)
     elif len(read_files) == 2:

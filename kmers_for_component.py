@@ -39,13 +39,16 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
     It then cycles through the k1mer file and outputs the k1mers along with their weights to a file for each component.
     It then creates a kmers2component dictionary.  It then outputs a kmers file for each component. 
     """
-
+    
     
     if os.path.exists(directory_name+"/before_sp_log.txt"):
         f_log = open(directory_name+"/before_sp_log.txt", 'a')
     else:
         f_log = open(directory_name+"/before_sp_log.txt", 'w')
-        
+    
+    def write_log(s):
+	f_log.write(s + "\n"); print(s)
+    
     # Counts number of components above size threshold
     Num_Components = 0
     i = 1
@@ -82,7 +85,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                         run_cmd(gpmetis_path + " -ufactor="+str(ufactor) + " "+directory_name+"/component" + str(i+1) + graph_file_extension + " " +str(Partitions))
                         components_broken[i] = Partitions          
         
-        f_log.write(str(time.asctime()) + ": " + "gpmetis for partitioning " + str(int(second_iteration)+1) + " is complete -- " + temp_string + "\n")
+        write_log(str(time.asctime()) + ": " + "gpmetis for partitioning " + str(int(second_iteration)+1) + " is complete -- " + temp_string)
         
         new_components = {}
         k1mers2component = {}
@@ -125,7 +128,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                                 k1mers2component[contig[each:each+(K+1)]] = [comp, 0.0]
                             j += 1                             
 
-        f_log.write(str(time.asctime()) + ": " + "k1mers2component dictionary created " + "\n")
+        write_log(str(time.asctime()) + ": " + "k1mers2component dictionary created ")
 
                             
 
@@ -265,7 +268,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                 read1_part_file[comp].close()
                 read2_part_file[comp].close()
         
-        f_log.write(str(time.asctime()) + ": " + "reads partititoned " + "\n")        
+        write_log(str(time.asctime()) + ": " + "reads partititoned ")        
         
         c2 = Counter("k1mer Streaming", 10**6)
 
@@ -284,7 +287,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                     if r_k1mer in k1mers2component:
                         k1mers2component[r_k1mer][1] += weight
 
-        f_log.write(str(time.asctime()) + ": " + "k1mers weights stored in dictionary" + "\n")
+        write_log(str(time.asctime()) + ": " + "k1mers weights stored in dictionary")
 
         
         # Writes out k1mers with weights for each partition
@@ -295,7 +298,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                         k1mer = contig[i:i+(K+1)]
                         new_file.write(k1mer + "\t" + str(k1mers2component[k1mer][1]) + "\n")
 
-        f_log.write(str(time.asctime()) + ": " + "k1mers written to file " + "\n")
+        write_log(str(time.asctime()) + ": " + "k1mers written to file ")
                        
                         
             
@@ -333,7 +336,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                                 kmers2component[contig[each:each+(K)]] = 0.0
                             j += 1                            
 
-        f_log.write(str(time.asctime()) + ": " + "kmers2component dictionary created " + "\n")
+        write_log(str(time.asctime()) + ": " + "kmers2component dictionary created ")
                             
         c2 = Counter("kmer Streaming", 10**6)
 
@@ -352,7 +355,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                     if r_kmer in kmers2component:
                         kmers2component[r_kmer] += weight
 
-        f_log.write(str(time.asctime()) + ": " + "kmers weights stored in dictionary" + "\n")
+        write_log(str(time.asctime()) + ": " + "kmers weights stored in dictionary")
                         
         # Writes out kmers and weights for each partition          
         for comp in new_components:
@@ -362,6 +365,6 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                         kmer = contig[i:i+(K)]
                         new_file.write(kmer + "\t" + str(kmers2component[kmer]) + "\n")
 
-        f_log.write(str(time.asctime()) + ": " + "kmers written to file " + "\n")
+        write_log(str(time.asctime()) + ": " + "kmers written to file " + "\n")
                         
         return [components_broken, new_components]

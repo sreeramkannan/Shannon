@@ -7,14 +7,16 @@ def process_concatenated_fasta(file, new_file):
     new_f = open(new_file, 'w')
     lines = f.readlines()
     names_seen = {}
+    last_name = ''
     for line in lines:
         tokens = line.split()
         if tokens[0][0] == ">":
             if tokens[0] in names_seen:
-                new_f.write(tokens[0] + "_" + str(names_seen[tokens[0]]) + '\n')
+                last_name = (tokens[0] + "_" + str(names_seen[tokens[0]]) + '\n')
                 names_seen[tokens[0]] += 1
             else:
-                new_f.write(line)
+                last_name=(line)
                 names_seen[tokens[0]] = 1
-        else:
+        elif len(line) >  200:
+	    new_f.write(last_name)
             new_f.write(line)

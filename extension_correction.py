@@ -147,7 +147,7 @@ def trim_polyA(contig):
 def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold):
     f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
     #pdb.set_trace()
-    print "{:s}: Starting..".format(time.asctime())
+    print "{:s}: Starting Kmer error correction..".format(time.asctime())
     f_log.write("{:s}: Starting..".format(time.asctime()) + "\n")
     kmers, K = load_kmers(infile, double_stranded)
     print "{:s}: {:d} K-mers loaded.".format(time.asctime(), len(kmers))
@@ -216,8 +216,8 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
                 else:
                     rmer_to_contig[contig[i:i+r]] = [contig_index]
     f1.close()
-    print "{:s}: {:d} K-mers remaining.".format(time.asctime(), len(allowed))
-    f_log.write("{:s}: {:d} K-mers remaining.".format(time.asctime(), len(allowed)) + " \n")
+    print "{:s}: {:d} K-mers remaining after error correction.".format(time.asctime(), len(allowed))
+    f_log.write("{:s}: {:d} K-mers remaining after error correction.".format(time.asctime(), len(allowed)) + " \n")
     
     # Writes out kmers from all allowed contigs
     with open(outfile, 'w') as f:

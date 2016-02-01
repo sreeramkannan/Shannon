@@ -126,10 +126,10 @@ class Read(object):
             if node_pair is not None:
                 mate_nodes.append(node_pair)
 
-        print 'Total pairs: {}'.format(len(mate_nodes))
+        #print 'Total pairs: {}'.format(len(mate_nodes))
         mate_nodes = set(mate_nodes)
-        print 'Unique pairs: {}'.format(len(mate_nodes))
-        print 'Unique sources: {}'.format(len(set(n1 for n1, n2 in mate_nodes)))
+        #print 'Unique pairs: {}'.format(len(mate_nodes))
+        #print 'Unique sources: {}'.format(len(set(n1 for n1, n2 in mate_nodes)))
         for node1, node2 in mate_nodes:
             paths = node1.find_mate_path(len(node1.bases) - 1, node2, 0)
             if len(paths) == 1 and len(paths[0]) > 2:
@@ -1116,7 +1116,7 @@ class Node(object):
 
         cycle = Node.find_cycle(no_cycles)
         while cycle is not None:
-            print("Found cycle of length %s at %s" % (len(cycle), time.time()))
+            #print("Found cycle of length %s at %s" % (len(cycle), time.time()))
             Node.break_cycle(cycle)
             cycle = Node.find_cycle(no_cycles)
         Node.remove_destroyed()

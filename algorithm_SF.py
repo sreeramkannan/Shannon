@@ -73,11 +73,17 @@ paths_for_node = {}    ## Map: node => known_paths that the node is involved in.
 
 def single_nodes_to_fasta(): 
     ## The function outputs individual nodes without any edges as reconstructed transcripts.
+    sname_head,sname_tail = os.path.split(sample_name)
+    try:
+            spath,sname = sname_tail.split('__')
+    except ValueError:
+            sname = sname_tail
+
     with open(reconstr_file, 'a') as reconstFile:
         i = 0
         for lines in open(single_nodes_file):
             fields = lines.strip().split()
-            reconstFile.write('>'+sample_name + 'Reconst_single_'+str(i)+'\t Copycount:' + fields[2])
+            reconstFile.write('>Shannon_'+sname + '_single_'+str(i)+'\t Copycount:' + fields[2])
             reconstFile.write('\n'+fields[1] +'\n')
             i+=1
 
@@ -675,6 +681,12 @@ class Graph(object):    ## Graph object (used universally)
         ''' Uses read_paths_recursive to find all paths if the graph only has Y nodes 
         (a Y node is a node with at most 1 in edge AND 0 or more out edges).
         '''
+	sname_head,sname_tail = os.path.split(sample_name) 
+        try:
+            spath,sname = sname_tail.split('__')
+        except ValueError:
+            sname = sname_tail
+
         with open(reconstr_Y_file, 'a') as pathfile:
             self.search()
             if len(self.tobereduced) != 0:
@@ -684,7 +696,7 @@ class Graph(object):    ## Graph object (used universally)
                 path_str = path_str_wt[0][6:]
                 path_wt = path_str_wt[1]
 		if len(path_str):
-                	pathfile.write('>'+sample_name + 'Reconst_'+comp+'_'+str(i)+"\t"+str(path_wt))
+                	pathfile.write('>Shannon_'+sname + ' ' +comp+'_'+str(i)+"\t"+str(path_wt))
                 	pathfile.write("\n"+path_str+"\n") #with weights
 
 
@@ -964,16 +976,16 @@ if len(graph2.nodes) <= 3:
 
 
 
-print('before filtering')
 
 if debug_mode:
     graph2.printNodes()
     pdb.set_trace()
     raw_input()
 if use_smoothing:
+	print('before smoothing')
 	new_edge_weights2 = filter_copycounts_inc_nodes(graph2)
 	graph2.filter_update(new_edge_weights2)
-print('after filtering')
+	print('after smoothing')
 
 if debug_mode:
     graph2.printNodes()
@@ -994,8 +1006,8 @@ for node in graph2.nodes:
 t_start = time.time()
 graph2.algorithm2()
 t_elapsed = (time.time() - t_start)
-print('after running algorithm' + ' : ' + str(comp) +  " time taken: " + str(t_elapsed) )
-print('after running algorithm')
+#print('after running algorithm' + ' : ' + str(comp) +  " time taken: " + str(t_elapsed) )
+#print('after running algorithm')
 if debug_mode:
 	graph2.printNodes()
 
@@ -1005,8 +1017,8 @@ if use_Y_paths:
     graph2.read_Y_paths()
 else:
     graph2.read_paths()
-print("finished writing file")
-print("No unique solution: " + str(graph2.no_unique_solution)  + ' : ' + str(comp))
+#print("finished writing file")
+#print("No unique solution: " + str(graph2.no_unique_solution)  + ' : ' + str(comp))
 
 
 

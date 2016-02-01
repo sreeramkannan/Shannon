@@ -25,7 +25,8 @@ if len(reads_files) == 2:
     paired_end = True
     
 def run_cmd(s1):
-	print(s1); os.system(s1)
+	#print(s1); 
+	os.system(s1)
     
 def find_common_string(s1, s2):
     # Finds common string between two strings.
@@ -143,14 +144,26 @@ elif paired_end == True:
                             left_ends[prev_name].append(line)   
                             add_next_to_left_ends = False
                     i += 1
-                with open(base_dir + "/unpaired_reads.fasta", 'w') as unpaired_reads:
+                for each in left_ends:
+                    cr1.write(left_ends[each][0])
+                    cr1.write(left_ends[each][1])
+                    cr2.write(left_ends[each][0].replace(each, each + "_2"))
+                    cr2.write("AAAAAAAAAAAAAAAAAAAAAAAAAAAA \n")
+                
+                for each in right_ends:
+                    cr2.write(right_ends[each][0])
+                    cr2.write(right_ends[each][1])
+                    cr1.write(right_ends[each][0].replace(each, each + "_1"))
+                    cr1.write("TTTTTTTTTTTTTTTTTTTTTTTTTTTT \n")
+
+                '''with open(base_dir + "/unpaired_reads.fasta", 'w') as unpaired_reads:
                     for each in left_ends:
                         unpaired_reads.write(left_ends[each][0])
                         unpaired_reads.write(left_ends[each][1])
                     
                     for each in right_ends:
                         unpaired_reads.write(right_ends[each][0])
-                        unpaired_reads.write(right_ends[each][1])
+                        unpaired_reads.write(right_ends[each][1])'''
 
             
             

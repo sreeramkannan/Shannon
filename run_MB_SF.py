@@ -81,7 +81,7 @@ if len(n_inp)>1:
         compare_ans = 1
     if '--kmer_size' in n_inp:
         K_value = int(n_inp[n_inp.index('--kmer_size')+1])
-        print(K_value)
+        #print(K_value)
     if '--dir_name'in n_inp:
         directory_name = n_inp[n_inp.index('--dir_name')+1]
 
@@ -111,7 +111,7 @@ else:
 
 
 def run_cmd(s1):
-	print(s1); os.system(s1)
+	os.system(s1)
 
 sample_output_name = sample_name
 
@@ -212,7 +212,7 @@ with open(sample_name + '_terminal_output.txt', 'w') as f7:
 
     
 if mb:
-	run_cmd('rm '+sample_output_name+'intermediate/*')
+	#run_cmd('rm '+sample_output_name+'intermediate/*')
 	jf_s = ' '; cpp_s = ' ';
 	use_jellyfish = 1; use_cpp = 0 #force set parameter for jellyfish
 	if use_jellyfish:
@@ -230,8 +230,8 @@ timer['for_mb'] = timer['after_mb'] - timer['after_gen_reads']
 
 if sparse_flow:
         reconstr_file = sample_output_name+'algo_output/reconstructed.fasta'
-        run_cmd('rm '+sample_output_name+'algo_output/reconstructed_comp_*.fasta')
-        run_cmd('rm '+sample_output_name+'algo_output/reconstructed.fasta')
+        #run_cmd('rm '+sample_output_name+'algo_output/reconstructed_comp_*.fasta')
+        #run_cmd('rm '+sample_output_name+'algo_output/reconstructed.fasta')
         
         run_cmd('python algorithm_SF.py -1 '+ sample_output_name)
         ncomp = 0
@@ -263,7 +263,7 @@ if sparse_flow:
     
 
     f_log.write(str(time.asctime()) + ": " +sample_output_name + " has completed: " + str(num_transcripts) + " transcripts" + "\n")
-
+    print(str(time.asctime()) + ": " +sample_output_name + " has completed: " + str(num_transcripts) + " transcripts")
     f_log.close()
 
 
@@ -461,7 +461,7 @@ if plots:
 timer['after_comp'] = time.time()
 timer['for_comp'] = timer['after_comp'] - timer['after_generate_ref']
 
-print(timer)
+#print(timer)
 
 
 if plots_express:

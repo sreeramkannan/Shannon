@@ -58,15 +58,14 @@ compare_ans = False
 
 def run_cmd(s1):
 		#print(s1); 
-		os.system(s1 + '> temp_out.txt')
+		os.system(s1) # + '>> temp_out.txt')
 
 
 
 def test_install():
 	exit_now = False; 
-	print('--------------------------------------------')
-	print('Checking the various dependencies')
-	print('--------------------------------------------')
+	print('Checking for various dependencies...')
+	#print('--------------------------------------------')
 	if test_suite.which(jellyfish_path):
 		print('Using jellyfish in ' + test_suite.which(jellyfish_path))
 		a=subprocess.check_output([jellyfish_path,'--version'])
@@ -145,6 +144,8 @@ else:
 	print('ERROR: Output directory needed. Use -o flag, which is mandatory.')
 	exit_now = True
 
+
+
 reads_files = []
 
 if '--left' in n_inp and '--right' in n_inp:
@@ -177,7 +178,9 @@ else:
 if exit_now:
 	print('Try running python shannon.py --help for a short manual')   
 	sys.exit()
-
+else:
+        print('--------------------------------------------')
+	print "{:s}: Starting Shannon run..".format(time.asctime())
 
 if len(reads_files) == 1:
 	paired_end = False
@@ -219,6 +222,7 @@ run_cmd('mkdir ' + sample_name_input+ "algo_input")
 
 #Run Quorum now
 if run_quorum:
+	print "{:s}: Running Quorum for read error correction with quality scores..".format(time.asctime())
 	run_cmd('python run_quorum.py ' + quorum_path + ' ' + comp_directory_name + ' ' + '\t'.join(reads_files))
 	if paired_end:
 		reads_files = [comp_directory_name + '/corrected_reads_1.fa',comp_directory_name + '/corrected_reads_2.fa']
@@ -229,11 +233,12 @@ reads_string = ' '.join(reads_files)
 
 # Runs Jellyfish
 if run_jellyfish:
+	print "{:s}: Starting Jellyfish to extract Kmers from Reads..".format(time.asctime())
 	K_value = K
 	run_jfs = ' '
 	if double_stranded:
 		run_jfs += ' -C '
-	run_cmd('rm '+sample_name_input+'algo_input/jelly*')  #Remove old jellyfish files
+	#run_cmd('rm '+sample_name_input+'algo_input/jelly*')  #Remove old jellyfish files
 	run_cmd(jellyfish_path+' count -m ' + str(K_value+1) + run_jfs+ ' -o ' + sample_name_input+'algo_input/jellyfish_p1_output.jf -s 20000000 -c 4 -t 32 ' +reads_string)
 
 	run_cmd(jellyfish_path+' dump -c -t -L ' + str(jellyfish_kmer_cutoff) + ' ' + sample_name_input+'algo_input/jellyfish_p1_output.jf > ' +sample_name_input+'algo_input/k1mer.dict_org')
@@ -241,11 +246,12 @@ if run_jellyfish:
 		tester.double_strandify(sample_name_input+'algo_input/k1mer.dict_org', sample_name_input+'algo_input/k1mer.dict')
 	if (not run_extension_corr) and (not double_stranded):
 		run_cmd('mv ' + sample_name_input+'algo_input/k1mer.dict_org ' + sample_name_input+'algo_input/k1mer.dict')
+	print "{:s}: Jellyfish finished..".format(time.asctime())
 
 # Runs error correction for k1mers (Deletes error k1mers) using contig approach
 # and determines seperate groups of contigs that share no kmers (components)
 if run_extension_corr:
-	run_cmd('rm -rf ' + base_directory_name+"/component*contigs.txt")    
+	#run_cmd('rm ' + base_directory_name+"/component*contigs.txt")    
 
 	if double_stranded:
 		str_ec = ' -d '
@@ -301,7 +307,9 @@ if os.path.exists(comp_directory_name+"/before_sp_log.txt"):
 else:
 	f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
 f_log.write(str(time.asctime()) + ": " +"Number of simple Partitions: " + str(num_remaining)  + "\n")
+print(str(time.asctime()) + ": " +"Number of simple Partitions: " + str(num_remaining))
 f_log.write(str(time.asctime()) + ": " +"Number of complex Partitions: " + str(num_non_remaining)  + "\n")
+print(str(time.asctime()) + ": " +"Number of complex Partitions: " + str(num_non_remaining)  + "\n")
 f_log.close()
 		
 # parameters for main_server call
@@ -389,7 +397,14 @@ for comp in reconstructed_files:
 		temp_file_args = temp_file_args + file_name + " "
 		
 run_cmd("cat " + temp_file_args + " > " + temp_file)
-process_concatenated_fasta(temp_file, dir_out + "/reconstructed.fasta")
+process_concatenated_fasta(temp_file, dir_out + "/reconstructed_org.fasta")
+
+#run_cmd('cp ' + dir_out + "/reconstructed.fasta " + dir_out + "/reconstructed_org.fasta")
+
+run_cmd('cat ' +  dir_out + "/reconstructed.fasta | perl -e 'while (<>) {$h=$_; $s=<>; $seqs{$h}=$s;} foreach $header (sort {length($seqs{$a}) <=> length($seqs{$b})} keys %seqs) {print $header.$seqs{$header}}' > " +  dir_out +  "/reconstructed_sorted.fasta " )
+
+run_cmd('python fast_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
+
 
 # Compares reconstructed file against reference
 if compare_ans:
@@ -404,12 +419,14 @@ else:
 num_transcripts = 0
 with open(dir_out + "/" + "all_reconstructed.fasta", 'r') as reconstructed_transcripts:
 	num_transcripts = len(reconstructed_transcripts.readlines())
-f_log.write(str(time.asctime()) + ": " +"Program complete: " + str(num_transcripts) + " transcripts reconstructed" + "\n")
+f_log.write(str(time.asctime()) + ": " +"All partitions completed: " + str(num_transcripts) + " transcripts reconstructed" + "\n")
+print(str(time.asctime()) + ": " +"All partitions completed: " + str(num_transcripts) + " transcripts reconstructed" + "\n")
 f_log.close()
+
 
 # Creates final output
 run_cmd('mkdir '+ comp_directory_name + '/TEMP')
-run_cmd('mv ' + comp_directory_name + '/* ' + comp_directory_name + '/TEMP')
+run_cmd('mv ' + comp_directory_name + '/*_* ' + comp_directory_name + '/TEMP')
 run_cmd('mv ' + comp_directory_name + '/TEMP/before_sp_log.txt ' + comp_directory_name + '/log.txt')
 run_cmd('mv ' +  comp_directory_name + "/TEMP/" + sample_name + "_allalgo_output/reconstructed.fasta " + comp_directory_name + '/shannon.fasta')
 run_cmd('more ' +  comp_directory_name + "/TEMP/*output.txt > " +comp_directory_name + '/terminal_output.txt') 
