@@ -140,6 +140,23 @@
     
 <p>The short tutorial below explains how to run <strong>Shannon</strong> using a small example distributed with the program.</p>
 
+<p>The program includes some short read files to test if the program is running properly.</p>
+
+<pre><code>We will assemble Samples/SE_read.fasta first:
+
+python shannon.py  -o ../ShannonOutput --single Samples/SE_read.fasta
+
+Similarly we can assemble a fastq file now:
+
+python shannon.py -o ../ShannonOutput --single Samples/SE_reads.fastq 
+
+We can also assemble paired-end reads as follows:
+
+python shannon.py -o ../ShannonOutput --left Samples/PE_reads_1.fastq --right Samples/PE_reads_2.fastq
+
+</code></pre>
+
+
   </div>
 </div>
 
@@ -147,7 +164,7 @@
       </div>
       <hr>
       <footer>
-        <p>&copy; 2015 Sreeram Kannan
+        <p>&copy; 2016 Sreeram Kannan
           with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
           and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
         </p>

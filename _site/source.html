@@ -140,41 +140,44 @@
     
 <p>The <strong>Shannon</strong> GitHub repository is <a href="https://github.com/sreeramkannan/shannon">here</a>. Source code can also be downloaded from the <a href="download.html">download page</a>. Currently, <strong>Shannon</strong> can be built on Linux and Mac.</p>
 
-<p>If building on Mac, we suggest using a package manager such as <a href="http://brew.sh">Homebrew</a> to download dependencies. Homebrew is easily installed by copying and pasting the command below at a terminal prompt:</p>
+<!--
+If building on Mac, we suggest using a package manager such as [Homebrew](http://brew.sh) to download dependencies. Homebrew is easily installed by copying and pasting the command below at a terminal prompt:
 
-<p><code>ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"</code></p>
+`ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
 
-<p>Other dependencies are either included, or can be installed using package managers on the system.</p>
+
+Other dependencies are either included, or can be installed using package managers on the system.
+-->
 
 <h4 id="requirements">Requirements:</h4>
 
 <ul>
-  <li>A 64-bit operating system</li>
   <li>Python 2.7 or greater</li>
   <li><strong>Metis</strong>
     <ul>
-      <li>See <a href="http://glaros.dtc.umn.edu/gkhome/metis/metis/download">here</a> for instructions on installing metis.</li>
+      <li>See <a href="http://glaros.dtc.umn.edu/gkhome/metis/metis/download">here</a> for instructions on installing metis. In Ubuntu systems, metis can be simply installed using the following command: 
+  <code>sudo apt-get install metis</code></li>
     </ul>
   </li>
   <li><strong>CVXOPT</strong>
     <ul>
-      <li>See <a href="http://cvxopt.org/install/index.html">here</a> for installing. The following command will work
-   pip install cvxopt</li>
-    </ul>
-  </li>
-  <li><strong>Jellyfish</strong>
-    <ul>
-      <li>See <a href="http://www.genome.umd.edu/jellyfish.html">here</a> for installing.</li>
-    </ul>
-  </li>
-  <li><strong>GNU-Parallel</strong>
-    <ul>
-      <li>See <a href="https://www.gnu.org/software/parallel/">here</a> for installing.</li>
+      <li>See <a href="http://cvxopt.org/install/index.html">here</a> for installing. The following command will work if you have pip installed: 
+  <code>pip install cvxopt</code></li>
     </ul>
   </li>
   <li><strong>Quorum</strong>
     <ul>
-      <li>See <a href="http://www.genome.umd.edu/quorum.html">here</a> for installing.</li>
+      <li>See <a href="http://www.genome.umd.edu/quorum.html">here</a> for installing. Both Quorum and Jellyfish can be installed using a <a href="ftp://ftp.genome.umd.edu/pub/QuorUM/quorum_easy_install">single file</a></li>
+    </ul>
+  </li>
+  <li><strong>Jellyfish</strong> v2.0 or higher.
+    <ul>
+      <li>Jellyfish should be installed along with Quorum, but in case it is not installed, see <a href="http://www.genome.umd.edu/jellyfish.html">here</a> for downloading and installing.</li>
+    </ul>
+  </li>
+  <li><strong>GNU-Parallel</strong>
+    <ul>
+      <li>It is needed for running multiple jobs simultaneously. See <a href="https://www.gnu.org/software/parallel/">here</a> for installing.</li>
     </ul>
   </li>
 </ul>
@@ -185,9 +188,21 @@
 
 <p><code>git clone https://github.com/sreeramkannan/Shannon.git</code></p>
 
+<h4 id="configuration">Configuration</h4>
+<p>Shannon needs to be configured so that it can find the dependencies. If the programs can be found directly in the shell, then the default configuration is fine. Otherwise the following four path variables need to be set in the file shannon.py</p>
+
+<p>gpmetis_path = ‘gpmetis’
+jellyfish_path = ‘jellyfish’
+gnu_parallel_path = ‘parallel’
+quorum_path = ‘quorum’</p>
+
+<p>For example if quorum is available in ‘/Packages/quorum-1.0.0/’ set the variable as follows:</p>
+
+<p><code>quorum_path = '/Packages/quorum-1.0.0/quorum'</code></p>
+
 <h4 id="test">Test</h4>
 
-<p>The <strong>Shannon</strong> package comes with a small test transcriptome and read files that can be used to test that the package was compiled and installed correctly. The <a href="starting.html">Getting started</a> page provides a complete description of how to run <strong>Shannon</strong> on these files.</p>
+<p>The <strong>Shannon</strong> package comes with a small set of read files that can be used to test that the package was compiled and installed correctly. The <a href="starting.html">Getting started</a> page provides a complete description of how to run <strong>Shannon</strong> on these files.</p>
 
 
   </div>
@@ -197,7 +212,7 @@
       </div>
       <hr>
       <footer>
-        <p>&copy; 2015 Sreeram Kannan
+        <p>&copy; 2016 Sreeram Kannan
           with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
           and <a href="http://twitter.github.com/bootstrap/" target="_blank">Twitter Bootstrap</a>
         </p>

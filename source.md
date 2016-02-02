@@ -8,20 +8,21 @@ group: navigation
 
 The __Shannon__ GitHub repository is [here](https://github.com/sreeramkannan/shannon). Source code can also be downloaded from the [download page](download.html). Currently, __Shannon__ can be built on Linux and Mac. 
 
+<!--
 If building on Mac, we suggest using a package manager such as [Homebrew](http://brew.sh) to download dependencies. Homebrew is easily installed by copying and pasting the command below at a terminal prompt:
 
 `ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
 
 
 Other dependencies are either included, or can be installed using package managers on the system.
+-->
 
 #### Requirements: 
 
-- A 64-bit operating system
 - Python 2.7 or greater
 - __Metis__ 
     - See [here](http://glaros.dtc.umn.edu/gkhome/metis/metis/download) for instructions on installing metis. In Ubuntu systems, metis can be simply installed using the following command: 
-    'sudo apt-get install metis'
+    `sudo apt-get install metis`
 - __CVXOPT__ 
     - See [here](http://cvxopt.org/install/index.html) for installing. The following command will work if you have pip installed: 
     `pip install cvxopt` 
@@ -38,6 +39,17 @@ __Shannon__ is hosted on GitHub. The source code can be obtained by cloning the 
 
 `git clone https://github.com/sreeramkannan/Shannon.git`
 
+#### Configuration
+Shannon needs to be configured so that it can find the dependencies. If the programs can be found directly in the shell, then the default configuration is fine. Otherwise the following four path variables need to be set in the file shannon.py
+
+gpmetis_path = 'gpmetis'
+jellyfish_path = 'jellyfish'
+gnu_parallel_path = 'parallel'
+quorum_path = 'quorum'
+
+For example if quorum is available in '/Packages/quorum-1.0.0/' set the variable as follows:
+
+`quorum_path = '/Packages/quorum-1.0.0/quorum'`
 
 #### Test
 
