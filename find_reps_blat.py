@@ -7,7 +7,7 @@ def run_cmd(s1):
 def find_representatives(file_in,file_out):
 	'''Find representative transcripts from file_in and return them in file_out.'''
 	blat_file = file_out+ '_temp_blat.psl'
-	thresh_factor = 0.98 
+	thresh_factor = 0.99 
 	os.system('python parallel_blat.py '+ file_in + ' '+ file_in + ' ' + blat_file + ' 100')
 	allTr ={}
 	#blat_file = '../Shannon/Alpha/Cancer/shannon_temp.psl'

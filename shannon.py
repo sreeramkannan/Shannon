@@ -401,7 +401,7 @@ process_concatenated_fasta(temp_file, dir_out + "/reconstructed_org.fasta")
 
 #run_cmd('cp ' + dir_out + "/reconstructed.fasta " + dir_out + "/reconstructed_org.fasta")
 
-run_cmd('cat ' +  dir_out + "/reconstructed.fasta | perl -e 'while (<>) {$h=$_; $s=<>; $seqs{$h}=$s;} foreach $header (sort {length($seqs{$a}) <=> length($seqs{$b})} keys %seqs) {print $header.$seqs{$header}}' > " +  dir_out +  "/reconstructed_sorted.fasta " )
+run_cmd('cat ' +  dir_out + "/reconstructed_org.fasta | perl -e 'while (<>) {$h=$_; $s=<>; $seqs{$h}=$s;} foreach $header (sort {length($seqs{$a}) <=> length($seqs{$b})} keys %seqs) {print $header.$seqs{$header}}' > " +  dir_out +  "/reconstructed_sorted.fasta " )
 
 run_cmd('python fast_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
 
@@ -417,8 +417,8 @@ if os.path.exists(comp_directory_name+"/before_sp_log.txt"):
 else:
 	f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
 num_transcripts = 0
-with open(dir_out + "/" + "all_reconstructed.fasta", 'r') as reconstructed_transcripts:
-	num_transcripts = len(reconstructed_transcripts.readlines())
+with open(dir_out + "/" + "reconstructed.fasta", 'r') as reconstructed_transcripts:
+	num_transcripts = int(len(reconstructed_transcripts.readlines())/2.0)
 f_log.write(str(time.asctime()) + ": " +"All partitions completed: " + str(num_transcripts) + " transcripts reconstructed" + "\n")
 print(str(time.asctime()) + ": " +"All partitions completed: " + str(num_transcripts) + " transcripts reconstructed" + "\n")
 f_log.close()
@@ -432,4 +432,11 @@ run_cmd('mv ' +  comp_directory_name + "/TEMP/" + sample_name + "_allalgo_output
 run_cmd('more ' +  comp_directory_name + "/TEMP/*output.txt > " +comp_directory_name + '/terminal_output.txt') 
 
 if compare_ans:
-   run_cmd('mv ' +   comp_directory_name + "/TEMP/" + sample_name + "_allalgo_output/reconstr_log.txt "  + comp_directory_name + '/compare_log.txt')  
+   run_cmd('mv ' +   comp_directory_name + "/TEMP/" + sample_name + "_allalgo_output/reconstr_log.txt "  + comp_directory_name + '/compare_log.txt') 
+
+
+print("-------------------------------------------------")
+print(str(time.asctime()) + ": Shannon Run Completed")
+print("-------------------------------------------------")
+
+ 

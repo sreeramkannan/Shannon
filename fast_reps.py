@@ -53,7 +53,7 @@ def argmax(lst, key):
             best = x
     return best
 
-def duplicate_check(contigs, contig_name, ds, f = 0.9):
+def duplicate_check(contigs, contig_name, ds, f = 0.99):
     # To add: if rmer in the contig multiple times, only increment the dup-contig once for each time its in dup-contig
     dup_count = {}
     contig = contigs[contig_name]
