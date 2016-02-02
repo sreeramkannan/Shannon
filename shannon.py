@@ -61,11 +61,11 @@ def run_cmd(s1):
 		os.system(s1) # + '>> temp_out.txt')
 
 
-
 def test_install():
 	exit_now = False; 
-	print('Checking for various dependencies...')
-	#print('--------------------------------------------')
+	print('--------------------------------------------')
+	print('Checking the various dependencies')
+	print('--------------------------------------------')
 	if test_suite.which(jellyfish_path):
 		print('Using jellyfish in ' + test_suite.which(jellyfish_path))
 		a=subprocess.check_output([jellyfish_path,'--version'])
@@ -76,20 +76,32 @@ def test_install():
 				print('Jellyfish version does not seem to be greater than 2.0.0. Please ensure that it is version 2.0.0 or greater, continuing run...')
 
 	else:
-		print('Jellyfish not found. Set variable jellyfish_path correctly'); exit_now = True
+		print('ERROR: Jellyfish not found. Set variable jellyfish_path correctly'); exit_now = True
 	if test_suite.which(gpmetis_path):
 		print('Using GPMETIS in ' + test_suite.which(gpmetis_path))
 	else:
-		print('GPMETIS not found in path. Set variable gpmetis_path correctly'); exit_now = True
-	if test_suite.which(gnu_parallel_path):
-		print('Using GNU Parallel in ') + test_suite.which(gnu_parallel_path)
-	else:
-		print('GNU Parallel not found in path. Set variable gnu_parallel_path correctly'); exit_now = True
+		print('ERROR: GPMETIS not found in path. Set variable gpmetis_path correctly'); exit_now = True
+	try:
+		import cvxopt
+	except ImportError, e:
+		print('ERROR: CVXOPT not installed into Python. Please see online manual for instructions.'); exit_now = True
+	return exit_now
+
+def test_install_quorum():
 	if test_suite.which(quorum_path):
 		print('Using Quorum in ') + test_suite.which(quorum_path)
 	else:
-		print('Quorum not found in path. Set variable quorum_path correctly'); exit_now = False
-	return exit_now
+		print('ERROR: Quorum not found in path. Set variable quorum_path correctly'); 
+		sys.exit()
+
+
+def test_install_gnu_parallel():
+	if test_suite.which(gnu_parallel_path):
+		print('Using GNU Parallel in ') + test_suite.which(gnu_parallel_path)
+	else:
+		print('ERROR: GNU Parallel not found in path. If you need to run multi-threaded, GNU Parallel is needed. Set variable gnu_parallel_path correctly'); exit_now = True
+
+
 
 def print_message():
 	print('--------------------------------------------')
@@ -190,6 +202,14 @@ elif len(reads_files) == 2:
 run_quorum = False
 if reads_files[0][-1] == 'q': #Fastq mode
 	run_quorum = True
+	test_install_quorum()
+
+if run_parallel:
+	test_install_gnu_parallel()
+
+
+
+
 	
 paired_end_flag = ""
 if paired_end:
