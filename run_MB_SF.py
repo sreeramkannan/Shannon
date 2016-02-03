@@ -10,7 +10,7 @@ import os.path, tester
 L = 100
 N = 8743351
 
-sn='SRR453566'
+sn = ''
 sparsity = 0.5
 start_loc = 1
 stop_loc = 120000000
