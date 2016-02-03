@@ -63,7 +63,6 @@ def run_cmd(s1):
 
 def test_install():
 	exit_now = False; 
-	print('--------------------------------------------')
 	print('Checking the various dependencies')
 	print('--------------------------------------------')
 	if test_suite.which(jellyfish_path):
