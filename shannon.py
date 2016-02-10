@@ -15,6 +15,7 @@ from weight_updated_graph import weight_updated_graph
 from process_concatenated_fasta import process_concatenated_fasta
 
 #Set Paths
+shannon_dir = './'  
 gpmetis_path = 'gpmetis'
 jellyfish_path = 'jellyfish'
 gnu_parallel_path = 'parallel'
@@ -242,7 +243,7 @@ run_cmd('mkdir ' + sample_name_input+ "algo_input")
 #Run Quorum now
 if run_quorum:
 	print "{:s}: Running Quorum for read error correction with quality scores..".format(time.asctime())
-	run_cmd('python run_quorum.py ' + quorum_path + ' ' + comp_directory_name + ' ' + '\t'.join(reads_files))
+	run_cmd('python ' + shannon_dir + 'run_quorum.py ' + quorum_path + ' ' + comp_directory_name + ' ' + '\t'.join(reads_files))
 	if paired_end:
 		reads_files = [comp_directory_name + '/corrected_reads_1.fa',comp_directory_name + '/corrected_reads_2.fa']
 	else:
@@ -276,11 +277,11 @@ if run_extension_corr:
 		str_ec = ' -d '
 	else: 
 		str_ec = ' '
-	run_cmd('python extension_correction.py ' + str_ec + sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold))
+	run_cmd('python ' + shannon_dir + 'extension_correction.py ' + str_ec + sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold))
 
 # Gets kmers from k1mers
 if run_jellyfish or run_extension_corr:
-	run_cmd('python kp1mer_to_kmer.py ' + sample_name_input+'algo_input/k1mer.dict ' + sample_name_input+'algo_input/kmer.dict')
+	run_cmd('python ' + shannon_dir + 'kp1mer_to_kmer.py ' + sample_name_input+'algo_input/k1mer.dict ' + sample_name_input+'algo_input/kmer.dict')
 
 
 # Runs gpmetis to partition components of size above "partition_size" into partitions of size "partition_size"
@@ -378,10 +379,10 @@ else:
 	ds_string = "  "
 
 if run_parallel:
-	run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " python run_MB_SF.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " ::: " + main_server_parameter_string)
+	run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " python " + shannon_dir + "run_MB_SF.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " ::: " + main_server_parameter_string)
 else:
 	for param_str in main_server_parameter_string.split():
-			run_cmd("python run_MB_SF.py " + param_str + " --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str)
+			run_cmd("python " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str)
 
 
 # locates all reconstructed files          
@@ -422,13 +423,13 @@ process_concatenated_fasta(temp_file, dir_out + "/reconstructed_org.fasta")
 
 run_cmd('cat ' +  dir_out + "/reconstructed_org.fasta | perl -e 'while (<>) {$h=$_; $s=<>; $seqs{$h}=$s;} foreach $header (sort {length($seqs{$a}) <=> length($seqs{$b})} keys %seqs) {print $header.$seqs{$header}}' > " +  dir_out +  "/reconstructed_sorted.fasta " )
 
-run_cmd('python fast_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
+run_cmd('python ' + shannon_dir + 'fast_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
 
 
 # Compares reconstructed file against reference
 if compare_ans:
 	run_cmd("cp " + ref_file + ' ' +  dir_out + "/reference.fasta")
-	run_cmd("python run_MB_SF.py " + dir_base + " --compare ")
+	run_cmd("python " + shannon_dir + "run_MB_SF.py " + dir_base + " --compare ")
 
 # updates log
 if os.path.exists(comp_directory_name+"/before_sp_log.txt"):
