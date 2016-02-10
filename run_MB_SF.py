@@ -84,7 +84,8 @@ if len(n_inp)>1:
         #print(K_value)
     if '--dir_name'in n_inp:
         directory_name = n_inp[n_inp.index('--dir_name')+1]
-
+    if '--shannon-dir' in n_inp:
+	shannon_dir = n_inp[n_inp.index('--shannon-dir')+1]
         
 if paired_end:
 	F = 350 #Fragment size
@@ -135,8 +136,8 @@ if not os.path.exists(sample_output_name+'algo_output'):
 if not os.path.exists(sample_output_name+'intermediate'):
    	os.makedirs(sample_output_name+'intermediate')
 
-if mb or sparse_flow:
-        os.system('cp *.py ' + sample_output_name + 'algo_output/')
+'''if mb or sparse_flow:
+        os.system('cp *.py ' + sample_output_name + 'algo_output/')'''
 
 
 if generate_reads:
@@ -220,9 +221,9 @@ if mb:
 	if use_cpp:
 		cpp_s = '-c ' +sample_name+'algo_input/nodes.txt '+sample_name+'algo_input/edges.txt '
         if not paired_end:                
-		run_cmd('python multibridging.py -f ' + mb_string + jf_s + cpp_s + reads_file+'.fasta ' + sample_output_name + 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # ' 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
+		run_cmd('python ' + shannon_dir + 'multibridging.py -f ' + mb_string + jf_s + cpp_s + reads_file+'.fasta ' + sample_output_name + 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # ' 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
 	else:
-		run_cmd('python multibridging.py -f '+ mb_string + jf_s + cpp_s + reads_file+'_1.fasta '+reads_file+'_2.fasta ' + sample_output_name+ 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
+		run_cmd('python ' + shannon_dir + 'multibridging.py -f '+ mb_string + jf_s + cpp_s + reads_file+'_1.fasta '+reads_file+'_2.fasta ' + sample_output_name+ 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
 
 timer['after_mb'] = time.time()
 timer['for_mb'] = timer['after_mb'] - timer['after_gen_reads']
@@ -233,7 +234,7 @@ if sparse_flow:
         #run_cmd('rm '+sample_output_name+'algo_output/reconstructed_comp_*.fasta')
         #run_cmd('rm '+sample_output_name+'algo_output/reconstructed.fasta')
         
-        run_cmd('python algorithm_SF.py -1 '+ sample_output_name)
+        run_cmd('python ' + shannon_dir + 'algorithm_SF.py -1 '+ sample_output_name)
         ncomp = 0
         iteration_string = " "
         while os.path.isfile(sample_output_name + 'intermediate/nodes'+str(ncomp)+'.txt'):
@@ -242,12 +243,12 @@ if sparse_flow:
                 	continue
                 print('Component:',ncomp)
                 if not parallelize_sf:
-                        os.system('python algorithm_SF.py ' + str(ncomp) + ' '+ sample_output_name + ' | tee ' + sample_name + '_' + str(ncomp) + '_terminal_output.txt')
+                        os.system('python '  + shannon_dir + 'algorithm_SF.py ' + str(ncomp) + ' '+ sample_output_name + ' | tee ' + sample_name + '_' + str(ncomp) + '_terminal_output.txt')
                 iteration_string += str(ncomp) + " "
                 ncomp=ncomp+1
         
 	if parallelize_sf:
-		os.system('parallel python algorithm_SF.py {} ' + sample_output_name+ " ::: " + iteration_string)
+		os.system('parallel python ' + shannon_dir + 'algorithm_SF.py {} ' + sample_output_name+ " ::: " + iteration_string)
         os.system("cat " + sample_output_name+'algo_output/reconstructed_comp_*.fasta' +  " >> " + reconstr_file)
         #filter_trans(sample_output_name+'algo_output/reconstructed.fasta', sample_output_name+'algo_output/reconstructed_short.fasta', 200)
     
@@ -296,7 +297,7 @@ if compare_ans:
 		run_cmd('mummer -maxmatch -l 80 ' + curr_ref + ' ' + reconstr + ' > ' + reconstr_rev_per)
 		tester.reverse_analyzer(reconstr_rev_per,reconstr_rev_log,reconstr,N)
 	else:
-		run_cmd('python parallel_blat.py ' + reconstr + ' ' + curr_ref + ' ' + reconstr_per)
+		run_cmd('python ' + shannon_dir + 'parallel_blat.py ' + reconstr + ' ' + curr_ref + ' ' + reconstr_per)
 		tester.analyzer_blat_noExp(reconstr_per,reconstr_log,exp_file,N)
 	if false_positive:
 		tester.false_positive(reconstr,reconstr_per,reconstr_rev_log)	
@@ -332,7 +333,7 @@ if compare_trinity:
 		tester.pre_process_dual(trinity_rev_per,trinity_rev_per_dual)
 		tester.reverse_analyzer(trinity_rev_per_dual,trinity_rev_log,trinity_fasta,N)
 	else:
-		run_cmd('python parallel_blat.py ' + trinity_fasta + ' ' + curr_ref + ' ' + trinity_per)
+		run_cmd('python ' + shannon_dir + 'parallel_blat.py ' + trinity_fasta + ' ' + curr_ref + ' ' + trinity_per)
 		tester.analyzer_blat_noExp(trinity_per,trinity_log,exp_file,N)
         if false_positive:
                 tester.false_positive(trinity_fasta,trinity_per,trinity_rev_log)

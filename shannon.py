@@ -15,7 +15,7 @@ from weight_updated_graph import weight_updated_graph
 from process_concatenated_fasta import process_concatenated_fasta
 
 #Set Paths
-shannon_dir = './'  
+shannon_dir = os.path.dirname(os.path.abspath(sys.argv[0])) + '/' 
 gpmetis_path = 'gpmetis'
 jellyfish_path = 'jellyfish'
 gnu_parallel_path = 'parallel'
@@ -379,10 +379,10 @@ else:
 	ds_string = "  "
 
 if run_parallel:
-	run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " python " + shannon_dir + "run_MB_SF.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " ::: " + main_server_parameter_string)
+	run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " python " + shannon_dir + "run_MB_SF.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " --shannon-dir " + shannon_dir + " ::: " + main_server_parameter_string)
 else:
 	for param_str in main_server_parameter_string.split():
-			run_cmd("python " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str)
+			run_cmd("python " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon-dir " + shannon_dir)
 
 
 # locates all reconstructed files          

@@ -74,7 +74,7 @@ def duplicate_check(contigs, contig_name, ds, f = 0.99):
 
     imp_dups = {} #Duplicates that are considered
     for dup in dup_count:
-        if dup_count[dup] > f*(qLen-r):
+        if dup_count[dup] >= f*(qLen-r):
             imp_dups[dup] = numpy.zeros(len(contig))
 
     imp_dups_set = Set(list(imp_dups.keys()))
@@ -93,7 +93,7 @@ def duplicate_check(contigs, contig_name, ds, f = 0.99):
     for dup in imp_dups: #for dup in dup_count:
         tName = dup; tLen = len(contigs[tName])
         score = sum(imp_dups[dup])
-        if score > f*qLen:
+        if score >= f*qLen:
             if (tLen > qLen) or ((tLen == qLen) and (tName > qName)):
                 return True   
     return False
