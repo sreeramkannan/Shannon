@@ -22,7 +22,7 @@ python shannon.py -o ../ShannonOutput --single Samples/SE_reads.fastq
 
 We can also assemble paired-end reads as follows:
 
-python shannon.py -o ../ShannonOutput --left Samples/PE_reads_1.fastq --right Samples/PE_reads_2.fastq
+python shannon.py -o ../ShannonOutput --left Samples/PE_read_1.fastq --right Samples/PE_read_2.fastq
 
 ~~~
 
