@@ -315,7 +315,7 @@ if use_second_iteration:
 
 	get_og_comp_kmers = 0
 	get_partition_kmers = 1
-	[r2_components_broken, r2_new_components] = kmers_for_component(kmer_directory, reads_files, base_directory_name, r1_contig_file_extension, r2_new_kmer_tag, r2_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, True, partition_size, overload, K)
+	[r2_components_broken, r2_new_components] = kmers_for_component(kmer_directory, reads_files, base_directory_name, r1_contig_file_extension, r2_new_kmer_tag, r2_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, True, partition_size, overload, K, gpmetis_path)
 
 	# This counts remaining and non-remaining partitions for log.
 	for part in r2_new_components:
