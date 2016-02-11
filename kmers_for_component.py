@@ -33,7 +33,7 @@ def reverse_complement(bases):
         bases = re.sub(ch1, ch2, bases)
     return bases[::-1].upper()
 
-def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file_extension, new_kmer_tag, graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end = False, second_iteration = False,  partition_size = 500, overload = 1.5, K = 24, gpmetis_path = ''):
+def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file_extension, new_kmer_tag, graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end = False, second_iteration = False,  partition_size = 500, overload = 1.5, K = 24, gpmetis_path = 'gpmetis'):
     """This fuction runs gpmetis on the components above a threshold size.  It then creates a dictionary called 
     k1mers2component {k1mer : component}.  It then sends any reads that share a kmer with a component to that component.
     It then cycles through the k1mer file and outputs the k1mers along with their weights to a file for each component.
