@@ -10,7 +10,7 @@ group: navigation
 Shannon Version 0.0.0
 
 ~~~
-###Usage
+### Usage
 
 For single-ended reads,
 
@@ -26,7 +26,7 @@ The reads should be in fasta or fastq format.
 
 ~~~
 
-###Options
+### Options
 
 The string [options] can be either empty or one or more of the following: 
 
@@ -47,7 +47,7 @@ This option is used to compare the produced output to the reference and create a
 
 ~~~
 
-###Output 
+### Output 
 
 The main output is in running_directory/shannon.fasta which contains the list of reconstructed transcripts in fasta format.
 
@@ -58,7 +58,7 @@ The output of the --compare option is in running_directory/compare_log.txt
 The directory running_directory/TEMP contains intermediate running files and can be deleted after the run.
 
 ~~~
-###Requirements
+### Requirements
 
 Memory: Please reserve atleast 1GB / 1 million single-end reads.
 
