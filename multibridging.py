@@ -110,6 +110,13 @@ def run(output_dir, error_correction = False, compute_fringes = False):
     """
     log("Condensing.")
     Node.condense_all()
+    no_nodes = max(len(Node.nodes),1)
+    total_out_edges =sum(len(n.out_edges) for n in Node.nodes)
+    total_no_bases = sum(len(n.bases) for n in Node.nodes)
+    log("After condensing: No of nodes:" + str(no_nodes))
+    log("Total out edges per node:" + str(float(total_out_edges)/no_nodes))
+    log("Total no of bases per node:" + str(float(total_no_bases)/no_nodes))
+
     log(str(len(Node.nodes)) + " nodes after condensing.")
 
     if error_correction:
@@ -137,6 +144,7 @@ def run(output_dir, error_correction = False, compute_fringes = False):
     Node.find_approximate_copy_counts()
     log("Finding known paths.")
     known_paths()
+    log("Finding mate pairs.")
     Read.find_mate_pairs()
 
     #construct_reads()

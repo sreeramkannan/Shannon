@@ -1,4 +1,4 @@
-import time, doctest
+import time, doctest, pdb
 
 CYCLE_DESTROY = True
 
@@ -16,6 +16,7 @@ class Read(object):
 
     MATE_PAIR_LENGTH = 200
     MATE_PAIR_MIN_LENGTH = 0
+    MATE_PAIR_MAX_HOPS = 5
     MATED_READS = False
 
     def __init__(self, bases, copy_count):
@@ -119,22 +120,27 @@ class Read(object):
         end base on the last node of the second read.
         """
         #Set of all read node-pairs (n1, n2)
+	#pdb.set_trace()
         mate_nodes = list()
 
         for b, r in Read.reads.items():
             node_pair = r.mate_pair_check()
             if node_pair is not None:
                 mate_nodes.append(node_pair)
-
+	#pdb.set_trace()
         #print 'Total pairs: {}'.format(len(mate_nodes))
         mate_nodes = set(mate_nodes)
         #print 'Unique pairs: {}'.format(len(mate_nodes))
         #print 'Unique sources: {}'.format(len(set(n1 for n1, n2 in mate_nodes)))
+	no_mate_paths = 0
         for node1, node2 in mate_nodes:
+	    #pdb.set_trace()
             paths = node1.find_mate_path(len(node1.bases) - 1, node2, 0)
             if len(paths) == 1 and len(paths[0]) > 2:
+		no_mate_paths+=1
                 Read.known_paths.add(tuple(paths[0]))
                 Read.mate_paths.add(tuple(paths[0]))
+	print 'No of mate paths: {}'.format(no_mate_paths)
 
     def mate_pair_check(self):
         """Iff this read is the first of a mate pair, and both reads have
@@ -484,6 +490,12 @@ class Node(object):
                 if condensed % 1000 == 0:
                     pass
         Node.remove_destroyed()
+        '''no_nodes = len(Node.nodes)
+        total_out_edges =sum(len(n.out_edges) for n in Node.nodes)
+        total_no_bases = sum(len(n.bases) for n in Node.nodes)
+        print("No of nodes:" + str(no_nodes))
+        print("Total out edges:" + str(total_out_edges))
+        print("Total no of bases:" + str(total_no_bases))'''
 
     @staticmethod
     def bridged_xnodes():
@@ -815,13 +827,15 @@ class Node(object):
         fringe_length = end_base + (len(self.bases) - start_base)
         min_length = Read.MATE_PAIR_MIN_LENGTH - fringe_length
         max_length = Read.MATE_PAIR_LENGTH - fringe_length
+	max_hops = Read.MATE_PAIR_MAX_HOPS
+        #pdb.set_trace()
         for e in self.out_edges:
             paths += ([self] + path for path in
                 e.out_node.mate_search(goal,
-                    max_length + e.weight, min_length + e.weight))
+                    max_length + e.weight, min_length + e.weight, max_hops))
         return paths
 
-    def mate_search(self, goal, max_length, min_length):
+    def mate_search(self, goal, max_length, min_length, max_hops):
         """Return paths from SELF to GOAL of length less
         than MAX_LENGTH and at least MIN_LENGTH.
 
@@ -830,7 +844,8 @@ class Node(object):
         containing SELF in its entirety, and traversing to one base in
         GOAL.
         """
-        if max_length <= 0:
+	print('New_max_length:' + str(max_length))
+        if max_length <= 0 or max_hops <=0:
             return []
         if self is goal and min_length <= 1:
             return [[goal]]
@@ -838,7 +853,7 @@ class Node(object):
         for edge in self.out_edges:
             new_length = len(self.bases) - edge.weight
             e_paths = edge.out_node.mate_search(goal,
-                max_length - new_length, min_length - new_length)
+                max_length - new_length, min_length - new_length, max_hops-1)
             paths += [[self] + list(p) for p in e_paths]
         return paths
 
@@ -1325,29 +1340,36 @@ def known_paths():
             kmer = node.bases[i:i+Read.K]
             if kmer not in kmers: kmers[kmer] = []
             kmers[kmer].append((node, i))
-
+    no_known_paths = 0
     for read in Read.reads:
         #if len(read) > 200: continue
         start_kmer = read[:Read.K]
+	end_kmer = read[-Read.K:]
         if start_kmer not in kmers: continue
+	if end_kmer not in kmers: continue
+	max_hops = 100
         for start_node, start_i in kmers[start_kmer]:
-            for path in search_sequence(read, start_node, start_i):
+            for path in search_sequence(read, start_node, start_i, max_hops):
                 Read.reads[read].nodes = path
                 if len(path) > 2:
                     Read.known_paths.add(tuple(path))
-def search_sequence(seq, node, i):
+		    no_known_paths+=1
+    print("No of known paths:" + str(no_known_paths))
+def search_sequence(seq, node, i, max_hops):
     """Returns a list of all node-paths starting from NODE at index I
     and matching sequence SEQ.
     """
     node_length = len(node.bases) - i
     if not compare(seq, node.bases[i:]):
         return []
+    if max_hops<=0:
+	return []
     if len(seq) <= node_length:
         return [[node]]
     paths = []
     seq = seq[node_length:]
     for edge in node.out_edges:
-        for path in search_sequence(seq, edge.out_node, edge.weight):
+        for path in search_sequence(seq, edge.out_node, edge.weight, max_hops-1):
             paths.append([node] + path)
     return paths
 def compare(s1, s2):
@@ -1369,6 +1391,7 @@ def read_for_path(path):
 def construct_reads():
     for path in Read.mate_paths:
         Read.add_read(read_for_path(path), False)
+    print('Reconstructed ' + str(len(Read.mate_paths)) + ' number of reads')
 
 def clear():
     Read.reads = {}
