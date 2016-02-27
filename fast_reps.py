@@ -6,7 +6,7 @@ import numpy
 from sets import Set
 
 BASES = ['A', 'G', 'C', 'T']
-r=12
+r=18
 rmer_to_contig = {}
 contig_to_rmer = {}
 
