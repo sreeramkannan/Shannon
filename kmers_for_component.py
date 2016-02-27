@@ -4,7 +4,7 @@ import re
 import pdb,math
 import os
 import os.path
-
+from collections import defaultdict
 
 def run_cmd(s1):
     print(s1); os.system(s1) 
@@ -62,7 +62,23 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
     while os.path.exists(directory_name+"/remaining_contigs" + str(i) + ".txt"):
         i += 1
         Num_Remaining_Components += 1   
-       
+    
+    # def find_comps(comp_dict, tries):
+    #     #Only the exact 
+    #     (comp,hits) = max(comp_dict.iteritems(), key=operator.itemgetter(1))
+    #     if hits>=tries:
+    #         return set(comp)
+    #     else:
+    #         return set()
+
+    def get_3kmers(read,K):
+        start_kmer = read[:K]
+        end_kmer = read[-K:]
+        x = math.floor((len(read)-K)/2)
+        mid_kmer = read[x:x+K]
+        return [start_kmer,mid_kmer,end_kmer]
+
+
     if get_partition_kmers:
         ufactor = int(1000.0*overload - 1000.0)
         components_broken = {}
@@ -148,34 +164,45 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                         read_line = line
                     else:
                         read = line.split()[0]
-                        i = 0
-                        assigned_comp = set()
-                        while i < len(read) - (K+1):
-                            k1mer = read[i:i+(K+1)]
-                            if k1mer in k1mers2component:
-                                assigned_comp.add(k1mers2component[k1mer][0])
-                            i += K
-                        k1mer = read[-K:]
-                        if k1mer in k1mers2component:
-                            assigned_comp.add(k1mers2component[k1mer][0])
+                        comp_list = [set(k1mers2component.get(k1mer,[]) for k1mer in get_3kmers(read,K+1)]
+                        assigned_comp = set.intersection(*comp_list)
+
+
+                        # i = 0
+                        # while i < len(read) - (K+1):
+                        #     k1mer = read[i:i+(K+1)]
+                        #     tries += 1
+                        #     if k1mer in k1mers2component:
+                        #         assigned_comp[k1mers2component[k1mer][0]] += 1
+                        #     i += K
+
+                        # end_k1mer = read[-K:]; tries +=1
+                        # if k1mer in k1mers2component:
+                        #     assigned_comp[k1mers2component[end_k1mer][0]]+=1
+
+                        # assigned_comp = find_comps()
+
                         for each_comp in assigned_comp:
                             read_part_seq[each_comp]+=read_line
                             read_part_seq[each_comp]+=line
 
                             
-                        assigned_comp = set()
+                        
                         if double_stranded:
                             rc_read = reverse_complement(read)
-                            i = 0
-                            while i < len(rc_read) - (K+1):
-                                k1mer = rc_read[i:i+(K+1)]
-                                if k1mer in k1mers2component:
-                                    assigned_comp.add(k1mers2component[k1mer][0])
-                                i += K
+                            comp_list = [set(k1mers2component.get(k1mer,[]) for k1mer in get_3kmers(rc_read,K+1)]
+                            assigned_comp = set.intersection(*comp_list)
+
+                            # i = 0
+                            # while i < len(rc_read) - (K+1):
+                            #     k1mer = rc_read[i:i+(K+1)]
+                            #     if k1mer in k1mers2component:
+                            #         assigned_comp.add(k1mers2component[k1mer][0])
+                            #     i += K
                                 
-                            k1mer = rc_read[-K:]
-                            if k1mer in k1mers2component:
-                                assigned_comp.add(k1mers2component[k1mer][0])
+                            # k1mer = rc_read[-K:]
+                            # if k1mer in k1mers2component:
+                            #     assigned_comp.add(k1mers2component[k1mer][0])
                             for each_comp in assigned_comp:
                                 reversed_read_name=read_line.split()[0]+'_reversed'+'\t' +'\t'.join(read_line.split()[1:])
                                 
