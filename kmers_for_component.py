@@ -171,7 +171,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
         if paired_end == False:  
             read_part_seq = {}   
             for comp in new_components:
-                read_part_seq[comp] = ''; #open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w')
+                read_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w')
             with open(reads_files[0]) as readfile:
                 for line in readfile:
                     if line.split()[0][0] == ">":
@@ -179,7 +179,7 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                     else:
                         read = line.split()[0]
                         assigned_comp = get_comps(read,k1mers2component)
-                        print(assigned_comp)
+                        #print(assigned_comp)
 
                         # i = 0
                         # while i < len(read) - (K+1):
@@ -195,8 +195,8 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
 
                         # assigned_comp = find_comps()
                         for each_comp in assigned_comp:
-                            read_part_seq[each_comp]+=read_line
-                            read_part_seq[each_comp]+=line
+                            read_part_seq[each_comp].append(read_line)
+                            read_part_seq[each_comp].append(line)
 
                             
                         
@@ -215,11 +215,11 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                             #     assigned_comp.add(k1mers2component[k1mer][0])
                             for each_comp in assigned_comp:
                                 reversed_read_name=read_line.split()[0]+'_reversed'+'\t' +'\t'.join(read_line.split()[1:])
-                                read_part_seq[each_comp]+=(reversed_read_name+'\n')
-                                read_part_seq[each_comp]+=(rc_read+'\n')                            
+                                read_part_seq[each_comp].append(reversed_read_name+'\n')
+                                read_part_seq[each_comp].append(rc_read+'\n')                            
             for comp in new_components:
                 read_part_file = open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w')
-                read_part_file.write(read_part_seq[comp])
+                read_part_file.write("".join(read_part_seq[comp]))
                 read_part_file.close()
 
         # Assigns reads to components in the paired end case
@@ -227,8 +227,8 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
             read1_part_seq = {}
             read2_part_seq = {}
             for comp in new_components:
-                read1_part_seq[comp] = ''; # open(directory_name+"/reads"+iter_tag+str(comp)+"_1.fasta", 'w')
-                read2_part_seq[comp] = ''; #open(directory_name+"/reads"+iter_tag+str(comp)+"_2.fasta", 'w')
+                read1_part_seq[comp] = []; # open(directory_name+"/reads"+iter_tag+str(comp)+"_1.fasta", 'w')
+                read2_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+"_2.fasta", 'w')
             comp2reads = {}
 
             comp2reads_reversed = {}
@@ -271,10 +271,10 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
    #                          assigned_comp.add(k1mers2component[k1mer][0])
 
                         for each_comp in assigned_comp:
-                            read1_part_seq[each_comp]+=(read_line1)
-                            read1_part_seq[each_comp]+=(line1)
-                            read2_part_seq[each_comp]+=(read_line2)
-                            read2_part_seq[each_comp]+=(line2)
+                            read1_part_seq[each_comp].append(read_line1)
+                            read1_part_seq[each_comp].append(line1)
+                            read2_part_seq[each_comp].append(read_line2)
+                            read2_part_seq[each_comp].append(line2)
 
                         if double_stranded:
                             
@@ -302,15 +302,15 @@ def kmers_for_component(kmer_directory, reads_files, directory_name, contig_file
                             for each_comp in assigned_comp:
                                 reversed_read1_name=read_line1.split()[0]+'_reversed'+'\t'+'\t'.join(read_line1.split()[1:])
                                 reversed_read2_name=read_line2.split()[0]+'_reversed'+'\t'+'\t'.join(read_line2.split()[1:])
-                                read1_part_seq[each_comp]+=(reversed_read1_name+'\n')
-                                read1_part_seq[each_comp]+=(read1_reversed+'\n')
-                                read2_part_seq[each_comp]+=(reversed_read2_name+'\n')
-                                read2_part_seq[each_comp]+=(read2_reversed+'\n')
+                                read1_part_seq[each_comp].append(reversed_read1_name+'\n')
+                                read1_part_seq[each_comp].append(read1_reversed+'\n')
+                                read2_part_seq[each_comp].append(reversed_read2_name+'\n')
+                                read2_part_seq[each_comp].append(read2_reversed+'\n')
             for comp in new_components:
                 read1_part_file = open(directory_name+"/reads"+iter_tag+str(comp)+"_1.fasta", 'w')
                 read2_part_file = open(directory_name+"/reads"+iter_tag+str(comp)+"_2.fasta", 'w')
-                read1_part_file.write(read1_part_seq[comp])
-                read2_part_file.write(read2_part_seq[comp])
+                read1_part_file.write("".join(read1_part_seq[comp]))
+                read2_part_file.write("".join(read2_part_seq[comp]))
                 read1_part_file.close()
                 read2_part_file.close()
         
