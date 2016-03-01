@@ -389,22 +389,22 @@ else:
 reconstructed_files = {}
 for comp in new_components:
 	dir_base = comp_directory_name + "/" + sample_name + "_c" + str(comp)
-	dir = dir_base + "algo_output"
+	dir_out = dir_base + "algo_output"
 	if comp[0] in reconstructed_files:
-		reconstructed_files[comp[0]].append(dir + '/' + 'reconstructed.fasta')
+		reconstructed_files[comp[0]].append(dir_out + '/' + 'reconstructed.fasta')
 	else:
-		reconstructed_files[comp[0]] = [dir + '/' + 'reconstructed.fasta']
+		reconstructed_files[comp[0]] = [dir_out + '/' + 'reconstructed.fasta']
 
 if use_second_iteration:
 	for comp in new_components:
 		if "remaining" in comp:
 			continue
 		dir_base = comp_directory_name + "/" + sample_name + "_r2_c" + str(comp)
-		dir = dir_base + "algo_output"
+		dir_out = dir_base + "algo_output"
 		if comp[0] in reconstructed_files:
-			reconstructed_files[comp[0]].append(dir + '/' + 'reconstructed.fasta')
+			reconstructed_files[comp[0]].append(dir_out + '/' + 'reconstructed.fasta')
 		else:
-			reconstructed_files[comp[0]] = [dir + '/' + 'reconstructed.fasta']
+			reconstructed_files[comp[0]] = [dir_out + '/' + 'reconstructed.fasta']
 
 # Creates new directory with concatenation of all reconstructed files
 dir_base = comp_directory_name + "/" + sample_name + "_all"
@@ -415,6 +415,7 @@ temp_file_args = ""
 for comp in reconstructed_files:    
 	for file_name in reconstructed_files[comp]:
 		temp_file_args = temp_file_args + file_name + " "
+temp_file_args += comp_directory_name+"/reconstructed_single_contigs.fasta "
 		
 run_cmd("cat " + temp_file_args + " > " + temp_file)
 process_concatenated_fasta(temp_file, dir_out + "/reconstructed_org.fasta")

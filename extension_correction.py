@@ -275,10 +275,19 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     
     remaining_file_curr_size = 0
     remaining_file_num = 1
-    
+    single_contig_index = 0
+    single_contigs = open(comp_directory_name+"/reconstructed_single_contigs.fasta", 'w')
     non_comp_contigs = open(comp_directory_name+"/remaining_contigs"+str(remaining_file_num)+".txt", 'w')
     if 1:
         for component in component2contig:
+            if len(component2contig[component]) == 1:
+                contig_ind = component2contig[component][0]
+                contig = contigs[contig_ind]
+                single_contigs.write('>Single_'+ str(single_contig_index)+'\n')
+                single_contigs.write(contig+'\n')
+                single_contig_index+=1
+                continue
+
             #pdb.set_trace()
             if len(component2contig[component]) > comp_size_threshold:
                 with open(comp_directory_name+"/component" + str(new_comp_num) + ".txt" , 'w') as f:
