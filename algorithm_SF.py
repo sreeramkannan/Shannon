@@ -401,8 +401,8 @@ class Graph(object):    ## Graph object (used universally)
                     if len(node.in_edges)<=1 and len(node.out_edges)<=1:
                         continue
                 node_iter += 1; 
-                sys.stdout.write('\r')
-                sys.stdout.write('comp: ' + str(comp) + ', algo_iter: ' + str(algo_iteration)  + ', node_iter: ' +  str(node_iter) + ', node_name: ' +str(node.name)+ ', m: ' + str(len(node.in_edges)) + ', n: ' + str(len(node.out_edges)))
+                sys.stdout.write('\n')
+                sys.stdout.write('comp: ' + str(comp) + ', algo_iter: ' + str(algo_iteration)  + ', node_iter: ' +  str(node_iter) + ', node_name: ' +str(node.name)+ ', m: ' + str(len(node.in_edges)) + ', n: ' + str(len(node.out_edges)) + ', Paths: ' + str(len(paths_for_node.get(node,[]))))
                 sys.stdout.flush(); 
                 if 1:
                     if 1:
