@@ -1353,8 +1353,7 @@ def known_paths():
             for path in search_sequence(read, start_node, start_i, max_hops):
                 Read.reads[read].nodes = path
                 if len(path) > 2:
-                    pass
-                    #Read.known_paths.add(tuple(path))
+                    Read.known_paths.add(tuple(path))
 		    no_known_paths+=1
     print("No of known paths:" + str(no_known_paths))
 def search_sequence(seq, node, i, max_hops):
