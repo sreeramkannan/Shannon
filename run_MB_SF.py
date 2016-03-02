@@ -68,6 +68,8 @@ blat = 1
 # Sets parameters from terminal
 sample_name = None
 n_inp = sys.argv
+shannon_dir = ''
+
 if len(n_inp)>1:
     sample_name = sys.argv[1]
     if '--run_alg' in n_inp:

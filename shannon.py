@@ -438,7 +438,7 @@ else:
 # Compares reconstructed file against reference
 if compare_ans:
 	run_cmd("cp " + ref_file + ' ' +  dir_out + "/reference.fasta")
-	run_cmd("python " + shannon_dir + "run_MB_SF.py " + dir_base + " --compare ")
+	run_cmd("python " + shannon_dir + "run_MB_SF.py " + dir_base + " --compare --shannon-dir " + shannon_dir)
 
 # updates log
 if os.path.exists(comp_directory_name+"/before_sp_log.txt"):
