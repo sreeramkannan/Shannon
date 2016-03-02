@@ -6,7 +6,7 @@ import numpy
 from sets import Set
 
 BASES = ['A', 'G', 'C', 'T']
-r=K-1
+r=24
 rmer_to_contig = {}
 contig_to_rmer = {}
 
@@ -20,6 +20,9 @@ def reverse_complement(bases):
     for ch1, ch2 in replacements:
         bases = re.sub(ch1, ch2, bases)
     return bases[::-1].upper()
+
+
+
 
 class Counter():
     def __init__(self, name, report_length):
@@ -54,58 +57,41 @@ def argmax(lst, key):
     return best
 
 
-def duplicate_check_ends(contigs,contig_name, ds, f = 0.9):
+def duplicate_check_ends(contigs,contig_name, rc, f = 0.99):
         contig = contigs[contig_name];
+        if rc:
+                contig = reverse_complement(contig) 
         qName = contig_name; qLen = len(contig);
         first_rmer = contig[:r]; last_rmer = contig[-r:]
         if first_rmer in rmer_to_contig and last_rmer in rmer_to_contig:
-                
+                contig_dict = {}
+                for c,p in rmer_to_contig[first_rmer]:
+                        if c == contig_name:
+                                continue
+
+                        if c in contig_dict:
+                                contig_dict[c][0] = p
+                        else:
+                                contig_dict[c] = [p,-1]  
+                for c,p in rmer_to_contig[last_rmer]:
+                        if c == contig_name:
+                                continue
+                        if c in contig_dict:
+                                contig_dict[c][1] = p
+                        else:
+                                contig_dict[c] = [-1,p]
+                for c in contig_dict:
+                        if contig_dict[c][0] >= 0 and contig_dict[c][1]>=0:
+                                diff = contig_dict[c][1] - contig_dict[c][0]
+                                if abs(diff - (len(contig)-r)) < 3: #we are assuming that if two kmers match and if the length is the same, then the sequences must be the same
+                                        if len(contig) < len(contigs[c]) or ( (len(contig) == len(contigs[c])) and contig_name > c):
+                                                print(contig_name + ' is already in '+ c)
+                                                #print(contig)
+                                                #print(contigs[c][contig_dict[c][0]: contig_dict[c][1]+r])
+                                                return True
+        return False
 
 
-def duplicate_check(contigs, contig_name, ds, f = 0.99):
-    # To add: if rmer in the contig multiple times, only increment the dup-contig once for each time its in dup-contig
-    dup_count = {}
-    contig = contigs[contig_name]
-    qName = contig_name; qLen = len(contig); 
-    max_till_now = 0; max_contig_index = -1
-    for rmer in find_kmers(contig,r,ds):
-        if rmer in rmer_to_contig:
-            for dup in rmer_to_contig[rmer]:
-                if dup == contig_name:
-                    'Only take duplicates other than curr contig'
-                    continue
-                if dup not in dup_count:
-                    dup_count[dup] = 1
-                else:
-                    dup_count[dup] += 1
-                if dup_count[dup] >= max_till_now:
-                    max_till_now = dup_count[dup]; max_contig_name = dup
-
-    imp_dups = {} #Duplicates that are considered
-    for dup in dup_count:
-        if dup_count[dup] >= f*(qLen-r):
-            imp_dups[dup] = numpy.zeros(len(contig))
-
-    imp_dups_set = Set(list(imp_dups.keys()))
-
-    a = numpy.zeros(len(contig))
-    for i in range(len(contig)-r+1):
-        rmer = contig[i:i+r]
-        if rmer in rmer_to_contig:
-            for dup in imp_dups_set.intersection(rmer_to_contig[rmer]):
-                imp_dups[dup][i:i+r] = 1
-        if ds:
-            rmer_rc=reverse_complement(rmer)
-            if rmer_rc in rmer_to_contig:
-                for dup in imp_dups_set.intersection(rmer_to_contig[rmer]):
-                    imp_dups[dup][i:i+r] = 1
-    for dup in imp_dups: #for dup in dup_count:
-        tName = dup; tLen = len(contigs[tName])
-        score = sum(imp_dups[dup])
-        if score >= f*qLen:
-            if (tLen > qLen) or ((tLen == qLen) and (tName > qName)):
-                return True   
-    return False
            
         
         
@@ -122,16 +108,19 @@ def find_reps(infile, outfile,ds):
         else:
             curr_contig = line.strip()
             contigs[curr_name] = curr_contig
-            for (i,rmer) in enumerate(find_kmers(curr_contig,r,ds)):
+            for i in range(len(curr_contig)-r+1): #enumerate(find_kmers(curr_contig,r,False)):
+                rmer = curr_contig[i:i+r]
                 if rmer in rmer_to_contig:
-                    rmer_to_contig[rmer].add([curr_name,i])
+                    rmer_to_contig[rmer].append([curr_name,i])
                 else:
-                    rmer_to_contig[rmer]= Set([curr_name,i])
+                    rmer_to_contig[rmer]= [[curr_name,i]]
     with open(outfile,'w') as out_file:
 	contig_no = 0
         for contig_name in contigs:
 	    contig_no +=1
-            duplicate_suspect = duplicate_check(contigs,contig_name, ds)
+            duplicate_suspect = duplicate_check_ends(contigs,contig_name, False)
+            if ds:
+                duplicate_suspect = duplicate_suspect or duplicate_check_ends(contigs,contig_name, True)
 	    if contig_no % 1000 == 0:
 		print("written " + str(contig_no) + " sequences")
             if not duplicate_suspect:
@@ -147,6 +136,7 @@ def main():
         arguments = sys.argv
     #pdb.set_trace()
     ds = '-d' in arguments
+
     arguments = [a for a in arguments if len(a) > 0 and a[0] != '-'][1:]
 
     infile, outfile = arguments[:2]
