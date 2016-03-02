@@ -228,9 +228,13 @@ get_og_comp_kmers = False
 # For kmers_for_component
 kmer_directory = sample_name_input+"algo_input" # "./S15_SE_algo_input" # K = 24
 base_directory_name = comp_directory_name #"./S15_SE_contig_partition"
-r1_contig_file_extension = "contigs.txt"
+contig_file_extension = "contigs.txt"
 r1_new_kmer_tag = "r1"
 r1_graph_file_extension = ".txt"
+r2_new_kmer_tag = "r2"
+
+r2_graph_file_extension = "r2.txt"
+
 randomize = False 
 
 if use_partitioning == False:
@@ -290,7 +294,7 @@ if run_extension_corr:
 
 # Runs gpmetis to partition components of size above "partition_size" into partitions of size "partition_size"
 # Gets k1mers, kmers, and reads for each partition
-[components_broken, new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, r1_contig_file_extension, r1_new_kmer_tag, r1_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, False, partition_size, overload, K, gpmetis_path)
+[components_broken, new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, contig_file_extension, r1_new_kmer_tag, r1_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, False, partition_size, overload, K, gpmetis_path)
 
 # This counts remaining and non-remaining partitions for log.
 num_remaining = 0
@@ -305,8 +309,6 @@ for part in new_components:
 # This to give a new partitioning for each component of size above "partition_size"
 # Gets k1mers, kmers, and reads for each partition
 if use_second_iteration:
-	r2_graph_file_extension = "r2.txt"
-	r2_new_kmer_tag = "r2"
 	r2_contig_file_extension = "r2.txt"  #Currently unused since randomize = False
 
 	for i in components_broken:
@@ -319,7 +321,7 @@ if use_second_iteration:
 
 	get_og_comp_kmers = 0
 	get_partition_kmers = 1
-	[r2_components_broken, r2_new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, r1_contig_file_extension, r2_new_kmer_tag, r2_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, True, partition_size, overload, K, gpmetis_path)
+	[r2_components_broken, r2_new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, contig_file_extension, r2_new_kmer_tag, r2_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, True, partition_size, overload, K, gpmetis_path)
 
 	# This counts remaining and non-remaining partitions for log.
 	for part in r2_new_components:

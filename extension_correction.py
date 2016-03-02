@@ -5,7 +5,7 @@ import pdb,math
 import numpy
 
 BASES = ['A', 'G', 'C', 'T']
-dont_correct_errors = True
+dont_correct_errors = False
 rmer_to_contig = {}
 contig_to_rmer = {}
 cmer_to_contig = {}
@@ -232,7 +232,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
             f.write("{:s}\t{:d}\n".format(kmer, int(kmers[kmer])))
             allowed_kmer_dict[kmer] = int(kmers[kmer])
     del kmers
-     
+    f_log.write("{:s}: {:d} K-mers written to file.".format(time.asctime(), len(allowed)) + " \n") 
     #pdb.set_trace()
 
     # Depth First Search to find components of contig graph.
