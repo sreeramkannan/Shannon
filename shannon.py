@@ -317,7 +317,7 @@ if use_second_iteration:
 		new_graph_file = "/component" + str(i+1) + r2_graph_file_extension
 		contig_file = "/component" + str(i+1) + r1_contig_file_extension
 		new_contig_file = "/component" + str(i+1) + r2_contig_file_extension 
-		weight_updated_graph(base_directory_name, partition_file, og_graph_file, new_graph_file, contig_file, penalty, randomize, new_contig_file)
+		weight_updated_graph(base_directory_name, partition_file, og_graph_file, new_graph_file, contig_file, new_contig_file, penalty, randomize)
 
 	get_og_comp_kmers = 0
 	get_partition_kmers = 1
