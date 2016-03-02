@@ -845,7 +845,7 @@ class Node(object):
         containing SELF in its entirety, and traversing to one base in
         GOAL.
         """
-	print('New_max_length:' + str(max_length))
+	#print('New_max_length:' + str(max_length))
         if max_length <= 0 or max_hops <=0:
             return []
         if self is goal and min_length <= 1:
