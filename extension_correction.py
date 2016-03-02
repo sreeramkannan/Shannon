@@ -8,7 +8,6 @@ BASES = ['A', 'G', 'C', 'T']
 dont_correct_errors = True
 rmer_to_contig = {}
 contig_to_rmer = {}
-
 cmer_to_contig = {}
 
 class Counter():
@@ -21,6 +20,10 @@ class Counter():
         self.count += 1
         if self.count % self.report_length == 0:
             print "{:s}: {:s}, processed {:d}".format(time.asctime(), self.name, self.count)
+
+c1 = Counter("Loading", 10**6)
+c2 = Counter("Correction", 10**6)
+
 
 def reverse_complement(bases):
     """Return the reverse complement of BASES. Assumes BASES is
@@ -44,6 +47,9 @@ def load_kmers(infile, double_stranded):
     """Loads the list of K-mers and copycounts and determines K.
     Returns (kmers, K).
     """
+    #c1 = Counter("Loading", 10**6)
+    
+
     kmers = {}
     with open(infile) as f:
         for line in f:
@@ -63,7 +69,7 @@ def extend(start, extended, unextended, traversed, kmers, K):
     last = unextended(start)
     tot_weight = 0; tot_kmer=0
     extension = []
-
+    
     while True:
         next_bases = [b for b in BASES if extended(last, b) in kmers and extended(last, b) not in traversed]
         if len(next_bases) == 0: return [extension,tot_weight,tot_kmer]
@@ -220,9 +226,12 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     f_log.write("{:s}: {:d} K-mers remaining after error correction.".format(time.asctime(), len(allowed)) + " \n")
     
     # Writes out kmers from all allowed contigs
+    allowed_kmer_dict = {}
     with open(outfile, 'w') as f:
         for kmer in allowed:
             f.write("{:s}\t{:d}\n".format(kmer, int(kmers[kmer])))
+            allowed_kmer_dict[kmer] = int(kmers[kmer])
+    del kmers
      
     #pdb.set_trace()
 
@@ -330,27 +339,30 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     
     f_log.write(str(time.asctime()) + ": " + "Metis Input File Created " + "\n")
     f_log.close()
+    return allowed_kmer_dict
     #pdb.set_trace()
             
                 
                 
 
-def main():
-    if len(sys.argv) == 1:
-        arguments = ['asd', 'kmers.dict', 'allowed_kmers.dict', '1', '1', '-d']
-    else:
-        arguments = sys.argv
+def extension_correction(arguments):
     #pdb.set_trace()
     double_stranded = '-d' in arguments
-    arguments = [a for a in arguments if len(a) > 0 and a[0] != '-'][1:]
+    arguments = [a for a in arguments if len(a) > 0 and a[0] != '-']
 
     infile, outfile = arguments[:2]
     min_weight, min_length = int(arguments[2]), int(arguments[3])
     comp_directory_name, comp_size_threshold = arguments[4], int(arguments[5])
     #pdb.set_trace()
-    run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold)
+    allowed_kmer_dict = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold)
+    return allowed_kmer_dict
 
 if __name__ == '__main__':
-    c1 = Counter("Loading", 10**6)
-    c2 = Counter("Correction", 10**6)
-    main()
+    #c1 = Counter("Loading", 10**6)
+    #c2 = Counter("Correction", 10**6)
+    if len(sys.argv) == 1:
+        arguments = ['kmers.dict', 'allowed_kmers.dict', '1', '1', '-d']
+    else:
+        arguments = sys.argv[1:]
+
+    extension_correction(arguments)

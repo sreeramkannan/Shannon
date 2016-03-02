@@ -490,6 +490,7 @@ class Node(object):
                 if condensed % 1000 == 0:
                     pass
         Node.remove_destroyed()
+        
         '''no_nodes = len(Node.nodes)
         total_out_edges =sum(len(n.out_edges) for n in Node.nodes)
         total_no_bases = sum(len(n.bases) for n in Node.nodes)

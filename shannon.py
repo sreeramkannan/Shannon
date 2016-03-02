@@ -13,6 +13,7 @@ import subprocess
 from kmers_for_component import kmers_for_component
 from weight_updated_graph import weight_updated_graph
 from process_concatenated_fasta import process_concatenated_fasta
+from extension_correction import  extension_correction
 
 #Set Paths
 shannon_dir = os.path.dirname(os.path.abspath(sys.argv[0])) + '/' 
@@ -277,16 +278,19 @@ if run_extension_corr:
 		str_ec = ' -d '
 	else: 
 		str_ec = ' '
-	run_cmd('python ' + shannon_dir + 'extension_correction.py ' + str_ec + sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold))
+	
+	#run_cmd('python ' + shannon_dir + 'extension_correction.py ' + str_ec + sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold))
+	str_ec += sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold)
+	k1mer_dictionary = extension_correction(str_ec.split())
 
 # Gets kmers from k1mers
-if run_jellyfish or run_extension_corr:
-	run_cmd('python ' + shannon_dir + 'kp1mer_to_kmer.py ' + sample_name_input+'algo_input/k1mer.dict ' + sample_name_input+'algo_input/kmer.dict')
+'''if run_jellyfish or run_extension_corr:
+	run_cmd('python ' + shannon_dir + 'kp1mer_to_kmer.py ' + sample_name_input+'algo_input/k1mer.dict ' + sample_name_input+'algo_input/kmer.dict')'''
 
 
 # Runs gpmetis to partition components of size above "partition_size" into partitions of size "partition_size"
 # Gets k1mers, kmers, and reads for each partition
-[components_broken, new_components] = kmers_for_component(kmer_directory, reads_files, base_directory_name, r1_contig_file_extension, r1_new_kmer_tag, r1_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, False, partition_size, overload, K, gpmetis_path)
+[components_broken, new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, r1_contig_file_extension, r1_new_kmer_tag, r1_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, False, partition_size, overload, K, gpmetis_path)
 
 # This counts remaining and non-remaining partitions for log.
 num_remaining = 0
@@ -303,7 +307,7 @@ for part in new_components:
 if use_second_iteration:
 	r2_graph_file_extension = "r2.txt"
 	r2_new_kmer_tag = "r2"
-	r2_contig_file_extension = "r2.txt"
+	r2_contig_file_extension = "r2.txt"  #Currently unused since randomize = False
 
 	for i in components_broken:
 		partition_file = "/component" + str(i+1) + r1_graph_file_extension + ".part." + str(components_broken[i])
@@ -311,11 +315,11 @@ if use_second_iteration:
 		new_graph_file = "/component" + str(i+1) + r2_graph_file_extension
 		contig_file = "/component" + str(i+1) + r1_contig_file_extension
 		new_contig_file = "/component" + str(i+1) + r2_contig_file_extension 
-		weight_updated_graph(base_directory_name, partition_file, og_graph_file, new_graph_file, contig_file, new_contig_file, penalty, randomize)
+		weight_updated_graph(base_directory_name, partition_file, og_graph_file, new_graph_file, contig_file, penalty, randomize, new_contig_file)
 
 	get_og_comp_kmers = 0
 	get_partition_kmers = 1
-	[r2_components_broken, r2_new_components] = kmers_for_component(kmer_directory, reads_files, base_directory_name, r1_contig_file_extension, r2_new_kmer_tag, r2_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, True, partition_size, overload, K, gpmetis_path)
+	[r2_components_broken, r2_new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, r1_contig_file_extension, r2_new_kmer_tag, r2_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, True, partition_size, overload, K, gpmetis_path)
 
 	# This counts remaining and non-remaining partitions for log.
 	for part in r2_new_components:
@@ -347,7 +351,7 @@ for comp in new_components:
 	else:
 		run_cmd("mv " + base_directory_name + "/reads_c" + str(comp) + ".fasta " + dir_base + "algo_input/reads.fasta")
 
-	run_cmd("mv " + base_directory_name + "/component" + comp +  r1_new_kmer_tag + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
+	#run_cmd("mv " + base_directory_name + "/component" + comp +  r1_new_kmer_tag + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
 	run_cmd("mv " + base_directory_name + "/component" + comp +  r1_new_kmer_tag + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
 	main_server_parameter_string = main_server_parameter_string + dir_base + " " 
 	
@@ -363,7 +367,7 @@ if use_second_iteration:
 		else:
 			run_cmd("mv " + base_directory_name + "/reads_r2_c" + str(comp)+".fasta " + dir_base + "algo_input/reads.fasta")        
 		
-		run_cmd("mv " + base_directory_name + "/component" + comp +  r2_new_kmer_tag + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
+		#run_cmd("mv " + base_directory_name + "/component" + comp +  r2_new_kmer_tag + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
 		run_cmd("mv " + base_directory_name + "/component" + comp +  r2_new_kmer_tag + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
 		main_server_parameter_string = main_server_parameter_string + dir_base + " " 
 

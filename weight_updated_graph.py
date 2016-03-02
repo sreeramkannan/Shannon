@@ -6,7 +6,7 @@ import os
 import os.path
 import numpy as np
 
-def weight_updated_graph(directory, partition_file, og_graph_file, new_graph_file, contig_file, new_contig_file, penalty = 5, randomize = False):
+def weight_updated_graph(directory, partition_file, og_graph_file, new_graph_file, contig_file, penalty = 5, randomize = False, new_contig_file):
     ''' This function creates a gpmetis input graph where the edge weights
     between contigs is increased if the edge was broken in the previous partitioning.
     This makes it so paths that were broken in the previous partitioning

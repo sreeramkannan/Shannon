@@ -1,4 +1,4 @@
-import time, sys
+import time, sys, pdb
 from mbgraph import *
 
 def extract_reads(filename, weighted):
@@ -81,9 +81,12 @@ def load_jellyfish(node_file, edge_file):
     with open(node_file) as f:
         for line in f:
             bases, prevalence = line.split()
-            n = Node(bases)
-            n.prevalence = round(float(prevalence))
-            nodes[bases] = n
+            if bases in nodes:
+                n.prevalence += round(float(prevalence))
+            else:
+                n = Node(bases)
+                n.prevalence = round(float(prevalence))
+                nodes[bases] = n
 
     with open(edge_file) as f:
         for line in f:
@@ -92,6 +95,36 @@ def load_jellyfish(node_file, edge_file):
             weight = Read.K - 1
             e = nodes[k1].link_to(nodes[k2], int(weight))
             e.copy_count = round(float(prevalence))
+
+def load_single_jellyfish(edge_file):
+    """Loads condensed files from Jellyfish.
+    """
+    log("Loading nodes from K-mer files.")
+
+    nodes = {}
+    # with open(node_file) as f:
+    #     for line in f:
+    #         bases, prevalence = line.split()
+    #         n = Node(bases)
+    #         n.prevalence = round(float(prevalence))
+    #         nodes[bases] = n
+
+    with open(edge_file) as f:
+        for line in f:
+            bases, prevalence = line.split()
+            k1, k2 = bases[:-1], bases[1:]
+            if k1 not in nodes:
+                n1 = Node(k1);  nodes[k1] = n1
+            if k2 not in nodes:
+                n2 = Node(k2);  nodes[k2] = n2
+            weight = Read.K - 1
+            e = nodes[k1].link_to(nodes[k2], int(weight))
+            e.copy_count = round(float(prevalence))
+
+    for node in Node.nodes:
+        node.prevalence = sum(e.weight for e in node.out_edges)
+
+
 
 def setup(read_file):
     """Perform some setup functions.
@@ -235,7 +268,7 @@ def main():
     cpp = False
     weighted = False
     Read.K = 24
-
+    use_only_k1mer = False
     for arg in arguments[1:]:
         if arg == '-d':
             double_stranded = True
@@ -249,6 +282,8 @@ def main():
             weighted = True
         elif arg[:7] == "--kmer=":
             Read.K = int(arg[7:])
+        elif arg == '--only_k1':
+            use_only_k1mer = True
         else:
             names.append(arg)
 
@@ -268,7 +303,11 @@ def main():
     if cpp:
         load_cpp(node_file, edge_file)
     else:
-        load_jellyfish(node_file, edge_file)
+        if use_only_k1mer:
+            load_single_jellyfish(edge_file)
+        else:
+            load_jellyfish(node_file, edge_file)
+        
 
     run(output_dir, error_correction, compute_fringes)
 

@@ -221,9 +221,9 @@ if mb:
 	if use_cpp:
 		cpp_s = '-c ' +sample_name+'algo_input/nodes.txt '+sample_name+'algo_input/edges.txt '
         if not paired_end:                
-		run_cmd('python ' + shannon_dir + 'multibridging.py -f ' + mb_string + jf_s + cpp_s + reads_file+'.fasta ' + sample_output_name + 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # ' 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
+		run_cmd('python ' + shannon_dir + 'multibridging.py --only_k1 -f ' + mb_string + jf_s + cpp_s + reads_file+'.fasta ' + sample_output_name + 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # ' 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
 	else:
-		run_cmd('python ' + shannon_dir + 'multibridging.py -f '+ mb_string + jf_s + cpp_s + reads_file+'_1.fasta '+reads_file+'_2.fasta ' + sample_output_name+ 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
+		run_cmd('python ' + shannon_dir + 'multibridging.py --only_k1 -f '+ mb_string + jf_s + cpp_s + reads_file+'_1.fasta '+reads_file+'_2.fasta ' + sample_output_name+ 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
 
 timer['after_mb'] = time.time()
 timer['for_mb'] = timer['after_mb'] - timer['after_gen_reads']
