@@ -30,6 +30,7 @@ double_stranded = True
 run_jellyfish = True
 paired_end = False # Automatically set if command line is used
 jellyfish_kmer_cutoff = 1
+find_reps = False
 
 # General, Can be read in from terminal
 reads_files = ['~/Full_Assembler/SPombe_algo_input/reads.fasta'] # ['./S15_SE_algo_input/reads.fasta']
@@ -428,10 +429,11 @@ process_concatenated_fasta(temp_file, dir_out + "/reconstructed_org.fasta")
 
 #run_cmd('cp ' + dir_out + "/reconstructed.fasta " + dir_out + "/reconstructed_org.fasta")
 
-run_cmd('cat ' +  dir_out + "/reconstructed_org.fasta | perl -e 'while (<>) {$h=$_; $s=<>; $seqs{$h}=$s;} foreach $header (sort {length($seqs{$a}) <=> length($seqs{$b})} keys %seqs) {print $header.$seqs{$header}}' > " +  dir_out +  "/reconstructed_sorted.fasta " )
-
-run_cmd('python ' + shannon_dir + 'fast_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
-
+if find_reps:
+	run_cmd('cat ' +  dir_out + "/reconstructed_org.fasta | perl -e 'while (<>) {$h=$_; $s=<>; $seqs{$h}=$s;} foreach $header (sort {length($seqs{$a}) <=> length($seqs{$b})} keys %seqs) {print $header.$seqs{$header}}' > " +  dir_out +  "/reconstructed_sorted.fasta " )
+	run_cmd('python ' + shannon_dir + 'fast_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
+else:
+	run_cmd('mv '  + dir_out + "/reconstructed_org.fasta " + dir_out + "/reconstructed.fasta ")
 
 # Compares reconstructed file against reference
 if compare_ans:
