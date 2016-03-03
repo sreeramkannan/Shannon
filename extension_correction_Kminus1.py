@@ -168,7 +168,7 @@ def duplicate_check_ends(contig,C):
                 for c in contig_dict:
                         if contig_dict[c][0] >= 0 and contig_dict[c][1]>=0:
                                 diff = contig_dict[c][1] - contig_dict[c][0]
-                                if abs(diff - (len(contig)-r)) < 3: #we are assuming that if two kmers match and if the length is the same, then the sequences must be the same
+                                if abs(diff - (len(contig)-C)) < 3: #we are assuming that if two kmers match and if the length is the same, then the sequences must be the same
                                                 #if hamming_dist(contig,)
                                                 #print(contig_name + ' is already in '+ c)
                                                 #print(contig)
