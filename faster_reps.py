@@ -85,7 +85,7 @@ def duplicate_check_ends(contigs,contig_name, rc, f = 0.99):
                                 diff = contig_dict[c][1] - contig_dict[c][0]
                                 if abs(diff - (len(contig)-r)) < 3: #we are assuming that if two kmers match and if the length is the same, then the sequences must be the same
                                         if len(contig) < len(contigs[c]) or ( (len(contig) == len(contigs[c])) and contig_name > c):
-                                                print(contig_name + ' is already in '+ c)
+                                                #print(contig_name + ' is already in '+ c)
                                                 #print(contig)
                                                 #print(contigs[c][contig_dict[c][0]: contig_dict[c][1]+r])
                                                 return True
