@@ -118,49 +118,49 @@ def duplicate_check(contig, r = 12, f = 0.5):
 
 def trim_polyA(contig):
     '''Trim polyA tails if atleast last minLen bases are polyA or first minLen bases are polyT'''
-    minLen = 12; startLen = 0; endLen = 0; startPt = 0
-    maxMiss = 1; startMiss = 0; endMiss = 0; endPt = 0
+    minLen = 13; startPt = 0; endPt = 0
+    maxMiss = 0; startMiss = 0; endMiss = 0; 
     for i in range(len(contig)):
-        if contig[i] != 'T':
-            startMiss+=1;
-        else:
-            startPt = startLen  + 1
+        startPt +=1
+        if contig[i] != 'A':
+            startMiss+=1
         if startMiss > maxMiss:
             break
-        startLen +=1
     
     totLen = len(contig)
     
 
     for j in range(len(contig)):
-        if contig[totLen-1-j] != 'A':
-            endMiss +=1;
-        else:
-            endPt = endLen +1
+        endPt +=1
+        if contig[totLen-1-j] != 'T':
+            endMiss+=1
         if endMiss > maxMiss:
             break;
-        endLen +=1
-
-    if startLen < minLen:
-        startLen = 0
+        
+    if startPt < minLen:
+        startPt = 0
+    else:
+        startPt -=2
  
-    if endLen < minLen:
-        endLen = 0
+    if endPt < minLen:
+        endPt = 0
+    else:
+        endPt -=2
  
     return contig[startPt:totLen-endPt]
 
 
-def duplicate_check_ends(contig):
+def duplicate_check_ends(contig,C):
         qLen = len(contig);
-        first_rmer = contig[:r]; last_rmer = contig[-r:]
-        if first_rmer in rmer_to_contig and last_rmer in rmer_to_contig:
+        first_cmer = contig[:C]; last_cmer = contig[-C:]
+        if first_cmer in cmer_to_contig and last_cmer in cmer_to_contig:
                 contig_dict = {}
-                for c,p in rmer_to_contig[first_rmer]:
+                for c,p in cmer_to_contig[first_cmer]:
                         if c in contig_dict:
                                 contig_dict[c][0] = p
                         else:
                                 contig_dict[c] = [p,-1]  
-                for c,p in rmer_to_contig[last_rmer]:
+                for c,p in cmer_to_contig[last_cmer]:
                         if c in contig_dict:
                                 contig_dict[c][1] = p
                         else:
@@ -239,16 +239,16 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
                             contig_connections[contig2_index][contig_index] = 1
                 else:
                     cmer_to_contig[contig[i:i+C]] = []
-                cmer_to_contig[contig[i:i+C]].append(contig_index)     
+                cmer_to_contig[contig[i:i+C]].append([contig_index,i])     
                 #pdb.set_trace()
                 
             # For error correction
-            for i in range(len(contig) -r + 1):
-                rmer = contig[i:i+r]
-                if rmer in rmer_to_contig:
-                    rmer_to_contig[rmer].append([contig_index,i])
-                else:
-                    rmer_to_contig[rmer]=[[contig_index,i]]
+            # for i in range(len(contig) -r + 1):
+            #     rmer = contig[i:i+r]
+            #     if rmer in rmer_to_contig:
+            #         rmer_to_contig[rmer].append([contig_index,i])
+            #     else:
+            #         rmer_to_contig[rmer]=[[contig_index,i]]
     f1.close()
     print "{:s}: {:d} K-mers remaining after error correction.".format(time.asctime(), len(allowed))
     f_log.write("{:s}: {:d} K-mers remaining after error correction.".format(time.asctime(), len(allowed)) + " \n")
