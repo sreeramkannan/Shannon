@@ -226,7 +226,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
             #pdb.set_trace()
             for i in range(len(contig) - C +1):
                 if contig[i:i+C] in cmer_to_contig:
-                    for contig2_index in cmer_to_contig[contig[i:i+C]]:
+                    for contig2_index,pos in cmer_to_contig[contig[i:i+C]]:
 
                         #pdb.set_trace()
                         if contig2_index in contig_connections[contig_index] and contig2_index != contig_index:
