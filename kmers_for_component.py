@@ -39,7 +39,6 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
     It then cycles through the k1mer file and outputs the k1mers along with their weights to a file for each component.
     It then creates a kmers2component dictionary.  It then outputs a kmers file for each component. 
     """
-    pdb.set_trace()
     
     if os.path.exists(directory_name+"/before_sp_log.txt"):
         f_log = open(directory_name+"/before_sp_log.txt", 'a')
