@@ -25,6 +25,7 @@ def load_reads(filename, double_stranded, weighted):
     log("Loading reads.")
     for read in extract_reads(filename, weighted):
         Read.add_read(read, double_stranded)
+
 def load_mated_reads(file_1, file_2, double_stranded):
     #Does not allow weighted reads.
     def pair(r1, r2):
@@ -55,6 +56,7 @@ def load_mated_reads(file_1, file_2, double_stranded):
 def load_cpp(node_file, edge_file):
     """Loads condensed files from C++ implementation.
     FILES are the read files, NODES/EDGES are the node/edge files.
+    Will implicitly set
     """
     log("Loading nodes from C++ output.")
 
@@ -73,7 +75,7 @@ def load_cpp(node_file, edge_file):
             weight = Read.K - 1
             nodes[id1].link_to(nodes[id2], int(weight))
 def load_jellyfish(node_file, edge_file):
-    """Loads condensed files from Jellyfish.
+    """Loads condensed files from Jelyfish.
     """
     log("Loading nodes from K-mer files.")
 
@@ -82,6 +84,7 @@ def load_jellyfish(node_file, edge_file):
         for line in f:
             bases, prevalence = line.split()
             if bases in nodes:
+                n = nodes[bases]
                 n.prevalence += round(float(prevalence))
             else:
                 n = Node(bases)
@@ -112,6 +115,7 @@ def load_single_jellyfish(edge_file):
     with open(edge_file) as f:
         for line in f:
             bases, prevalence = line.split()
+            assert Read.K == len(bases) -1 
             k1, k2 = bases[:-1], bases[1:]
             if k1 not in nodes:
                 n1 = Node(k1);  nodes[k1] = n1
