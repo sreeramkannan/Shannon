@@ -5,7 +5,7 @@ import pdb,math
 import numpy
 
 BASES = ['A', 'G', 'C', 'T']
-dont_correct_errors = True
+dont_correct_errors = False
 rmer_to_contig = {}
 contig_to_rmer = {}
 
