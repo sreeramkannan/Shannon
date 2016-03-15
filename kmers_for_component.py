@@ -79,11 +79,12 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
     #         return set()
 
     def get_rmers(read,R):
-        start_kmer = read[:R]
-        end_kmer = read[-R:]
-        x = int(math.floor((len(read)-R)/2))
-        mid_kmer = read[x:x+R]
-        return [start_kmer,mid_kmer,end_kmer]
+        i = 0; k1mers = []
+        while i < len(read) - R:
+            k1mers.append(read[i:i+R])
+            i+=R
+        k1mers.append(read[-R:])
+        return k1mers
 
     def get_comps(read,k1mers2component):
         k1mers = get_rmers(read,K+1);
