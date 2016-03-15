@@ -130,7 +130,7 @@ if '--compare' in n_inp:
 if '--ss' in n_inp:
 	ind1 = n_inp.index('--ss')
 	double_stranded = False
-	n_inp = n_inp[:ind1]+n_inp[ind1+2:]    
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 
 if '-p' in n_inp:
 	ind1 = n_inp.index('-p')
@@ -245,7 +245,7 @@ run_cmd('mkdir ' + sample_name_input+ "algo_input")
 #Run Quorum now
 if run_quorum:
 	print "{:s}: Running Quorum for read error correction with quality scores..".format(time.asctime())
-	run_cmd('python ' + shannon_dir + 'run_quorum.py ' + quorum_path + ' ' + comp_directory_name + ' ' + '\t'.join(reads_files))
+	run_cmd('python ' + shannon_dir + 'run_quorum.py ' + quorum_path + ' ' + comp_directory_name + ' ' + '\t'.join(reads_files) + " -t " + str(nJobs))
 	if paired_end:
 		reads_files = [comp_directory_name + '/corrected_reads_1.fa',comp_directory_name + '/corrected_reads_2.fa']
 	else:

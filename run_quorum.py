@@ -11,6 +11,16 @@ reads_files = []
 paired_end = False
 n_inp = sys.argv
 quorum_path = sys.argv[1]
+
+jobs_string = " "
+
+if "-t" in n_inp:
+    ind1 = n_inp.index('-t')
+    nJobs = (n_inp[ind1+1])  #stored as a string directly
+    n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
+    jobs_string = " -t " + nJobs + " "
+
+
 if len(n_inp)>3:
     base_dir = sys.argv[2]
     reads_files = [sys.argv[3]]
@@ -41,7 +51,7 @@ def find_common_string(s1, s2):
 # In the non-paired end case, run Quorum normally
 if paired_end == False:
     base_file = base_dir + "/corrected_reads"
-    run_cmd(quorum_path + " --prefix " + base_file + " " + reads_files[0])
+    run_cmd(quorum_path + jobs_string + " --prefix " + base_file + " " + reads_files[0])
 
 # This id the paired end case.
 # If both ends of pair are present after filtering, add the left end to corrected_reads_1.fasta
@@ -90,7 +100,7 @@ elif paired_end == True:
                     i += 1
 
     base_file = base_dir + "/quorum_output"    
-    run_cmd(quorum_path + " --prefix " + base_file + " " +  new_reads1_file + " " + new_reads2_file)
+    run_cmd(quorum_path + jobs_string + " --prefix " + base_file + " " +  new_reads1_file + " " + new_reads2_file)
     
     # Cycle through corrected reads and write reads to files accordingly
     with open(base_file + ".fa", 'r') as quorum_output: 
