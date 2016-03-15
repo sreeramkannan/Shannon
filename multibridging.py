@@ -312,7 +312,7 @@ def main():
         else:
             load_jellyfish(node_file, edge_file)
         
-
+ 
     run(output_dir, error_correction, compute_fringes)
 
 if __name__ == '__main__':

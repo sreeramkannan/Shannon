@@ -11,7 +11,6 @@ import test_suite
 import subprocess
 
 from kmers_for_component import kmers_for_component
-from weight_updated_graph import weight_updated_graph
 from process_concatenated_fasta import process_concatenated_fasta
 from extension_correction import  extension_correction
 
@@ -128,6 +127,11 @@ if '--compare' in n_inp:
 	ref_file = os.path.abspath(ref_file)
 	n_inp = n_inp[:ind1]+n_inp[ind1+2:]    
 
+if '--ss' in n_inp:
+	ind1 = n_inp.index('--ss')
+	double_stranded = False
+	n_inp = n_inp[:ind1]+n_inp[ind1+2:]    
+
 if '-p' in n_inp:
 	ind1 = n_inp.index('-p')
 	nJobs = int(n_inp[ind1+1])
@@ -209,9 +213,6 @@ if reads_files[0][-1] == 'q': #Fastq mode
 if run_parallel:
 	test_install_gnu_parallel()
 
-
-
-
 	
 paired_end_flag = ""
 if paired_end:
@@ -230,11 +231,6 @@ get_og_comp_kmers = False
 kmer_directory = sample_name_input+"algo_input" # "./S15_SE_algo_input" # K = 24
 base_directory_name = comp_directory_name #"./S15_SE_contig_partition"
 contig_file_extension = "contigs.txt"
-r1_new_kmer_tag = "r1"
-r1_graph_file_extension = ".txt"
-r2_new_kmer_tag = "r2"
-
-r2_graph_file_extension = "r2.txt"
 
 randomize = False 
 
@@ -292,40 +288,18 @@ if run_extension_corr:
 '''if run_jellyfish or run_extension_corr:
 	run_cmd('python ' + shannon_dir + 'kp1mer_to_kmer.py ' + sample_name_input+'algo_input/k1mer.dict ' + sample_name_input+'algo_input/kmer.dict')'''
 
-
 # Runs gpmetis to partition components of size above "partition_size" into partitions of size "partition_size"
 # Gets k1mers, kmers, and reads for each partition
-[components_broken, new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, contig_file_extension, r1_new_kmer_tag, r1_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, False, partition_size, overload, K, gpmetis_path)
+[components_broken, new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, contig_file_extension, get_partition_kmers, double_stranded, paired_end, use_second_iteration, partition_size, overload, K, gpmetis_path, penalty)
 
+del k1mer_dictionary
 # This counts remaining and non-remaining partitions for log.
 num_remaining = 0
 num_non_remaining = 0 
 for part in new_components:
-	if "remaining" in part:
+	if 'remaining' in part:
 		num_remaining += 1
 	else:
-		num_non_remaining += 1
-
-# If "use_second_partition", rerun gpmetis with a penalization for contig edges broken in old partitioning
-# This to give a new partitioning for each component of size above "partition_size"
-# Gets k1mers, kmers, and reads for each partition
-if use_second_iteration:
-	r2_contig_file_extension = "r2.txt"  #Currently unused since randomize = False
-
-	for i in components_broken:
-		partition_file = "/component" + str(i+1) + r1_graph_file_extension + ".part." + str(components_broken[i])
-		og_graph_file = "/component" + str(i+1) + r1_graph_file_extension
-		new_graph_file = "/component" + str(i+1) + r2_graph_file_extension
-		contig_file = "/component" + str(i+1) + contig_file_extension
-		new_contig_file = "/component" + str(i+1) + r2_contig_file_extension 
-		weight_updated_graph(base_directory_name, partition_file, og_graph_file, new_graph_file, contig_file, new_contig_file, penalty, randomize)
-
-	get_og_comp_kmers = 0
-	get_partition_kmers = 1
-	[r2_components_broken, r2_new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, contig_file_extension, r2_new_kmer_tag, r2_graph_file_extension, get_og_comp_kmers, get_partition_kmers, double_stranded, paired_end, True, partition_size, overload, K, gpmetis_path)
-
-	# This counts remaining and non-remaining partitions for log.
-	for part in r2_new_components:
 		num_non_remaining += 1
 
 # This code updates the log
@@ -343,96 +317,62 @@ f_log.close()
 main_server_parameter_string = ""
 main_server_og_parameter_string = ""
 
-# Create directories for each partition where main_server.py will be run
+# Create directories for each partition where run_MB_SF.py will be run
 for comp in new_components:
-	dir_base = comp_directory_name + "/" + sample_name + "_c" + str(comp)
+	dir_base = comp_directory_name + "/" + sample_name + str(comp)
 	run_cmd("mkdir " + dir_base + "algo_input")
 	run_cmd("mkdir " + dir_base + "algo_output")
 	if paired_end:
-		run_cmd("mv " + base_directory_name + "/reads_c" + str(comp) + "_1.fasta " + dir_base + "algo_input/reads_1.fasta")
-		run_cmd("mv " + base_directory_name + "/reads_c" + str(comp) + "_2.fasta " + dir_base + "algo_input/reads_2.fasta")
+		run_cmd("mv " + base_directory_name + "/reads" + str(comp) + "_1.fasta " + dir_base + "algo_input/reads_1.fasta")
+		run_cmd("mv " + base_directory_name + "/reads" + str(comp) + "_2.fasta " + dir_base + "algo_input/reads_2.fasta")
 	else:
-		run_cmd("mv " + base_directory_name + "/reads_c" + str(comp) + ".fasta " + dir_base + "algo_input/reads.fasta")
+		run_cmd("mv " + base_directory_name + "/reads" + str(comp) + ".fasta " + dir_base + "algo_input/reads.fasta")
 
-	#run_cmd("mv " + base_directory_name + "/component" + comp +  r1_new_kmer_tag + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
-	run_cmd("mv " + base_directory_name + "/component" + comp +  r1_new_kmer_tag + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
+	#run_cmd("mv " + base_directory_name + "/component" + comp + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
+	run_cmd("mv " + base_directory_name + "/component" + str(comp)  + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
 	main_server_parameter_string = main_server_parameter_string + dir_base + " " 
 	
-# Create directories for each partition where main_server.py will be run for second partitioning 
-if use_second_iteration:
-	for comp in r2_new_components:
-		dir_base = comp_directory_name + "/" + sample_name + "_r2_c" + str(comp)
-		run_cmd("mkdir " + dir_base + "algo_input")
-		run_cmd("mkdir " + dir_base + "algo_output")
-		if paired_end:
-			run_cmd("mv " + base_directory_name + "/reads_r2_c" + str(comp)+"_1.fasta " + dir_base + "algo_input/reads_1.fasta")
-			run_cmd("mv " + base_directory_name + "/reads_r2_c" + str(comp)+"_2.fasta " + dir_base + "algo_input/reads_2.fasta")
-		else:
-			run_cmd("mv " + base_directory_name + "/reads_r2_c" + str(comp)+".fasta " + dir_base + "algo_input/reads.fasta")        
-		
-		#run_cmd("mv " + base_directory_name + "/component" + comp +  r2_new_kmer_tag + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
-		run_cmd("mv " + base_directory_name + "/component" + comp +  r2_new_kmer_tag + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
-		main_server_parameter_string = main_server_parameter_string + dir_base + " " 
-
 
 child_names = [x[0][:-10] for x in os.walk(comp_directory_name) if x[0].endswith('algo_input') and not x[0].endswith('_algo_input') and not x[0].endswith('allalgo_input')]
 main_server_parameter_string = ' '.join(child_names)
 
 		
-# Run main_server.py for each partition in parallel
+# Run run_MB_SF.py for each partition in parallel
 if double_stranded:
 	ds_string = "  --ds "
 else:
 	ds_string = "  "
 
-if run_parallel:
-	run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " python " + shannon_dir + "run_MB_SF.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " --shannon-dir " + shannon_dir + " ::: " + main_server_parameter_string)
-else:
-	for param_str in main_server_parameter_string.split():
-			run_cmd("python " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon-dir " + shannon_dir)
-
-
-# locates all reconstructed files          
-reconstructed_files = {}
-for comp in new_components:
-	dir_base = comp_directory_name + "/" + sample_name + "_c" + str(comp)
-	dir_out = dir_base + "algo_output"
-	if comp[0] in reconstructed_files:
-		reconstructed_files[comp[0]].append(dir_out + '/' + 'reconstructed.fasta')
+if main_server_parameter_string:
+	if run_parallel:
+		run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " python " + shannon_dir + "run_MB_SF.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " --shannon-dir " + shannon_dir + " ::: " + main_server_parameter_string)
 	else:
-		reconstructed_files[comp[0]] = [dir_out + '/' + 'reconstructed.fasta']
+		for param_str in main_server_parameter_string.split():
+				run_cmd("python " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon-dir " + shannon_dir)
 
-if use_second_iteration:
-	for comp in new_components:
-		if "remaining" in comp:
-			continue
-		dir_base = comp_directory_name + "/" + sample_name + "_r2_c" + str(comp)
-		dir_out = dir_base + "algo_output"
-		if comp[0] in reconstructed_files:
-			reconstructed_files[comp[0]].append(dir_out + '/' + 'reconstructed.fasta')
-		else:
-			reconstructed_files[comp[0]] = [dir_out + '/' + 'reconstructed.fasta']
 
+# locates all reconstructed files
+
+reconstructed_files = comp_directory_name+"/reconstructed_single_contigs.fasta "
+for comp in new_components:
+	dir_base = comp_directory_name + "/" + sample_name + str(comp)
+	dir_out = dir_base + "algo_output"
+	reconstructed_files +=  (dir_out + '/' + 'reconstructed.fasta ')
+	
 # Creates new directory with concatenation of all reconstructed files
-dir_base = comp_directory_name + "/" + sample_name + "_all"
+dir_base = comp_directory_name + "/" + sample_name + "all"
 dir_out = dir_base + "algo_output"
 run_cmd("mkdir " + dir_out)
-temp_file = dir_out + "/" + "all_reconstructed.fasta"
-temp_file_args = "" 
-for comp in reconstructed_files:    
-	for file_name in reconstructed_files[comp]:
-		temp_file_args = temp_file_args + file_name + " "
-temp_file_args += comp_directory_name+"/reconstructed_single_contigs.fasta "
-		
-run_cmd("cat " + temp_file_args + " > " + temp_file)
-process_concatenated_fasta(temp_file, dir_out + "/reconstructed_org.fasta")
+out_file = dir_out + "/" + "all_reconstructed.fasta"
+run_cmd("cat " + reconstructed_files + " > " + out_file)
+process_concatenated_fasta(out_file, dir_out + "/reconstructed_org.fasta")
 
 #run_cmd('cp ' + dir_out + "/reconstructed.fasta " + dir_out + "/reconstructed_org.fasta")
 
 if find_reps:
 	run_cmd('cat ' +  dir_out + "/reconstructed_org.fasta | perl -e 'while (<>) {$h=$_; $s=<>; $seqs{$h}=$s;} foreach $header (sort {length($seqs{$a}) <=> length($seqs{$b})} keys %seqs) {print $header.$seqs{$header}}' > " +  dir_out +  "/reconstructed_sorted.fasta " )
 	run_cmd('python ' + shannon_dir + 'faster_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
-else:
+else:	
 	run_cmd('mv '  + dir_out + "/reconstructed_org.fasta " + dir_out + "/reconstructed.fasta ")
 
 # Compares reconstructed file against reference
@@ -452,16 +392,15 @@ f_log.write(str(time.asctime()) + ": " +"All partitions completed: " + str(num_t
 print(str(time.asctime()) + ": " +"All partitions completed: " + str(num_transcripts) + " transcripts reconstructed" + "\n")
 f_log.close()
 
-
 # Creates final output
 run_cmd('mkdir '+ comp_directory_name + '/TEMP')
 run_cmd('mv ' + comp_directory_name + '/*_* ' + comp_directory_name + '/TEMP')
 run_cmd('mv ' + comp_directory_name + '/TEMP/before_sp_log.txt ' + comp_directory_name + '/log.txt')
-run_cmd('mv ' +  comp_directory_name + "/TEMP/" + sample_name + "_allalgo_output/reconstructed.fasta " + comp_directory_name + '/shannon.fasta')
+run_cmd('mv ' +  comp_directory_name + "/TEMP/" + sample_name + "allalgo_output/reconstructed.fasta " + comp_directory_name + '/shannon.fasta')
 run_cmd('more ' +  comp_directory_name + "/TEMP/*output.txt > " +comp_directory_name + '/terminal_output.txt') 
 
 if compare_ans:
-   run_cmd('mv ' +   comp_directory_name + "/TEMP/" + sample_name + "_allalgo_output/reconstr_log.txt "  + comp_directory_name + '/compare_log.txt') 
+   run_cmd('mv ' +   comp_directory_name + "/TEMP/" + sample_name + "allalgo_output/reconstr_log.txt "  + comp_directory_name + '/compare_log.txt') 
 
 
 print("-------------------------------------------------")

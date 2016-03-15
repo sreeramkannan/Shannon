@@ -5,7 +5,7 @@ import pdb,math
 import numpy
 
 BASES = ['A', 'G', 'C', 'T']
-dont_correct_errors = False
+correct_errors = True
 rmer_to_contig = {}
 contig_to_rmer = {}
 cmer_to_contig = {}
@@ -184,7 +184,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
         duplicate_suspect = duplicate_check(contig, r) #Check whether this contig is significantly represented in a earlier contig. 
         #pdb.set_trace()
         # The line below is the hyperbola error correction.
-        if dont_correct_errors or (len(contig) >= min_length and len(contig)*math.pow(avg_wt,1/4.0) >= 2*min_length*math.pow(min_weight,1/4.0) and not duplicate_suspect):
+        if (not correct_errors) or (len(contig) >= min_length and len(contig)*math.pow(avg_wt,1/4.0) >= 2*min_length*math.pow(min_weight,1/4.0) and not duplicate_suspect):
             f1.write("{:s}\n".format(contig));  contig_index+=1
             contigs.append(contig)
             if contig_index not in contig_connections:
@@ -200,7 +200,6 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
             for i in range(len(contig) - C +1):
                 if contig[i:i+C] in cmer_to_contig:
                     for contig2_index in cmer_to_contig[contig[i:i+C]]:
-
                         #pdb.set_trace()
                         if contig2_index in contig_connections[contig_index] and contig2_index != contig_index:
                             contig_connections[contig_index][contig2_index] += 1

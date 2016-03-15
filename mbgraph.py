@@ -315,7 +315,7 @@ class Node(object):
     #Dictionary of K-mers at the beginning
     kmer_dict = {}
     #Average prevalence required for a K-mer to not be destroyed
-    PREVALENCE_THRESHOLD = 2
+    PREVALENCE_THRESHOLD = 1
     #Hamming distance required for two nodes to be collapsed
     HAMMING_FRACTION = 0.1
 
@@ -845,7 +845,7 @@ class Node(object):
         containing SELF in its entirety, and traversing to one base in
         GOAL.
         """
-	#print('New_max_length:' + str(max_length))
+	print('New_max_length:' + str(max_length))
         if max_length <= 0 or max_hops <=0:
             return []
         if self is goal and min_length <= 1:
@@ -1175,6 +1175,7 @@ class Node(object):
         if len(self.bases) <= Node.SIZE_THRESHOLD and (self.in_degree() == 0 or self.out_degree() == 0):
             return True
 
+
         if self.average_prevalence() >= Node.PREVALENCE_THRESHOLD:
             return False
         #if len(self.bases) >= Node.SIZE_THRESHOLD:
@@ -1352,7 +1353,7 @@ def known_paths():
         for start_node, start_i in kmers[start_kmer]:
             for path in search_sequence(read, start_node, start_i, max_hops):
                 Read.reads[read].nodes = path
-                if len(path) > 2:
+                if len(path) > 2 and len(path) <= 3*(len(read)/ float(Read.K)) +2:
                     Read.known_paths.add(tuple(path))
 		    no_known_paths+=1
     print("No of known paths:" + str(no_known_paths))

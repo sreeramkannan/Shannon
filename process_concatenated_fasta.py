@@ -20,3 +20,15 @@ def process_concatenated_fasta(file, new_file):
         elif len(line) >  200:
 	    new_f.write(last_name)
             new_f.write(line)
+
+
+def main():
+    if len(sys.argv) == 1:
+        arguments = ['', 'in_file.fasta', 'out_file.fasta']
+    else:
+        arguments = sys.argv
+    infile, outfile = arguments[1], arguments[2]
+    process_concatenated_fasta(infile, outfile)
+
+if __name__ == '__main__':
+    main()

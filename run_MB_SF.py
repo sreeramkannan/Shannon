@@ -69,6 +69,7 @@ blat = 1
 sample_name = None
 n_inp = sys.argv
 shannon_dir = ''
+only_k1 = ' --only_k1 '  #Default: write only k1mers
 
 if len(n_inp)>1:
     sample_name = sys.argv[1]
@@ -83,6 +84,8 @@ if len(n_inp)>1:
         compare_ans = 1
     if '--kmer_size' in n_inp:
         K_value = int(n_inp[n_inp.index('--kmer_size')+1])
+    if '--both' in n_inp:
+    	only_k1 == ' ' #Dont write only k1mers
         #print(K_value)
     if '--dir_name'in n_inp:
         directory_name = n_inp[n_inp.index('--dir_name')+1]
@@ -107,7 +110,7 @@ if add_errors:
 if double_stranded:
 	sn = sn + '_DS' 
 	ds_string = ' '
-	mb_string += ' -d '
+	#mb_string += ' -d '
 else:
 	ds_string = ' --stranded '
 	trinity_string += ' --SS_lib_type FR '
@@ -223,9 +226,9 @@ if mb:
 	if use_cpp:
 		cpp_s = '-c ' +sample_name+'algo_input/nodes.txt '+sample_name+'algo_input/edges.txt '
         if not paired_end:                
-		run_cmd('python ' + shannon_dir + 'multibridging.py --only_k1 -f ' + mb_string + jf_s + cpp_s + reads_file+'.fasta ' + sample_output_name + 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # ' 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
+		run_cmd('python ' + shannon_dir + 'multibridging.py  -f --kmer=' +str(K_value) + mb_string + only_k1 +  jf_s + cpp_s + reads_file+'.fasta ' + sample_output_name + 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # ' 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
 	else:
-		run_cmd('python ' + shannon_dir + 'multibridging.py --only_k1 -f '+ mb_string + jf_s + cpp_s + reads_file+'_1.fasta '+reads_file+'_2.fasta ' + sample_output_name+ 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
+		run_cmd('python ' + shannon_dir + 'multibridging.py -f --kmer='+ str(K_value) + mb_string + only_k1 + jf_s + cpp_s + reads_file+'_1.fasta '+reads_file+'_2.fasta ' + sample_output_name+ 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
 
 timer['after_mb'] = time.time()
 timer['for_mb'] = timer['after_mb'] - timer['after_gen_reads']

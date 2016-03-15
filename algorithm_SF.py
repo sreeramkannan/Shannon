@@ -696,7 +696,7 @@ class Graph(object):    ## Graph object (used universally)
                 path_str = path_str_wt[0][6:]
                 path_wt = path_str_wt[1]
 		if len(path_str):
-                	pathfile.write('>Shannon_'+sname + ' ' +comp+'_'+str(i)+"\t"+str(path_wt))
+                	pathfile.write('>Shannon_'+sname + '_' +comp+'_'+str(i)+"\t"+str(path_wt))
                 	pathfile.write("\n"+path_str+"\n") #with weights
 
 
