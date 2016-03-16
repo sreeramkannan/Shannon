@@ -127,8 +127,8 @@ if '--compare' in n_inp:
 	ref_file = os.path.abspath(ref_file)
 	n_inp = n_inp[:ind1]+n_inp[ind1+2:]    
 
-if '--strand-specific' in n_inp:
-	ind1 = n_inp.index('--strand-specific')
+if '--strand_specific' in n_inp:
+	ind1 = n_inp.index('--strand_specific')
 	double_stranded = False
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 	print('OPTIONS: Single-stranded mode enabled')
