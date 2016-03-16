@@ -113,7 +113,7 @@ def print_message():
 print_message()
 exit_now = test_install()
 # Read input from terminal
-n_inp = sys.argv
+n_inp = sys.argv[1:]
 if '--help' in n_inp:
 	with open('manual.md','r') as fin:
 		print fin.read()
@@ -127,27 +127,44 @@ if '--compare' in n_inp:
 	ref_file = os.path.abspath(ref_file)
 	n_inp = n_inp[:ind1]+n_inp[ind1+2:]    
 
+if '--single-stranded' in n_inp:
+	ind1 = n_inp.index('--single-stranded')
+	double_stranded = False
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
+	print('OPTIONS: Single-stranded mode enabled')
+
 if '--ss' in n_inp:
 	ind1 = n_inp.index('--ss')
 	double_stranded = False
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
+	print('OPTIONS: Single-stranded mode enabled')
+
+
+if '-s' in n_inp:
+	ind1 = n_inp.index('-s')
+	double_stranded = False
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
+	print('OPTIONS: Single-stranded mode enabled')
+
 
 if '-p' in n_inp:
 	ind1 = n_inp.index('-p')
 	nJobs = int(n_inp[ind1+1])
 	n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
 	run_parallel = True
+	print('OPTIONS: Running parallel with ' + str(nJobs) + ' jobs.')
 
 if '--partition' in n_inp:
 	ind1 = n_inp.index('--partition')
 	partition_size = int(n_inp[ind1+1])
 	n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
+	print('OPTIONS: Partition size set to ' + str(partition_size))	
 	
 if '-K' in n_inp:
 	ind1 = n_inp.index('-K')
 	K = int(n_inp[ind1+1])
 	n_inp = n_inp[:ind1]+n_inp[ind1+2:]
-
+	print('Kmer size set to ' + str(K))
 
 
 if '-o' in n_inp:
@@ -188,6 +205,9 @@ else:
 #     if len(n_inp)>3:
 #         reads_files.append(n_inp[3])
 # else:
+
+if n_inp:
+	print('OPTIONS WARNING: Following options not parsed: ' + " ".join(n_inp))
 
 
 	''''with open('manual.md','r') as fin:
