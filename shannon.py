@@ -429,7 +429,7 @@ f_log.write(str(time.asctime()) + ': All partitions completed.\n')
 if find_reps:
 	f_log.write(str(time.asctime()) + ': Finding representative outputs\n')
 	run_cmd('cat ' +  dir_out + "/reconstructed_org.fasta | perl -e 'while (<>) {$h=$_; $s=<>; $seqs{$h}=$s;} foreach $header (sort {length($seqs{$a}) <=> length($seqs{$b})} keys %seqs) {print $header.$seqs{$header}}' > " +  dir_out +  "/reconstructed_sorted.fasta " )
-	run_cmd(python_path + shannon_dir + 'faster_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
+	run_cmd(python_path + ' ' + shannon_dir + 'faster_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
 	f_log.write(str(time.asctime()) + ': Representative outputs found.\n')
 else:	
 	run_cmd('mv '  + dir_out + "/reconstructed_org.fasta " + dir_out + "/reconstructed.fasta ")
