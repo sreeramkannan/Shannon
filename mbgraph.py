@@ -1,4 +1,4 @@
-import time, doctest, pdb
+import time, doctest, pdb, collections
 
 CYCLE_DESTROY = True
 
@@ -13,10 +13,11 @@ class Read(object):
     reads = {}
     known_paths = set()
     mate_paths = set()
+    known_edges = collections.Counter()
 
-    MATE_PAIR_LENGTH = 200
+    MATE_PAIR_LENGTH = 300
     MATE_PAIR_MIN_LENGTH = 0
-    MATE_PAIR_MAX_HOPS = 5
+    MATE_PAIR_MAX_HOPS = 7
     MATED_READS = False
 
     def __init__(self, bases, copy_count):
@@ -136,6 +137,11 @@ class Read(object):
         for node1, node2 in mate_nodes:
 	    #pdb.set_trace()
             paths = node1.find_mate_path(len(node1.bases) - 1, node2, 0)
+
+            '''for p in paths:
+                for i in range(len(p)-1):
+                    Read.known_edges[tuple([p[i], p[i+1]])]+=1'''
+
             if len(paths) == 1 and len(paths[0]) > 2:
 		no_mate_paths+=1
                 Read.known_paths.add(tuple(paths[0]))
@@ -144,11 +150,11 @@ class Read(object):
 
     def mate_pair_check(self):
         """Iff this read is the first of a mate pair, and both reads have
-        known paths, return the first node/start base of this read, and the
-        last node/end base of the second read. Otherwise return null.
+        known paths, return the last node/start base of this read, and the
+        first node/end base of the second read. Otherwise return null.
         """
         if self.mate_pair == 1 and self.nodes and self.mate.nodes:
-            link = (self.nodes[0], self.mate.nodes[-1])
+            link = (self.nodes[-1], self.mate.nodes[0])
             if link[0] is link[1]: return
             if link[1] in link[0].successors(): return
             return link
@@ -845,7 +851,7 @@ class Node(object):
         containing SELF in its entirety, and traversing to one base in
         GOAL.
         """
-	print('New_max_length:' + str(max_length))
+
         if max_length <= 0 or max_hops <=0:
             return []
         if self is goal and min_length <= 1:
@@ -1353,7 +1359,10 @@ def known_paths():
         for start_node, start_i in kmers[start_kmer]:
             for path in search_sequence(read, start_node, start_i, max_hops):
                 Read.reads[read].nodes = path
-                if len(path) > 2 and len(path) <= 3*(len(read)/ float(Read.K)) +2:
+                for i in range(len(path)-1):
+                    Read.known_edges[tuple([path[i], path[i+1]])] +=1
+
+                if len(path) > 2: # and len(path) <= 3*(len(read)/ float(Read.K)) +2:
                     Read.known_paths.add(tuple(path))
 		    no_known_paths+=1
     print("No of known paths:" + str(no_known_paths))

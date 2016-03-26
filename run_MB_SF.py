@@ -70,7 +70,9 @@ sample_name = None
 n_inp = sys.argv
 shannon_dir = ''
 only_k1 = ' --only_k1 '  #Default: write only k1mers
-
+only_reads = False  #default: only_reads = false
+nJobs = 1
+python_path = 'python'
 if len(n_inp)>1:
     sample_name = sys.argv[1]
     if '--run_alg' in n_inp:
@@ -84,13 +86,21 @@ if len(n_inp)>1:
         compare_ans = 1
     if '--kmer_size' in n_inp:
         K_value = int(n_inp[n_inp.index('--kmer_size')+1])
+    if '--only_reads' in n_inp:
+    	only_reads = True
+    	run_jellyfish = 1
+    	run_extension_corr = 1
+    if '--nJobs' in n_inp:
+        nJobs = int(n_inp[n_inp.index('--nJobs')+1])
     if '--both' in n_inp:
     	only_k1 == ' ' #Dont write only k1mers
         #print(K_value)
     if '--dir_name'in n_inp:
         directory_name = n_inp[n_inp.index('--dir_name')+1]
-    if '--shannon-dir' in n_inp:
-	shannon_dir = n_inp[n_inp.index('--shannon-dir')+1]
+    if '--shannon_dir' in n_inp:
+	shannon_dir = n_inp[n_inp.index('--shannon_dir')+1]
+    if '--python_path' in n_inp:
+    	python_path = n_inp[n_inp.index('--python_path')+1]
         
 if paired_end:
 	F = 350 #Fragment size
@@ -183,29 +193,30 @@ if run_seecer:
 if run_jellyfish:
 	run_jfs = ' '
 	if double_stranded:
-		run_jfs += ' --both-strands '
-	run_cmd('rm '+sample_name+'algo_input/jelly*')  #Remove old jellyfish files
-	run_cmd(jellyfish_dir+' count -m ' + str(K_value+1) + run_jfs+ ' -o ' + sample_name+'algo_input/jellyfish_p1_output -s 20000000 -c 4 -t 32 ' +reads_string)
+		run_jfs += ' -C '
+	#run_cmd('rm '+sample_name+'algo_input/jelly*')  #Remove old jellyfish files
+	run_cmd(jellyfish_dir+' count -m ' + str(K_value+1) + run_jfs+ ' -o ' + sample_name+'algo_input/jellyfish_p1_output -s 20000000 -c 4 -t ' + str(nJobs) + ' ' +reads_string)
 
-	if os.path.isfile(sample_name+'algo_input/jellyfish_p1_output_1'):
+	'''if os.path.isfile(sample_name+'algo_input/jellyfish_p1_output_1'):
 		run_cmd(jellyfish_dir+' merge -o '+ sample_name+'algo_input/jellyfish_p1_output.jf ' + sample_name+'algo_input/jellyfish_p1_output\_*')
 	else:
-		run_cmd('mv ' + sample_name+'algo_input/jellyfish_p1_output_0 ' +sample_name+'algo_input/jellyfish_p1_output.jf')
+		run_cmd('mv ' + sample_name+'algo_input/jellyfish_p1_output_0 ' +sample_name+'algo_input/jellyfish_p1_output.jf')'''
 	
-	run_cmd(jellyfish_dir+' dump -c -t -L ' + str(jellyfish_kmer_cutoff) + ' ' + sample_name+'algo_input/jellyfish_p1_output.jf > ' + sample_name+'algo_input/k1mer.dict_org')
+	run_cmd(jellyfish_dir+' dump -c -t -L ' + str(jellyfish_kmer_cutoff) + ' ' + sample_name+'algo_input/jellyfish_p1_output > ' + sample_name+'algo_input/k1mer.dict_org')
 	if (not run_extension_corr) and double_stranded:
                 tester.double_strandify(sample_name+'algo_input/k1mer.dict_org', sample_name+'algo_input/k1mer.dict')
         if (not run_extension_corr) and (not double_stranded):
 		run_cmd('mv ' + sample_name+'algo_input/k1mer.dict_org ' + sample_name+'algo_input/k1mer.dict')	
+
 if run_extension_corr:	
 		if double_stranded:
 			str_ec = ' -d '
 		else: 
 			str_ec = ' '
-		run_cmd('python extension_correction_SIC.py ' + str_ec + sample_name+'algo_input/k1mer.dict_org ' +sample_name+'algo_input/k1mer.dict 3 75 12 0.5')
+		run_cmd(python_path + ' ext_corr.py ' + str_ec + sample_name+'algo_input/k1mer.dict_org ' +sample_name+'algo_input/k1mer.dict 3 75')
 
-if run_jellyfish or run_extension_corr:
-		run_cmd('python kp1mer_to_kmer.py ' + sample_name+'algo_input/k1mer.dict ' + sample_name+'algo_input/kmer.dict')
+'''if run_jellyfish or run_extension_corr:
+		run_cmd('python kp1mer_to_ kmer.py ' + sample_name+'algo_input/k1mer.dict ' + sample_name+'algo_input/kmer.dict')'''
 
 
 if run_cpp:
@@ -226,9 +237,9 @@ if mb:
 	if use_cpp:
 		cpp_s = '-c ' +sample_name+'algo_input/nodes.txt '+sample_name+'algo_input/edges.txt '
         if not paired_end:                
-		run_cmd('python ' + shannon_dir + 'multibridging.py  -f --kmer=' +str(K_value) + mb_string + only_k1 +  jf_s + cpp_s + reads_file+'.fasta ' + sample_output_name + 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # ' 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
+		run_cmd(python_path + ' ' + shannon_dir + 'multibridging.py  -f --kmer=' +str(K_value) + mb_string + only_k1 +  jf_s + cpp_s + reads_file+'.fasta ' + sample_output_name + 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # ' 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
 	else:
-		run_cmd('python ' + shannon_dir + 'multibridging.py -f --kmer='+ str(K_value) + mb_string + only_k1 + jf_s + cpp_s + reads_file+'_1.fasta '+reads_file+'_2.fasta ' + sample_output_name+ 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
+		run_cmd(python_path + ' ' + shannon_dir + 'multibridging.py -f --kmer='+ str(K_value) + mb_string + only_k1 + jf_s + cpp_s + reads_file+'_1.fasta '+reads_file+'_2.fasta ' + sample_output_name+ 'intermediate ' + ' | tee ' + sample_name + '_terminal_output.txt') # 2>&1 | tee ./' + sample_name + 'algo_input/log.txt')
 
 timer['after_mb'] = time.time()
 timer['for_mb'] = timer['after_mb'] - timer['after_gen_reads']
@@ -239,7 +250,7 @@ if sparse_flow:
         #run_cmd('rm '+sample_output_name+'algo_output/reconstructed_comp_*.fasta')
         #run_cmd('rm '+sample_output_name+'algo_output/reconstructed.fasta')
         
-        run_cmd('python ' + shannon_dir + 'algorithm_SF.py -1 '+ sample_output_name)
+        run_cmd(python_path + ' ' + shannon_dir + 'algorithm_SF.py -1 '+ sample_output_name)
         ncomp = 0
         iteration_string = " "
         while os.path.isfile(sample_output_name + 'intermediate/nodes'+str(ncomp)+'.txt'):
@@ -248,12 +259,12 @@ if sparse_flow:
                 	continue
                 print('Component:',ncomp)
                 if not parallelize_sf:
-                        os.system('python '  + shannon_dir + 'algorithm_SF.py ' + str(ncomp) + ' '+ sample_output_name + ' | tee ' + sample_name + '_' + str(ncomp) + '_terminal_output.txt')
+                        os.system(python_path + ' '  + shannon_dir + 'algorithm_SF.py ' + str(ncomp) + ' '+ sample_output_name + ' | tee ' + sample_name + '_' + str(ncomp) + '_terminal_output.txt')
                 iteration_string += str(ncomp) + " "
                 ncomp=ncomp+1
         
 	if parallelize_sf:
-		os.system('parallel python ' + shannon_dir + 'algorithm_SF.py {} ' + sample_output_name+ " ::: " + iteration_string)
+		os.system('parallel ' + python_path + ' ' + shannon_dir + 'algorithm_SF.py {} ' + sample_output_name+ " ::: " + iteration_string)
         os.system("cat " + sample_output_name+'algo_output/reconstructed_comp_*.fasta' +  " >> " + reconstr_file)
         #filter_trans(sample_output_name+'algo_output/reconstructed.fasta', sample_output_name+'algo_output/reconstructed_short.fasta', 200)
     
@@ -302,7 +313,7 @@ if compare_ans:
 		run_cmd('mummer -maxmatch -l 80 ' + curr_ref + ' ' + reconstr + ' > ' + reconstr_rev_per)
 		tester.reverse_analyzer(reconstr_rev_per,reconstr_rev_log,reconstr,N)
 	else:
-		run_cmd('python ' + shannon_dir + 'parallel_blat.py ' + reconstr + ' ' + curr_ref + ' ' + reconstr_per)
+		run_cmd(python_path + ' ' + shannon_dir + 'parallel_blat.py ' + reconstr + ' ' + curr_ref + ' ' + reconstr_per)
 		tester.analyzer_blat_noExp(reconstr_per,reconstr_log,exp_file,N)
 	if false_positive:
 		tester.false_positive(reconstr,reconstr_per,reconstr_rev_log)	

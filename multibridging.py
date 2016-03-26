@@ -253,8 +253,10 @@ def output_components(output_dir):
 
                 edgefile.write("InID\tOutID\tWeight\tCopycount\tNormalization\n")
                 for edge in component_edges:
-                    edgefile.write(edge.to_string())
-                
+                    #Update edge copy count based on exact copy count
+                    edge.copy_count = Read.known_edges[tuple([edge.in_node,edge.out_node])]/max(Read.L - edge.weight - 1, 1)
+                    if Read.known_edges[tuple([edge.in_node,edge.out_node])] >= 2: #EDGE_TH
+                        edgefile.write(edge.to_string())
                 component += 1
 
 def main():

@@ -114,7 +114,9 @@ def find_reps(infile, outfile,ds):
                     rmer_to_contig[rmer].append([curr_name,i])
                 else:
                     rmer_to_contig[rmer]= [[curr_name,i]]
+
     with open(outfile,'w') as out_file:
+        out_lines = []
 	contig_no = 0
         for contig_name in contigs:
 	    contig_no +=1
@@ -124,8 +126,9 @@ def find_reps(infile, outfile,ds):
 	    if contig_no % 1000 == 0:
 		print("written " + str(contig_no) + " sequences")
             if not duplicate_suspect:
-                out_file.write('>' + contig_name+'\n')
-                out_file.write(contigs[contig_name]+'\n')
+                out_lines.append('>' + contig_name+'\n')
+                out_lines.append(contigs[contig_name]+'\n')
+        out_file.writelines(out_lines)
              
                 
 

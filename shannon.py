@@ -20,9 +20,11 @@ gpmetis_path = 'gpmetis'
 jellyfish_path = 'jellyfish'
 gnu_parallel_path = 'parallel'
 quorum_path = 'quorum'
+python_path = 'python'
 
 
-
+#For version
+version = '0.0.1'
 	
 # For jellyfish
 double_stranded = True
@@ -30,6 +32,7 @@ run_jellyfish = True
 paired_end = False # Automatically set if command line is used
 jellyfish_kmer_cutoff = 1
 find_reps = True
+
 
 # General, Can be read in from terminal
 reads_files = ['~/Full_Assembler/SPombe_algo_input/reads.fasta'] # ['./S15_SE_algo_input/reads.fasta']
@@ -48,11 +51,12 @@ get_partition_kmers = True
 overload = 2
 K = 24
 penalty = 5
+nJobs = 1
 
 # General runtime options
 run_parallel = False
 compare_ans = False
-
+only_reads = False #Use only the reads from partitioning, not the kmers
 
 # Everything beyond this point does not need to be set
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
@@ -107,6 +111,7 @@ def test_install_gnu_parallel():
 def print_message():
 	print('--------------------------------------------')
 	print('Shannon: RNA Seq de novo Assembly')
+	print('Version: ' + version)
 	print('--------------------------------------------')
 
 
@@ -117,6 +122,11 @@ n_inp = sys.argv[1:]
 if '--help' in n_inp:
 	with open('manual.md','r') as fin:
 		print fin.read()
+	exit_now = True
+	sys.exit()
+
+if '--version' in n_inp:
+	print_message()
 	exit_now = True
 	sys.exit()
 
@@ -131,20 +141,20 @@ if '--strand_specific' in n_inp:
 	ind1 = n_inp.index('--strand_specific')
 	double_stranded = False
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
-	print('OPTIONS: Single-stranded mode enabled')
+	print('OPTIONS --strand_specific: Single-stranded mode enabled')
 
 if '--ss' in n_inp:
 	ind1 = n_inp.index('--ss')
 	double_stranded = False
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
-	print('OPTIONS: Single-stranded mode enabled')
+	print('OPTIONS --ss: Single-stranded mode enabled')
 
 
 if '-s' in n_inp:
 	ind1 = n_inp.index('-s')
 	double_stranded = False
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
-	print('OPTIONS: Single-stranded mode enabled')
+	print('OPTIONS -s: Single-stranded mode enabled')
 
 
 if '-p' in n_inp:
@@ -152,19 +162,37 @@ if '-p' in n_inp:
 	nJobs = int(n_inp[ind1+1])
 	n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
 	run_parallel = True
-	print('OPTIONS: Running parallel with ' + str(nJobs) + ' jobs.')
+	print('OPTIONS -p: Running parallel with ' + str(nJobs) + ' jobs.')
 
 if '--partition' in n_inp:
 	ind1 = n_inp.index('--partition')
 	partition_size = int(n_inp[ind1+1])
 	n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
-	print('OPTIONS: Partition size set to ' + str(partition_size))	
+	print('OPTIONS --partition: Partition size set to ' + str(partition_size))	
+	
+if '--only_reads' in n_inp:
+	ind1 = n_inp.index('--only_reads')
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:] 
+	print('OPTIONS --only_reads: Reads are partitioned but kmers are recomputed.')	
+	only_reads = True
 	
 if '-K' in n_inp:
 	ind1 = n_inp.index('-K')
 	K = int(n_inp[ind1+1])
 	n_inp = n_inp[:ind1]+n_inp[ind1+2:]
-	print('Kmer size set to ' + str(K))
+	print('OPTIONS -K: Kmer size set to ' + str(K))
+
+if '--kmer_hard_cutoff' in n_inp:
+	ind1 = n_inp.index('--kmer_hard_cutoff')
+	jellyfish_kmer_cutoff = int(n_inp[ind1+1])
+	n_inp = n_inp[:ind1]+n_inp[ind1+2:]
+	print('OPTIONS --kmer_hard_cutoff: Kmer hard cutoff set to ' + str(jellyfish_kmer_cutoff))
+
+if '--kmer_soft_cutoff' in n_inp:
+	ind1 = n_inp.index('--kmer_soft_cutoff')
+	hyp_min_weight = int(n_inp[ind1+1])
+	n_inp = n_inp[:ind1]+n_inp[ind1+2:]
+	print('OPTIONS --kmer_soft_cutoff: Kmer soft cutoff set to ' + str(hyp_min_weight))
 
 
 if '-o' in n_inp:
@@ -265,7 +293,7 @@ run_cmd('mkdir ' + sample_name_input+ "algo_input")
 #Run Quorum now
 if run_quorum:
 	print "{:s}: Running Quorum for read error correction with quality scores..".format(time.asctime())
-	run_cmd('python ' + shannon_dir + 'run_quorum.py ' + quorum_path + ' ' + comp_directory_name + ' ' + '\t'.join(reads_files) + " -t " + str(nJobs))
+	run_cmd(python_path + ' ' + shannon_dir + 'run_quorum.py ' + quorum_path + ' ' + comp_directory_name + ' ' + '\t'.join(reads_files) + " -t " + str(nJobs))
 	if paired_end:
 		reads_files = [comp_directory_name + '/corrected_reads_1.fa',comp_directory_name + '/corrected_reads_2.fa']
 	else:
@@ -281,7 +309,7 @@ if run_jellyfish:
 	if double_stranded:
 		run_jfs += ' -C '
 	#run_cmd('rm '+sample_name_input+'algo_input/jelly*')  #Remove old jellyfish files
-	run_cmd(jellyfish_path+' count -m ' + str(K_value+1) + run_jfs+ ' -o ' + sample_name_input+'algo_input/jellyfish_p1_output.jf -s 20000000 -c 4 -t 32 ' +reads_string)
+	run_cmd(jellyfish_path+' count -m ' + str(K_value+1) + run_jfs+ ' -o ' + sample_name_input+'algo_input/jellyfish_p1_output.jf -s 20000000 -c 4 -t ' + str(nJobs) + " " +reads_string)
 
 	run_cmd(jellyfish_path+' dump -c -t -L ' + str(jellyfish_kmer_cutoff) + ' ' + sample_name_input+'algo_input/jellyfish_p1_output.jf > ' +sample_name_input+'algo_input/k1mer.dict_org')
 	if (not run_extension_corr) and double_stranded:
@@ -310,7 +338,7 @@ if run_extension_corr:
 
 # Runs gpmetis to partition components of size above "partition_size" into partitions of size "partition_size"
 # Gets k1mers, kmers, and reads for each partition
-[components_broken, new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, contig_file_extension, get_partition_kmers, double_stranded, paired_end, use_second_iteration, partition_size, overload, K, gpmetis_path, penalty)
+[components_broken, new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, contig_file_extension, get_partition_kmers, double_stranded, paired_end, use_second_iteration, partition_size, overload, K, gpmetis_path, penalty, only_reads)
 
 del k1mer_dictionary
 # This counts remaining and non-remaining partitions for log.
@@ -349,27 +377,35 @@ for comp in new_components:
 		run_cmd("mv " + base_directory_name + "/reads" + str(comp) + ".fasta " + dir_base + "algo_input/reads.fasta")
 
 	#run_cmd("mv " + base_directory_name + "/component" + comp + "kmers_allowed.dict " + dir_base + "algo_input/kmer.dict")
-	run_cmd("mv " + base_directory_name + "/component" + str(comp)  + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
+	if not only_reads: #if only_reads, no need to copy k1mers
+		run_cmd("mv " + base_directory_name + "/component" + str(comp)  + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
 	main_server_parameter_string = main_server_parameter_string + dir_base + " " 
 	
-
 child_names = [x[0][:-10] for x in os.walk(comp_directory_name) if x[0].endswith('algo_input') and not x[0].endswith('_algo_input') and not x[0].endswith('allalgo_input')]
 main_server_parameter_string = ' '.join(child_names)
 
 		
 # Run run_MB_SF.py for each partition in parallel
-if double_stranded:
-	ds_string = "  --ds "
-else:
-	ds_string = "  "
+mb_sf_param_string = " "
+'''if double_stranded:
+	mb_sf_param_string += "  --ds " '''
+if only_reads:
+	mb_sf_param_string += "  --only_reads "
+mb_sf_param_string += "  --nJobs "	+ str(nJobs) + " "
 
 if main_server_parameter_string:
-	if run_parallel:
-		run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " python " + shannon_dir + "run_MB_SF.py {} --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " --shannon-dir " + shannon_dir + " ::: " + main_server_parameter_string)
+	if run_parallel and nJobs > 1:
+		run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " " + python_path + " " + shannon_dir + "run_MB_SF.py {} --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " --shannon_dir " + shannon_dir + " --python_path " + python_path +  " ::: " + main_server_parameter_string)
 	else:
 		for param_str in main_server_parameter_string.split():
-				run_cmd("python " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + ds_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon-dir " + shannon_dir)
+				run_cmd(python_path + " " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon_dir " + shannon_dir + " --python_path " + python_path)
 
+if os.path.exists(comp_directory_name+"/before_sp_log.txt"):
+	f_log = open(comp_directory_name+"/before_sp_log.txt", 'a')
+else:
+	f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
+
+# updates log
 
 # locates all reconstructed files
 
@@ -386,25 +422,24 @@ run_cmd("mkdir " + dir_out)
 out_file = dir_out + "/" + "all_reconstructed.fasta"
 run_cmd("cat " + reconstructed_files + " > " + out_file)
 process_concatenated_fasta(out_file, dir_out + "/reconstructed_org.fasta")
+f_log.write(str(time.asctime()) + ': All partitions completed.\n')
 
 #run_cmd('cp ' + dir_out + "/reconstructed.fasta " + dir_out + "/reconstructed_org.fasta")
 
 if find_reps:
+	f_log.write(str(time.asctime()) + ': Finding representative outputs\n')
 	run_cmd('cat ' +  dir_out + "/reconstructed_org.fasta | perl -e 'while (<>) {$h=$_; $s=<>; $seqs{$h}=$s;} foreach $header (sort {length($seqs{$a}) <=> length($seqs{$b})} keys %seqs) {print $header.$seqs{$header}}' > " +  dir_out +  "/reconstructed_sorted.fasta " )
-	run_cmd('python ' + shannon_dir + 'faster_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
+	run_cmd(python_path + shannon_dir + 'faster_reps.py -d ' + dir_out + "/reconstructed_sorted.fasta " + dir_out + "/reconstructed.fasta ")
+	f_log.write(str(time.asctime()) + ': Representative outputs found.\n')
 else:	
 	run_cmd('mv '  + dir_out + "/reconstructed_org.fasta " + dir_out + "/reconstructed.fasta ")
+
 
 # Compares reconstructed file against reference
 if compare_ans:
 	run_cmd("cp " + ref_file + ' ' +  dir_out + "/reference.fasta")
-	run_cmd("python " + shannon_dir + "run_MB_SF.py " + dir_base + " --compare --shannon-dir " + shannon_dir)
+	run_cmd(python_path + " " + shannon_dir + "run_MB_SF.py " + dir_base + " --compare --shannon_dir " + shannon_dir + " --python_path " + python_path)
 
-# updates log
-if os.path.exists(comp_directory_name+"/before_sp_log.txt"):
-	f_log = open(comp_directory_name+"/before_sp_log.txt", 'a')
-else:
-	f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
 num_transcripts = 0
 with open(dir_out + "/" + "reconstructed.fasta", 'r') as reconstructed_transcripts:
 	num_transcripts = int(len(reconstructed_transcripts.readlines())/2.0)

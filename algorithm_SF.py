@@ -95,29 +95,22 @@ def ParseKnownPathsFile(KnownPathsFile, graph):
     i = 0
     for node1 in graph.nodes:
         paths_for_node[node1] = []
-    for line in lines:
-        
+    for (i,line) in enumerate(lines):
         if i != 0:
             tokens = line.split()
             nodes_in_path = []
             tmp_string = ""
-            prev_node = None
-            j = 0
-            for hashcode in tokens:
-
+            #prev_node = None
+            for (j,hashcode) in enumerate(tokens):
                 node = hash_to_node[hashcode]
                 nodes_in_path.append(node)
                 if paths_for_node.get(node) == None:
                     paths_for_node[node]=[i-1]
                 else:
-                    paths_for_node[node].append(i-1)
-                prev_node = node
-                j += 1
-                    
-                    
+                    if len(paths_for_node[node]) < path_sparsity: #Append only if the no of known paths is smaller than path_sparsity
+                        paths_for_node[node].append(i-1)
+                #prev_node = node
             known_paths.append(nodes_in_path)
-            
-        i += 1
     f.close()
 
 
@@ -486,7 +479,6 @@ class Graph(object):    ## Graph object (used universally)
                                                         node_good = False
                                                 prev = each    
                                             
-                                            
                                             if node_good == True:
                                                 
                                                 l_good = True
@@ -551,7 +543,7 @@ class Graph(object):    ## Graph object (used universally)
                                         nodes_to_eliminate.append(in_node)
                                         nodes_to_eliminate.append(out_node)
                                         
-                                        paths_for_node[new_node] = path_bridge_dict[(i, j)]
+                                        paths_for_node[new_node] = path_bridge_dict[(i, j)][:path_sparsity]  #only write out path_sparsity no of paths per node.
                                         
                                     elif in_node_out_deg == 1 and in_1new and not (out_node_in_deg == 1 and out_1new):
                                         in_node = inedges[i]
@@ -573,7 +565,7 @@ class Graph(object):    ## Graph object (used universally)
                                     
                                         nodes_to_eliminate.append(in_node)
                                         
-                                        paths_for_node[new_node] = path_bridge_dict[(i, j)]
+                                        paths_for_node[new_node] = path_bridge_dict[(i, j)][:path_sparsity]
                                         
 
                                     elif not (in_node_out_deg == 1 and in_1new) and out_node_in_deg == 1 and out_1new:
@@ -598,7 +590,7 @@ class Graph(object):    ## Graph object (used universally)
                                     
                                         nodes_to_eliminate.append(out_node) 
                                         
-                                        paths_for_node[new_node] = path_bridge_dict[(i, j)]
+                                        paths_for_node[new_node] = path_bridge_dict[(i, j)][:path_sparsity]
 
                                     else: 
                                         out_attr = outgoing_edge_attributes[outedges[j]]  
@@ -618,7 +610,7 @@ class Graph(object):    ## Graph object (used universally)
                                         new_nodes.append(new_node)
                                         new_node_list.append(new_node)
                                         
-                                        paths_for_node[new_node] = path_bridge_dict[(i, j)]
+                                        paths_for_node[new_node] = path_bridge_dict[(i, j)][:path_sparsity]
                         
                         ## For each node that was condensed into a new node, delete all it's connections.
                         for old_node in nodes_to_eliminate:
@@ -696,7 +688,7 @@ class Graph(object):    ## Graph object (used universally)
                 path_str = path_str_wt[0][6:]
                 path_wt = path_str_wt[1]
 		if len(path_str):
-                	pathfile.write('>Shannon_'+sname + '_' +comp+'_'+str(i)+"\t"+str(path_wt))
+                	pathfile.write('>Shannon_'+sname + ' ' +comp+'_'+str(i)+"\t"+str(path_wt))
                 	pathfile.write("\n"+path_str+"\n") #with weights
 
 
