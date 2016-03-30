@@ -655,10 +655,13 @@ class Graph(object):    ## Graph object (used universally)
         prev_weight:  The wieght of thw last node in the path.  
         '''
         curr_str=str_till_now+node.string[overlap:]
-        if curr_str[-4:] == '_End':
-            curr_str = curr_str[:-4]    
 
         if len(node.out_edges) == 0: ## This assumes all paths end at the _END node.
+            if curr_str[-4:] != '_End':
+                #Return without appending this path
+                return
+            else:
+                curr_str = curr_str[:-4]    
             self.paths_Y.append([curr_str,prev_weight])
             return
         prev_weight = node.weight
