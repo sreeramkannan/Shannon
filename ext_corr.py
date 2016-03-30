@@ -24,15 +24,13 @@ class Counter():
 c1 = Counter("Loading", 10**6)
 c2 = Counter("Correction", 10**6)
 
+reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
 
-def reverse_complement(bases):
-    """Return the reverse complement of BASES. Assumes BASES is
-    all uppercase.
-    """
+'''def reverse_complement(bases):
     replacements = [('A', 't'), ('T', 'a'), ('C', 'g'), ('G', 'c')]
     for ch1, ch2 in replacements:
         bases = re.sub(ch1, ch2, bases)
-    return bases[::-1].upper()
+    return bases[::-1].upper()'''
 
 def argmax(lst, key):
     """Returns the element x in LST that maximizes KEY(x).

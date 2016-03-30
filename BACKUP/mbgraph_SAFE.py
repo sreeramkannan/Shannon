@@ -732,18 +732,6 @@ class Node(object):
         return added_list
 
     @staticmethod
-    def find_copy_counts():
-        for node in Node.nodes:
-                for edge in node.out_edges:
-                        np=tuple([edge.in_node,edge.out_node])
-                        ec = Read.known_edges.get(np,0)
-                        if 1: #ec>0 or edge.weight <= Read.K-1: 
-                                edge.copy_count = ec/max(Read.L - edge.weight - 1, 1)
-                        else:
-                                edge.copy_count = edge.copy_count #keep approximate cc
-
-
-    @staticmethod
     def find_approximate_copy_counts():
         """Find approximate copy counts based on kmer count and node length.
         """
@@ -1358,8 +1346,7 @@ def known_paths():
     for node in Node.nodes:
         for i in range(len(node.bases) - Read.K + 1):
             kmer = node.bases[i:i+Read.K]
-            if kmer not in kmers: 
-                kmers[kmer] = []
+            if kmer not in kmers: kmers[kmer] = []
             kmers[kmer].append((node, i))
     no_known_paths = 0
     for (enum,read) in enumerate(Read.reads):
@@ -1368,65 +1355,32 @@ def known_paths():
 	end_kmer = read[-Read.K:]
         if start_kmer not in kmers: continue
 	if end_kmer not in kmers: continue
-	max_hops = 30; #3*(len(read)/ float(Read.K)) +2; typical 15
-        '''if len(kmers[start_kmer]) > 100 :
-                continue  #Too many places to check. Not worth it.'''
+	max_hops = 15; #3*(len(read)/ float(Read.K)) +2; typical 15
         for start_node, start_i in kmers[start_kmer]:
-            if not compare(read,start_node.bases[start_i:]): continue
             for path in search_sequence(read, start_node, start_i, max_hops):
-                #print('iter ' + str(enum) + ': '+ str(len(path)) + ' nodes.')
                 Read.reads[read].nodes = path
                 for i in range(len(path)-1):
                     pair_i = tuple([path[i], path[i+1]])
                     Read.known_edges[pair_i] = Read.known_edges.get(pair_i,0)+Read.reads[read].copy_count
+
                 if len(path) > 2: # and len(path) <= 3*(len(read)/ float(Read.K)) +2:
                     Read.known_paths.add(tuple(path))
 		    no_known_paths+=1
     print("No of known paths:" + str(no_known_paths))
-
-def search_sequence_nonrec(seq, node, i, max_hops):
-    """Returns a list of all node-paths starting from NODE at index I
-    and matching sequence SEQ.
-    ASSUME that each sequence matches only one position
-    """
-    curr_path = []
-    while max_hops > 0:
-        '''if not compare(seq,node.bases[i:]): 
-            return []'''
-        curr_path.append(node)
-        node_length = len(node.bases)-i
-        if len(seq) <= node_length:
-            return [curr_path]
-        seq = seq[node_length:]
-        edges_search = [edge for edge in node.out_edges if compare(seq,edge.out_node.bases[edge.weight:])]
-        if edges_search:
-            edge = edges_search[0] #ONLY consider one edge. SINCE assumption: seq matches only one path.
-            node = edge.out_node
-            i = edge.weight
-            max_hops-=1
-        else:
-            return []        
-    return [curr_path]  #Optionally return curr_path
-
-
-
 def search_sequence(seq, node, i, max_hops):
     """Returns a list of all node-paths starting from NODE at index I
     and matching sequence SEQ.
     """
     node_length = len(node.bases) - i
-    '''if not compare(seq, node.bases[i:]):
-        return []'''
+    if not compare(seq, node.bases[i:]):
+        return []
     if max_hops<=0:
-	return [[node]]
+	return []
     if len(seq) <= node_length:
         return [[node]]
     paths = []
     seq = seq[node_length:]
-    edges_search = [edge for edge in node.out_edges if compare(seq,edge.out_node.bases[edge.weight:])]
-    if not edges_search:
-        return []
-    for edge in edges_search:
+    for edge in node.out_edges:
         for path in search_sequence(seq, edge.out_node, edge.weight, max_hops-1):
             paths.append([node] + path)
     return paths

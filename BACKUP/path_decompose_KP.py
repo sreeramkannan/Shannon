@@ -22,7 +22,7 @@ def path_decompose(a,b,a_true,b_true,overwrite_norm,P,use_GLPK, sparsity= False)
 	a_true: a vector that should have the copycount values for the in-edges but does not.  (Don't Use)
 	b_true: a vector that should have the copycount values for the out-edges but does not.  (Don't Use)
 	decides whether or not to  use a_true and b_true.
-	This is a matrix of in-edges versus out-edges that has a 0 if there is a known path and a 1 otherwise.  
+	This is a matrix of in-edges versus out-edges that has a 1 if there is a known path and a 0 otherwise.  
 	'''
 
     #mb_check = 1 #if this parameter is set to 1, if the data can be set using MB, then it
@@ -69,7 +69,17 @@ def path_decompose(a,b,a_true,b_true,overwrite_norm,P,use_GLPK, sparsity= False)
 		a = [k+const*k/sa for k in a ]
 
 
-	
+	#process known_paths to make sure that atleast one of the paths is active for each node
+	in_nodes_noKP = {}; out_nodes_noKP = {}
+	for i in range(m):
+		if not sum(P[i,:]): in_nodes_noKP[i]=True 
+	for j in range(n):
+		if not sum(P[:,j]): out_nodes_noKP[j]=True
+
+	for i in in_nodes_noKP:
+		for j in out_nodes_noKP:
+			P[i,j]=1
+
 
 	A = matrix(0.,(m+n-1,m*n))  ## A is used to enforce flow constraint on decomposition.
 	p=matrix(0.,(m*n,1))  ## This vector tells whether there is a known path for the pair of nodes or not.  
@@ -77,7 +87,7 @@ def path_decompose(a,b,a_true,b_true,overwrite_norm,P,use_GLPK, sparsity= False)
 	for i in range(m):
 		for j in range(n):
 			A[i,j*m+i] = 1.;  #check indexing
-			p[j*m+i] = 1-P[i,j];#p denotes if known path is *ABSENT*
+			p[j*m+i] = P[i,j];	
 	
 	for j in range(n-1):  #Must be range(n) to get full mattrix
 		for i in range(m):
@@ -106,7 +116,7 @@ def path_decompose(a,b,a_true,b_true,overwrite_norm,P,use_GLPK, sparsity= False)
 	for ctr in range(trials):  ## randomize the the coefficients for the known non=known path flow values.
 		c=matrix(abs(numpy.random.normal(0,1,(m*n,1))))
 		for i in range(m*n):
-			c[i] = c[i]*p[i]
+			c[i] = c[i] + (1-p[i])*10000 #Penalize paths not there in KP
 
 		## G and h are used to make sure that the flow values are non-negative.  
 		G = spmatrix(-1.,range(m*n),range(m*n))
@@ -125,6 +135,8 @@ def path_decompose(a,b,a_true,b_true,overwrite_norm,P,use_GLPK, sparsity= False)
 		## This loop basically sets the flow values equal to 0 under certain conditions.              
 		for i in range(m):
 			for j in range(n):
+				temp_sol[j*m+i] = temp_sol[j*m+i]*p[j*m+i]  #Set flow value to zero if not in paths
+				another_sol[j*m+i] = another_sol[j*m+i]*p[j*m+i]  #Set flow value to zero if not in paths
 				if another_sol[j*m+i]<sparsity_factor*min(a[i],b[j]):
 					another_sol[j*m+i]=0
 					
@@ -135,11 +147,14 @@ def path_decompose(a,b,a_true,b_true,overwrite_norm,P,use_GLPK, sparsity= False)
 				if another_sol[j*m+i]<0:
 					another_sol[j*m+i]=0
 					temp_sol[j*m+i]=0
+
+
 		
 		
 		s=0 ## s equals how many non-zero flows we are sending down non "known paths" in the temp solution
+
 		for i in range(m*n):
-			if p[i] > 0:  #Only couont the paths that are not supported
+			if p[i] > 0:  #Only couont the paths that are in KP
 				s=s+numpy.count_nonzero(another_sol[i])
 
 				## if the temporary solution is less than the current minimum solution, replace current minimum solution with

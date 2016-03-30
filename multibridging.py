@@ -19,15 +19,19 @@ def extract_reads(filename, weighted):
                 reads.append((last_weight, line[:-1].upper()))
     return reads
 
-def load_reads(filename, double_stranded, weighted):
+def load_reads(filename, double_stranded, weighted, no_reads_cutoff):
     """Load FASTA reads.
     """
     log("Loading reads.")
-    for read in extract_reads(filename, weighted):
-        Read.add_read(read, double_stranded)
+    for (curr_no,read) in enumerate(extract_reads(filename, weighted)):
+        if curr_no <= no_reads_cutoff:
+            Read.add_read(read, double_stranded)
+        else:
+            break
 
-def load_mated_reads(file_1, file_2, double_stranded):
-    #Does not allow weighted reads.
+def load_mated_reads(file_1, file_2, double_stranded, no_reads_cutoff):
+    #Does not allow weighted reads. 
+    #Only read reads till no_reads_cutoff 
     def pair(r1, r2):
         r1.mate_pair = 1
         r2.mate_pair = 2
@@ -40,7 +44,10 @@ def load_mated_reads(file_1, file_2, double_stranded):
     with open(file_1) as f1, open(file_2) as f2:
         gen1 = (l[:-1].upper().strip() for l in f1 if l[0] != '>')
         gen2 = (l[:-1].upper().strip() for l in f2 if l[0] != '>')
-        for line1 in gen1:
+        for (curr_no,line1) in enumerate(gen1):
+            if curr_no > no_reads_cutoff:
+                break
+            #Continue otherwise
             line2 = next(gen2)
             r1 = Read.add_read((1.0, line1), double_stranded)
             r2 = Read.add_read((1.0, Read.reverse_complement(line2)), double_stranded)
@@ -181,6 +188,7 @@ def run(output_dir, error_correction = False, compute_fringes = False):
     Node.find_approximate_copy_counts()
     log("Finding known paths.")
     known_paths()
+    Node.find_copy_counts()
     log("Finding mate pairs.")
     Read.find_mate_pairs()
 
@@ -253,11 +261,11 @@ def output_components(output_dir):
 
                 edgefile.write("InID\tOutID\tWeight\tCopycount\tNormalization\n")
                 for edge in component_edges:
-                    #Update edge copy count based on exact copy count
-                    edge.copy_count = Read.known_edges[tuple([edge.in_node,edge.out_node])]/max(Read.L - edge.weight - 1, 1)
-                    if Read.known_edges[tuple([edge.in_node,edge.out_node])] >= 2: #EDGE_TH
+                    #np = tuple([edge.in_node,edge.out_node]) #node-pair
+                    if edge.copy_count > 0: #either the edge has a copy count or edge weight >= Read.K
+                        #edge.copy_count = max(Read.known_edges.get(np,0),1)/max(Read.L - edge.weight - 1, 1)
                         edgefile.write(edge.to_string())
-                component += 1
+                component += 1  
 
 def main():
     sys.setrecursionlimit(10000)
@@ -298,13 +306,6 @@ def main():
 
     setup(read_files[0])
     log("Starting Multibridging.")
-    if len(read_files) == 1:
-        load_reads(read_files[0], double_stranded, weighted)
-    elif len(read_files) == 2:
-        load_mated_reads(read_files[0], read_files[1], double_stranded)
-    else:
-        load_reads(read_files[0], double_stranded)
-        load_mated_reads(read_files[1], read_files[2], double_stranded)
 
     if cpp:
         load_cpp(node_file, edge_file)
@@ -314,6 +315,20 @@ def main():
         else:
             load_jellyfish(node_file, edge_file)
         
+    no_kmers = len(Node.nodes);
+    FACTOR = 10
+    no_reads_cutoff = no_kmers*FACTOR;
+
+    if len(read_files) == 1:
+        #Single-end
+        load_reads(read_files[0], double_stranded, weighted, no_reads_cutoff)
+    elif len(read_files) == 2:
+        #Paired-end
+        load_mated_reads(read_files[0], read_files[1], double_stranded, no_reads_cutoff)
+    else: 
+        #There is an unpaired read file and 2 paired_read files
+        load_reads(read_files[0], double_stranded, no_reads_cutoff)
+        load_mated_reads(read_files[1], read_files[2], double_stranded, no_reads_cutoff)
  
     run(output_dir, error_correction, compute_fringes)
 

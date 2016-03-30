@@ -395,7 +395,7 @@ class Graph(object):    ## Graph object (used universally)
                         continue
                 node_iter += 1; 
                 sys.stdout.write('\r')
-                sys.stdout.write('comp: ' + str(comp) + ', algo_iter: ' + str(algo_iteration)  + ', node_iter: ' +  str(node_iter) + ', node_name: ' +str(node.name)+ ', m: ' + str(len(node.in_edges)) + ', n: ' + str(len(node.out_edges)) + ', Paths: ' + str(len(paths_for_node.get(node,[]))))
+                sys.stdout.write(str(time.asctime())+': comp: ' + str(comp) + ', algo_iter: ' + str(algo_iteration)  + ', node_iter: ' +  str(node_iter) + ', node_name: ' +str(node.name)+ ', m: ' + str(len(node.in_edges)) + ', n: ' + str(len(node.out_edges)) + ', Paths: ' + str(len(paths_for_node.get(node,[]))))
                 sys.stdout.flush(); 
                 if 1:
                     if 1:
@@ -434,7 +434,7 @@ class Graph(object):    ## Graph object (used universally)
                             outedge_cc.append(float(in_edge[3]))
                             outgoing_edge_attributes[out_edge[0]] = [out_edge[1], out_edge[3]]
 			
-			P = matrix(1.,(len(node.in_edges), len(node.out_edges)))
+			P = matrix(0.,(len(node.in_edges), len(node.out_edges)))
             
                         #  This section of code determines which known paths will be considered when decomposing this node
                         path_bridge_dict = {}
@@ -492,7 +492,7 @@ class Graph(object):    ## Graph object (used universally)
                                                     if node_list[tmp1[-1]+1+y].string != r_node[y].string:
                                                         r_good = False
                                                 if r_good and l_good:
-                                                    P[m, n] = 0 
+                                                    P[m, n] = 1 
                                                     path_bridge_dict[(m, n)].append(cp)
                                                 
                                         

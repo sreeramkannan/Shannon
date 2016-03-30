@@ -23,17 +23,13 @@ class Counter():
         if self.count % self.report_length == 0:
             print "{:s}: {:s}, processed {:d}".format(time.asctime(), self.name, self.count)
 
-def reverse_complement(bases):
-    """Return the reverse complement of BASES. Assumes BASES is
-    all uppercase.
-
-    >>> Read.reverse_complement("ATCGGGG")
-    'CCCCGAT'
-    """
+reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
+'''def reverse_complement(bases):
     replacements = [('A', 't'), ('T', 'a'), ('C', 'g'), ('G', 'c')]
     for ch1, ch2 in replacements:
         bases = re.sub(ch1, ch2, bases)
-    return bases[::-1].upper()
+    return bases[::-1].upper()'''
+
 
 def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_name, contig_file_extension, get_partition_k1mers, double_stranded = True, paired_end = False, repartition = False,  partition_size = 500, overload = 1.5, K = 24, gpmetis_path = 'gpmetis', penalty = 5, only_reads = False):
     """This fuction runs gpmetis on the components above a threshold size.  It then creates a dictionary called 
@@ -204,7 +200,13 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
                             j += 1                             
 
         write_log(str(time.asctime()) + ": " + "k1mers2component dictionary created ")
-
+        
+        '''no_kmers_in_comp = {}
+        for comp in new_components:
+            temp = 0
+            for contig in new_components[comp]:
+                temp += len(contig)
+            no_kmers_in_comp[comp] = temp'''
         
 
                             
@@ -337,8 +339,8 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
                     k1mer_file_data = []
                     for contig in new_components[comp]:
                         for i in range(len(contig)-(K+1) + 1):
-                            k1mer = contig[i:i+(K+1)]; rc = reverse_complement(k1mer); rw = k1mers2component.get(rc,[0,0])
-                            k1mer_file_data.append(k1mer + "\t" + str(k1mers2component[k1mer][1] + rw[1]) + "\n")
+                            k1mer = contig[i:i+(K+1)]; #rc = reverse_complement(k1mer); rw = k1mers2component.get(rc,[0,0])
+                            k1mer_file_data.append(k1mer + "\t" + str(k1mers2component[k1mer][1]) + "\n")
                             #k1mer_file.write(k1mer + "\t" + str(k1mers2component[k1mer][1] + rw[1]) + "\n")
                         '''for i in range(len(contig)-(K) + 1):
                             kmer = contig[i:i+(K)]
