@@ -66,7 +66,7 @@ def main():
     	ind1 = args.index('--nJobs')
     	nJobs = int(args[ind1+1])
     	args = args[:ind1]+args[ind1+1:]    
-	Query_split = 100
+    Query_split = 100
 
     
     parallel_blat(args[0],args[1],args[2],Query_split, nJobs)
