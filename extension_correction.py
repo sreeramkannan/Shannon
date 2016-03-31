@@ -40,7 +40,7 @@ def argmax(lst, key):
             best = x
     return best
 
-def load_kmers(infile, double_stranded):
+def load_kmers(infile, double_stranded, polyA_del=True):
     """Loads the list of K-mers and copycounts and determines K.
     Returns (kmers, K).
     """
@@ -54,6 +54,7 @@ def load_kmers(infile, double_stranded):
             c1.increment()
             kmer, weight = line.split()
             kmer = kmer.upper()
+            if polyA_del and polyA(kmer): continue
             weight = (float(weight))
             kmers[kmer] = kmers.get(kmer,0)+weight
             if double_stranded:
@@ -167,15 +168,12 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     #pdb.set_trace()
     print "{:s}: Starting Kmer error correction..".format(time.asctime())
     f_log.write("{:s}: Starting..".format(time.asctime()) + "\n")
-    kmers, K = load_kmers(infile, double_stranded)
+    kmers, K = load_kmers(infile, double_stranded,polyA_del)
     print "{:s}: {:d} K-mers loaded.".format(time.asctime(), len(kmers))
     f_log.write("{:s}: {:d} K-mers loaded.".format(time.asctime(), len(kmers)) + "\n")
 
     heaviest = sorted(kmers.items(), key=lambda kv: kv[1])
-    if polyA_del:
-        heaviest = [(k, w) for k, w in heaviest if w >= min_weight and not polyA(k)]
-    else:
-        heaviest = [(k, w) for k, w in heaviest if w >= min_weight]
+    heaviest = [(k, w) for k, w in heaviest if w >= min_weight]
     traversed, allowed = set(), set()
     f1 = open(outfile+'_contig','w')
     contig_index = 0;
