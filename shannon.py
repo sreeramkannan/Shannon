@@ -9,6 +9,7 @@ import tester
 from filter_trans import filter_trans
 import test_suite
 import subprocess
+import run_parallel_cmds
 
 from kmers_for_component import kmers_for_component
 from process_concatenated_fasta import process_concatenated_fasta
@@ -395,7 +396,12 @@ mb_sf_param_string += "  --nJobs "	+ str(nJobs) + " "
 
 if main_server_parameter_string:
 	if run_parallel and nJobs > 1:
-		run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " " + python_path + " " + shannon_dir + "run_MB_SF.py {} --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " --shannon_dir " + shannon_dir + " --python_path " + python_path +  " ::: " + main_server_parameter_string)
+		cmds = []
+		for param_str in main_server_parameter_string.split():
+			cmds.append(python_path + " " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon_dir " + shannon_dir + " --python_path " + python_path)
+		cmds = tuple(cmds)
+		run_parallel_cmds.run_cmds(cmds,nJobs)
+		#run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " " + python_path + " " + shannon_dir + "run_MB_SF.py {} --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " --shannon_dir " + shannon_dir + " --python_path " + python_path +  " ::: " + main_server_parameter_string)
 	else:
 		for param_str in main_server_parameter_string.split():
 				run_cmd(python_path + " " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon_dir " + shannon_dir + " --python_path " + python_path)

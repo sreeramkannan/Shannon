@@ -313,7 +313,7 @@ if compare_ans:
 		run_cmd('mummer -maxmatch -l 80 ' + curr_ref + ' ' + reconstr + ' > ' + reconstr_rev_per)
 		tester.reverse_analyzer(reconstr_rev_per,reconstr_rev_log,reconstr,N)
 	else:
-		run_cmd(python_path + ' ' + shannon_dir + 'parallel_blat.py ' + reconstr + ' ' + curr_ref + ' ' + reconstr_per)
+		run_cmd(python_path + ' ' + shannon_dir + 'parallel_blat_python.py ' + reconstr + ' ' + curr_ref + ' ' + reconstr_per)
 		tester.analyzer_blat_noExp(reconstr_per,reconstr_log,exp_file,N)
 	if false_positive:
 		tester.false_positive(reconstr,reconstr_per,reconstr_rev_log)	
