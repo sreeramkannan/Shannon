@@ -31,6 +31,21 @@ reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for
         bases = re.sub(ch1, ch2, bases)
     return bases[::-1].upper()'''
 
+def polyA(k):
+    #Input: kmer k, Output: whether the kmer is within hamming distance of 2 from all A or all T
+    #allA='A'*len(k);allT='T'*len(k)
+    nonA = sum(c != 'A' for c in k); 
+    nonT = sum(c != 'T' for c in k); 
+    return nonA<=2 or nonT<=2
+    '''noA = 0; noT = 0;
+    for i in range(len(k)):
+        noA += (k[i]=='A');
+        noT += (k[i]=='T');
+    if noA >= len(k)-2 or noT >= len(k)-2:
+        return True #sum((1 for i in range(len(k)) if a[i]=='A')
+    else:
+        return False'''
+
 def argmax(lst, key):
     """Returns the element x in LST that maximizes KEY(x).
     """
@@ -147,20 +162,6 @@ def trim_polyA(contig):
  
     return contig[startPt:totLen-endPt]
         
-def polyA(k):
-    #Input: kmer k, Output: whether the kmer is within hamming distance of 2 from all A or all T
-    #allA='A'*len(k);allT='T'*len(k)
-    nonA = sum(c != 'A' for c in k); 
-    nonT = sum(c != 'T' for c in k); 
-    return nonA<=2 or nonT<=2
-    '''noA = 0; noT = 0;
-    for i in range(len(k)):
-        noA += (k[i]=='A');
-        noT += (k[i]=='T');
-    if noA >= len(k)-2 or noT >= len(k)-2:
-        return True #sum((1 for i in range(len(k)) if a[i]=='A')
-    else:
-        return False'''
 
         
 def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold, polyA_del=True):
