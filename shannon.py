@@ -144,6 +144,13 @@ if '--strand_specific' in n_inp:
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 	print('OPTIONS --strand_specific: Single-stranded mode enabled')
 
+if '--fastq' in n_inp
+	ind1 = n_inp.index('--fastq')
+	 = False
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
+	print('OPTIONS --strand_specific: Single-stranded mode enabled')
+
+
 if '--ss' in n_inp:
 	ind1 = n_inp.index('--ss')
 	double_stranded = False

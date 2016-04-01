@@ -227,6 +227,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
                         read_line = line
                     else:
                         read = line.split()[0]
+                        if read.strip('ACTG'): continue #Contains characters other than ACTG
                         assigned_comp = get_comps(read,k1mers2component)
                         for each_comp in assigned_comp:
                             read_part_seq[each_comp].append(read_line)
@@ -269,6 +270,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
                         assert line2.split()[0][0] != ">"
                         read1 = line1.split()[0]
                         read2 = line2.split()[0]
+                        if read1.strip('ACTG') or read2.strip('ACTG'): continue #Dont write 'N' reads
                         read1_reversed = reverse_complement(read1)
                         read2_reversed = reverse_complement(read2)
                         
