@@ -144,9 +144,9 @@ if '--strand_specific' in n_inp:
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 	print('OPTIONS --strand_specific: Single-stranded mode enabled')
 
-if '--fastq' in n_inp
+if '--fastq' in n_inp:
 	ind1 = n_inp.index('--fastq')
-	 = False
+	run_quorum = False
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 	print('OPTIONS --strand_specific: Single-stranded mode enabled')
 
