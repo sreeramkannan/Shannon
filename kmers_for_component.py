@@ -31,7 +31,7 @@ reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for
     return bases[::-1].upper()'''
 
 
-def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_name, contig_file_extension, get_partition_k1mers, double_stranded = True, paired_end = False, repartition = False,  partition_size = 500, overload = 1.5, K = 24, gpmetis_path = 'gpmetis', penalty = 5, only_reads = False):
+def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_name, contig_file_extension, get_partition_k1mers, double_stranded = True, paired_end = False, repartition = False,  partition_size = 500, overload = 1.5, K = 24, gpmetis_path = 'gpmetis', penalty = 5, only_reads = False, inMem = False):
     """This fuction runs gpmetis on the components above a threshold size.  It then creates a dictionary called 
     k1mers2component {k1mer : component}.  It then sends any reads that share a kmer with a component to that component.
     It then cycles through the k1mer file and outputs the k1mers along with their weights to a file for each component.
@@ -172,9 +172,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
                                     k1mers2component[k1mer] = [set([comp]), k1mer_dictionary.get(k1mer,0)]
                                 else:
                                     k1mers2component[k1mer][0].add(comp)
-                            j += 1
-
-                        
+                            j += 1                        
                          
         # Adds remaining components to k1mers2component
         if 1:
@@ -242,10 +240,15 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
                                 reversed_read_name=read_line.split()[0]+'_reversed'+'\t' +'\t'.join(read_line.split()[1:])
                                 read_part_seq[each_comp].append(reversed_read_name+'\n')
                                 read_part_seq[each_comp].append(rc_read+'\n')                            
-            for comp in new_components:
-                read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
-                read_part_file.write("".join(read_part_seq[comp]))
-                read_part_file.close()
+            if not inMem: 
+                for comp in new_components:
+                    read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
+                    read_part_file.write("".join(read_part_seq[comp]))
+                    read_part_file.close()
+            elif inMem:
+                for comp in new_components:
+                    rps = read_part_seq[comp][1::2]
+                    read_part_seq[comp] = rps
 
         # Assigns reads to components in the paired end case
         elif paired_end == True:
@@ -293,13 +296,20 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
                                 read1_part_seq[each_comp].append(read1_reversed+'\n')
                                 read2_part_seq[each_comp].append(reversed_read2_name+'\n')
                                 read2_part_seq[each_comp].append(read2_reversed+'\n')
-            for comp in new_components:
-                read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'w')
-                read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'w')
-                read1_part_file.write("".join(read1_part_seq[comp]))
-                read2_part_file.write("".join(read2_part_seq[comp]))
-                read1_part_file.close()
-                read2_part_file.close()
+            if not inMem: 
+                for comp in new_components:
+                    read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'w')
+                    read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'w')
+                    read1_part_file.write("".join(read1_part_seq[comp]))
+                    read2_part_file.write("".join(read2_part_seq[comp]))
+                    read1_part_file.close()
+                    read2_part_file.close()
+            elif inMem:
+                for comp in new_components:
+                    rps1 = read1_part_seq[comp][1::2] #Keep only the reads, not the names
+                    rps2 = read2_part_seq[comp][1::2]
+                    read1_part_seq[comp] = rps1
+                    read2_part_seq[comp] = rps2
         
         write_log(str(time.asctime()) + ": " + "reads partititoned ")        
         
@@ -333,16 +343,27 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
                 kmer_dictionary[k1] += k1mer_dictionary[kp1mer]
                 kmer_dictionary[k2] += k1mer_dictionary[kp1mer]                
         write_log(str(time.asctime()) + ": " + "Computed kmer weights.")'''
+
+        contig_weights = {}
         if not only_reads: #If only_reads, no need to write k1mers
             write_log(str(time.asctime()) + ": Writing k1mers to file")
             # Writes out k1mers with weights for each partition
             for comp in new_components:
                 with open(directory_name+"/component" + comp + "k1mers_allowed.dict" , 'w') as k1mer_file:
                     k1mer_file_data = []
+                    contig_weights[comp] = []
                     for contig in new_components[comp]:
+                        weight_list = []
                         for i in range(len(contig)-(K+1) + 1):
                             k1mer = contig[i:i+(K+1)]; #rc = reverse_complement(k1mer); rw = k1mers2component.get(rc,[0,0])
-                            k1mer_file_data.append(k1mer + "\t" + str(k1mers2component[k1mer][1]) + "\n")
+                            k1mer_wt = k1mers2component[k1mer][1]
+                            weight_list.append(k1mer_wt)
+                            if not inMem: 
+                                k1mer_file_data.append(k1mer + "\t" + str(k1mer_wt) + "\n")
+                        if inMem:
+                            contig_weights[comp].append(weight_list)
+                        
+
                             #k1mer_file.write(k1mer + "\t" + str(k1mers2component[k1mer][1] + rw[1]) + "\n")
                         '''for i in range(len(contig)-(K) + 1):
                             kmer = contig[i:i+(K)]
@@ -417,6 +438,22 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_
                         new_file.write(kmer + "\t" + str(kmer_dictionary[kmer]) + "\n")'''
 
         write_log(str(time.asctime()) + ": " + "kmers written to file " + "\n")
-        newcomps = [c for c in new_components]                
-        return [components_broken, newcomps]
+        
+        #newcomps = [c for c in new_components]    
+        if inMem:
+            new_comps = new_components
+        else:
+            #Reseat new_comps and contig_weights
+            new_comps = [c for c in new_components]    
+            contig_weights = []
+        rps = {}
+        if inMem:
+            if paired_end:
+                for comp in new_components:
+                    rps[comp] = [read1_part_seq[comp], read2_part_seq[comp]]
+            else:
+                for comp in new_components:
+                    rps[comp] = [read_part_seq[comp]]
+
+        return [components_broken, new_comps, contig_weights, rps]
 

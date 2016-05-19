@@ -9,7 +9,9 @@ import tester
 from filter_trans import filter_trans
 import test_suite
 import subprocess
-import run_parallel_cmds
+import run_MB_SF_fn
+import multiprocessing as mp
+
 
 from kmers_for_component import kmers_for_component
 from process_concatenated_fasta import process_concatenated_fasta
@@ -27,6 +29,10 @@ python_path = 'python'
 #For version
 version = '0.0.1'
 	
+#Meta-option to choose whether parameters are passed in memory or in disk
+inMem = True
+inDisk = not inMem
+
 # For jellyfish
 double_stranded = True
 run_jellyfish = True
@@ -144,11 +150,7 @@ if '--strand_specific' in n_inp:
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 	print('OPTIONS --strand_specific: Single-stranded mode enabled')
 
-if '--fastq' in n_inp:
-	ind1 = n_inp.index('--fastq')
-	run_quorum = False
-	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
-	print('OPTIONS --strand_specific: Single-stranded mode enabled')
+
 
 
 if '--ss' in n_inp:
@@ -242,6 +244,26 @@ else:
 #         reads_files.append(n_inp[3])
 # else:
 
+run_quorum = False
+if reads_files[0][-1] == 'q': #Fastq mode
+	print('OPTIONS: File extension detected as fastq.')
+	run_quorum = True
+	#test_install_quorum()
+
+
+if '--fastq' in n_inp:
+	ind1 = n_inp.index('--fastq')
+	run_quorum = True
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
+	print('OPTIONS --fastq: Input is fastq format')
+
+if '--fasta' in n_inp:
+	ind1 = n_inp.index('--fasta')
+	run_quorum = False
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
+	print('OPTIONS --fasta: Input is fasta format')
+
+
 if n_inp:
 	print('OPTIONS WARNING: Following options not parsed: ' + " ".join(n_inp))
 
@@ -261,10 +283,6 @@ if len(reads_files) == 1:
 elif len(reads_files) == 2:
 	paired_end = True
 
-run_quorum = False
-if reads_files[0][-1] == 'q': #Fastq mode
-	run_quorum = True
-	test_install_quorum()
 
 if run_parallel:
 	test_install_gnu_parallel()
@@ -330,15 +348,13 @@ if run_jellyfish:
 # and determines seperate groups of contigs that share no kmers (components)
 if run_extension_corr:
 	#run_cmd('rm ' + base_directory_name+"/component*contigs.txt")    
-
 	if double_stranded:
 		str_ec = ' -d '
 	else: 
-		str_ec = ' '
-	
+		str_ec = ' '	
 	#run_cmd('python ' + shannon_dir + 'extension_correction.py ' + str_ec + sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold))
 	str_ec += sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold)
-	k1mer_dictionary = extension_correction(str_ec.split())
+	k1mer_dictionary = extension_correction(str_ec.split(),inMem)
 
 # Gets kmers from k1mers
 '''if run_jellyfish or run_extension_corr:
@@ -346,7 +362,7 @@ if run_extension_corr:
 
 # Runs gpmetis to partition components of size above "partition_size" into partitions of size "partition_size"
 # Gets k1mers, kmers, and reads for each partition
-[components_broken, new_components] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, contig_file_extension, get_partition_kmers, double_stranded, paired_end, use_second_iteration, partition_size, overload, K, gpmetis_path, penalty, only_reads)
+[components_broken, new_components, contig_weights, rps] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, contig_file_extension, get_partition_kmers, double_stranded, paired_end, use_second_iteration, partition_size, overload, K, gpmetis_path, penalty, only_reads, inMem)
 
 del k1mer_dictionary
 # This counts remaining and non-remaining partitions for log.
@@ -375,6 +391,7 @@ main_server_og_parameter_string = ""
 
 # Create directories for each partition where run_MB_SF.py will be run
 for comp in new_components:
+	if inMem: break;
 	dir_base = comp_directory_name + "/" + sample_name + str(comp)
 	run_cmd("mkdir " + dir_base + "algo_input")
 	run_cmd("mkdir " + dir_base + "algo_output")
@@ -388,9 +405,10 @@ for comp in new_components:
 	if not only_reads: #if only_reads, no need to copy k1mers
 		run_cmd("mv " + base_directory_name + "/component" + str(comp)  + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
 	main_server_parameter_string = main_server_parameter_string + dir_base + " " 
-	
-child_names = [x[0][:-10] for x in os.walk(comp_directory_name) if x[0].endswith('algo_input') and not x[0].endswith('_algo_input') and not x[0].endswith('allalgo_input')]
-main_server_parameter_string = ' '.join(child_names)
+
+if 0:
+	child_names = [x[0][:-10] for x in os.walk(comp_directory_name) if x[0].endswith('algo_input') and not x[0].endswith('_algo_input') and not x[0].endswith('allalgo_input')]
+	main_server_parameter_string = ' '.join(child_names)
 
 		
 # Run run_MB_SF.py for each partition in parallel
@@ -401,7 +419,7 @@ if only_reads:
 	mb_sf_param_string += "  --only_reads "
 mb_sf_param_string += "  --nJobs "	+ str(nJobs) + " "
 
-if main_server_parameter_string:
+if main_server_parameter_string and inDisk:
 	if run_parallel and nJobs > 1:
 		cmds = []
 		for param_str in main_server_parameter_string.split():
@@ -412,6 +430,27 @@ if main_server_parameter_string:
 	else:
 		for param_str in main_server_parameter_string.split():
 				run_cmd(python_path + " " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon_dir " + shannon_dir + " --python_path " + python_path)
+elif inMem:
+	param_str={}
+	for comp in new_components:
+		dir_base = comp_directory_name + "/" + sample_name + str(comp)	
+		param_str[comp] = dir_base + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + dir_base + " --shannon_dir " + shannon_dir + " --python_path " + python_path
+	
+	run_MBSF_processes = [mp.Process(target=run_MB_SF_fn.run_MB_SF,args=(param_str[comp],inMem, new_components[comp], contig_weights[comp], rps[comp])) for comp in new_components]
+	nProc = len(run_MBSF_processes)
+
+
+	for process in run_MBSF_processes:
+		process.start()
+	for process in run_MBSF_processes:
+		process.join()
+
+	#pool = mp.Pool(nJobs)
+	#pool.map(run_MB_SF_fn.run_MB_SF,[(param_str,inMem, new_components[comp], contig_weights[comp], rps[comp]) for comp in new_components])
+
+	#May need to modify so that number of jobs
+
+
 
 if os.path.exists(comp_directory_name+"/before_sp_log.txt"):
 	f_log = open(comp_directory_name+"/before_sp_log.txt", 'a')

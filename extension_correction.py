@@ -164,7 +164,7 @@ def trim_polyA(contig):
         
 
         
-def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold, polyA_del=True):
+def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold, polyA_del=True, inMem = False):
     f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
     #pdb.set_trace()
     print "{:s}: Starting Kmer error correction..".format(time.asctime())
@@ -200,7 +200,8 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
         #pdb.set_trace()
         # The line below is the hyperbola error correction.
         if (not correct_errors) or (len(contig) >= min_length and len(contig)*math.pow(avg_wt,1/4.0) >= 2*min_length*math.pow(min_weight,1/4.0) and not duplicate_suspect):
-            f1.write("{:s}\n".format(contig));  contig_index+=1
+            f1.write("{:s}\n".format(contig));  
+            contig_index+=1
             contigs.append(contig)
             if contig_index not in contig_connections:
                 contig_connections[contig_index] = {}
@@ -240,13 +241,14 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     f_log.write("{:s}: {:d} K-mers remaining after error correction.".format(time.asctime(), len(allowed)) + " \n")
     
     # Writes out kmers from all allowed contigs
-    allowed_kmer_dict = {}
-    with open(outfile, 'w') as f:
-        for kmer in allowed:
-            f.write("{:s}\t{:d}\n".format(kmer, int(kmers[kmer])))
-            allowed_kmer_dict[kmer] = int(kmers[kmer])
-    del kmers
-    f_log.write("{:s}: {:d} K-mers written to file.".format(time.asctime(), len(allowed)) + " \n") 
+    if 1:
+        allowed_kmer_dict = {}
+        with open(outfile, 'w') as f:
+            for kmer in allowed:
+                if not inMem: f.write("{:s}\t{:d}\n".format(kmer, int(kmers[kmer])))
+                allowed_kmer_dict[kmer] = int(kmers[kmer])
+        del kmers
+        f_log.write("{:s}: {:d} K-mers written to file.".format(time.asctime(), len(allowed)) + " \n") 
     #pdb.set_trace()
 
     # Depth First Search to find components of contig graph.
@@ -357,9 +359,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     #pdb.set_trace()
             
                 
-                
-
-def extension_correction(arguments):
+def extension_correction(arguments,inMem=False):
     #pdb.set_trace()
     double_stranded = '-d' in arguments
     arguments = [a for a in arguments if len(a) > 0 and a[0] != '-']
@@ -368,7 +368,7 @@ def extension_correction(arguments):
     min_weight, min_length = int(arguments[2]), int(arguments[3])
     comp_directory_name, comp_size_threshold = arguments[4], int(arguments[5])
     #pdb.set_trace()
-    allowed_kmer_dict = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold)
+    allowed_kmer_dict = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold, True, inMem)
     return allowed_kmer_dict
 
 if __name__ == '__main__':

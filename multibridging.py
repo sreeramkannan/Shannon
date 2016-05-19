@@ -29,6 +29,42 @@ def load_reads(filename, double_stranded, weighted, no_reads_cutoff):
         else:
             break
 
+def load_reads_inMem(rps, double_stranded, no_reads_cutoff):
+    rl = 0; nreads = 0
+    for i in range(min(len(rps),no_reads_cutoff)):
+        #print(rps[i])
+        Read.add_read((1.0,rps[i].strip()),double_stranded)
+        rl+=len(rps[i]); nreads+=1
+    Read.L=int(float(rl)/nreads)
+    Node.SIZE_THRESHOLD = Read.L
+    print("No of reads:"+str(nreads))
+
+
+def load_mated_reads_inMem(rps1,rps2, double_stranded, no_reads_cutoff):
+    log("Loading mated reads.")
+    assert len(rps1)==len(rps2)
+    Read.MATED_READS = True
+    def pair(r1, r2):
+        r1.mate_pair = 1
+        r2.mate_pair = 2
+        r1.mate = r2
+        r2.mate = r1
+    nr=0; lr = 0;
+    for i in range(min(len(rps1),no_reads_cutoff)):
+        r1 = Read.add_read((1.0, rps1[i]), double_stranded)
+        r2 = Read.add_read((1.0, Read.reverse_complement(rps2[i])), double_stranded)
+        nr+=1; lr+= len(rps1[i])+len(rps2[i])
+        if double_stranded:
+                r1a, r1b = r1
+                r2a, r2b = r2
+                pair(r1a, r2a)
+                pair(r2b, r1b)
+        else:
+                pair(r1, r2)
+    Read.L = int(lr/(2.0*nr))
+    Node.SIZE_THRESHOLD = Read.L
+    print('No of paired reads:' + str(nr))
+
 def load_mated_reads(file_1, file_2, double_stranded, no_reads_cutoff):
     #Does not allow weighted reads. 
     #Only read reads till no_reads_cutoff 
@@ -135,6 +171,27 @@ def load_single_jellyfish(edge_file):
     for node in Node.nodes:
         node.prevalence = sum(e.weight for e in node.out_edges)
 
+def load_kmers_inMem(contigs,weights):
+    """Loads condensed files from Jellyfish.
+    """
+    log("Loading nodes from K-mer files.")
+
+    nodes = {}    
+    for i in range(len(weights)):
+        for (j,prevalence) in enumerate(weights[i]):
+            bases=contigs[i][j:j+Read.K+1]
+            k1, k2 = bases[:-1], bases[1:]
+            if k1 not in nodes:
+                n1 = Node(k1);  nodes[k1] = n1
+            if k2 not in nodes:
+                n2 = Node(k2);  nodes[k2] = n2
+            weight = Read.K - 1
+            e = nodes[k1].link_to(nodes[k2], int(weight))
+            e.copy_count = round(float(prevalence))
+
+    for node in Node.nodes:
+        node.prevalence = sum(e.weight for e in node.out_edges)
+    print('No of kmers:' + str(len(Node.nodes)))
 
 
 def setup(read_file):
@@ -267,14 +324,9 @@ def output_components(output_dir):
                         edgefile.write(edge.to_string())
                 component += 1  
 
-def main():
+def main(arguments,inMem=False,contigs=[],weights=[],rps=[]):
+    arguments=arguments.strip().split()
     sys.setrecursionlimit(10000)
-    if len(sys.argv) == 1:
-        arguments = ['', '-f', '-e', '-d',
-                     'input/kmer.dict', 'input/k1mer.dict', '--kmer=24',
-                     'input/r1_100k.fa', 'input/r2_100k.fa', 'output']
-    else:
-        arguments = sys.argv
     names = []
     double_stranded = False
     error_correction = False
@@ -283,7 +335,7 @@ def main():
     weighted = False
     Read.K = 24
     use_only_k1mer = False
-    for arg in arguments[1:]:
+    for arg in arguments:
         if arg == '-d':
             double_stranded = True
         elif arg == '-e':
@@ -304,33 +356,51 @@ def main():
     node_file, edge_file, output_dir = names[0], names[1], names[-1]
     read_files = names[2:-1]
 
-    setup(read_files[0])
+    
     log("Starting Multibridging.")
+    print(inMem)
+    if inMem:
+        load_kmers_inMem(contigs,weights)
+        no_kmers = len(Node.nodes);
+        FACTOR = 10
+        no_reads_cutoff = no_kmers*FACTOR;
 
-    if cpp:
-        load_cpp(node_file, edge_file)
-    else:
-        if use_only_k1mer:
-            load_single_jellyfish(edge_file)
+        if len(rps)==1:
+            load_reads_inMem(rps[0],double_stranded,no_reads_cutoff)
+        elif len(rps)==2:
+            load_mated_reads_inMem(rps[0],rps[1],double_stranded,no_reads_cutoff)
+    else:    
+        setup(read_files[0])
+        if cpp:
+            load_cpp(node_file, edge_file)
         else:
-            load_jellyfish(node_file, edge_file)
-        
-    no_kmers = len(Node.nodes);
-    FACTOR = 10
-    no_reads_cutoff = no_kmers*FACTOR;
+            if use_only_k1mer:
+                load_single_jellyfish(edge_file)
+            else:
+                load_jellyfish(node_file, edge_file)
+            
+        no_kmers = len(Node.nodes);
+        FACTOR = 10
+        no_reads_cutoff = no_kmers*FACTOR;
 
-    if len(read_files) == 1:
-        #Single-end
-        load_reads(read_files[0], double_stranded, weighted, no_reads_cutoff)
-    elif len(read_files) == 2:
-        #Paired-end
-        load_mated_reads(read_files[0], read_files[1], double_stranded, no_reads_cutoff)
-    else: 
-        #There is an unpaired read file and 2 paired_read files
-        load_reads(read_files[0], double_stranded, no_reads_cutoff)
-        load_mated_reads(read_files[1], read_files[2], double_stranded, no_reads_cutoff)
- 
+        if len(read_files) == 1:
+            #Single-end
+            load_reads(read_files[0], double_stranded, weighted, no_reads_cutoff)
+        elif len(read_files) == 2:
+            #Paired-end
+            load_mated_reads(read_files[0], read_files[1], double_stranded, no_reads_cutoff)
+        else: 
+            #There is an unpaired read file and 2 paired_read files
+            load_reads(read_files[0], double_stranded, no_reads_cutoff)
+            load_mated_reads(read_files[1], read_files[2], double_stranded, no_reads_cutoff)
+    print('output dir is ' + output_dir)
     run(output_dir, error_correction, compute_fringes)
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) == 1:
+        arguments = ['', '-f', '-e', '-d',
+                     'input/kmer.dict', 'input/k1mer.dict', '--kmer=24',
+                     'input/r1_100k.fa', 'input/r2_100k.fa', 'output']
+    else:
+        arguments = sys.argv; arguments = arguments[1:]
+    main('\t'.join(arguments))
