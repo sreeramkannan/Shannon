@@ -16,6 +16,7 @@ import multiprocessing as mp
 from kmers_for_component import kmers_for_component
 from process_concatenated_fasta import process_concatenated_fasta
 from extension_correction import  extension_correction
+from operator import itemgetter
 
 #Set Paths
 shannon_dir = os.path.dirname(os.path.abspath(sys.argv[0])) + '/' 
@@ -431,19 +432,33 @@ if main_server_parameter_string and inDisk:
 		for param_str in main_server_parameter_string.split():
 				run_cmd(python_path + " " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon_dir " + shannon_dir + " --python_path " + python_path)
 elif inMem:
-	param_str={}
+	param_str={}; contig_size = {}
 	for comp in new_components:
 		dir_base = comp_directory_name + "/" + sample_name + str(comp)	
 		param_str[comp] = dir_base + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + dir_base + " --shannon_dir " + shannon_dir + " --python_path " + python_path
+		contig_size[comp] = sum(len(cw_vec) for cw_vec in contig_weights[comp])
+
+	contig_vec = contig_size.items()
+	sorted_contig_vec = sorted(contig_vec,key=itemgetter(1),reverse=True)
+	def get_column(matrix, i):
+		return [row[i] for row in matrix]
+	sorted_comps = get_column(sorted_contig_vec,0)
+	run_MBSF_processes = [mp.Process(target=run_MB_SF_fn.run_MB_SF,args=(param_str[comp],inMem, new_components[comp], contig_weights[comp], rps[comp])) for comp in sorted_comps]
 	
-	run_MBSF_processes = [mp.Process(target=run_MB_SF_fn.run_MB_SF,args=(param_str[comp],inMem, new_components[comp], contig_weights[comp], rps[comp])) for comp in new_components]
-	nProc = len(run_MBSF_processes)
+	nProc = float(len(run_MBSF_processes))
+	nJobs = nJobs;
+	split_MBSF_processes = []; split_names = []
+	for i in range(int(math.ceil(nProc/nJobs))):
+		split_MBSF_processes.append(run_MBSF_processes[(i)*nJobs:(i+1)*nJobs])
+		split_names.append(sorted_comps[(i)*nJobs:(i+1)*nJobs])
 
-
-	for process in run_MBSF_processes:
-		process.start()
-	for process in run_MBSF_processes:
-		process.join()
+	for (i,curr_processes) in enumerate(split_MBSF_processes):
+		print("Currently running:  \n")
+		print(split_names[i])
+		for process in curr_processes:
+			process.start()
+		for process in curr_processes:
+			process.join()
 
 	#pool = mp.Pool(nJobs)
 	#pool.map(run_MB_SF_fn.run_MB_SF,[(param_str,inMem, new_components[comp], contig_weights[comp], rps[comp]) for comp in new_components])
