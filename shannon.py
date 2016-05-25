@@ -11,7 +11,7 @@ import test_suite
 import subprocess
 import run_MB_SF_fn
 import multiprocessing as mp
-
+import run_parallel_cmds
 
 from kmers_for_component import kmers_for_component
 from process_concatenated_fasta import process_concatenated_fasta

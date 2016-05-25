@@ -51,8 +51,8 @@ def load_mated_reads_inMem(rps1,rps2, double_stranded, no_reads_cutoff):
         r2.mate = r1
     nr=0; lr = 0;
     for i in range(min(len(rps1),no_reads_cutoff)):
-        r1 = Read.add_read((1.0, rps1[i]), double_stranded)
-        r2 = Read.add_read((1.0, Read.reverse_complement(rps2[i])), double_stranded)
+        r1 = Read.add_read((1.0, rps1[i].strip()), double_stranded)
+        r2 = Read.add_read((1.0, Read.reverse_complement(rps2[i].strip())), double_stranded)
         nr+=1; lr+= len(rps1[i])+len(rps2[i])
         if double_stranded:
                 r1a, r1b = r1
