@@ -221,12 +221,13 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                 read_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w')
             ctr = 0
             for read in reads:
-                #if read.strip('ACTG'): continue
+                read = read.strip()
+                if read.strip('ACTG'): continue
                 ctr +=1
                 assigned_comp = get_comps(read,k1mers2component)
                 for each_comp in assigned_comp:
                     read_part_seq[each_comp].append('>'+str(ctr)+'\n')
-                    read_part_seq[each_comp].append(read)
+                    read_part_seq[each_comp].append(read+'\n')
             if not inMem: 
                 for comp in new_components:
                     read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
@@ -254,16 +255,17 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             ctr = 0
             if 1:
                 for read1,read2 in zip(reads[0],reads[1]): 
-                        #if read1.strip('ACTG') or read2.strip('ACTG'): continue
+                        read1 = read1.strip(); read2 = read2.strip()
+                        if read1.strip('ACTG') or read2.strip('ACTG'): continue
                         ctr+=1
                         #First process (read1, read2_reversed)
                         assigned_comp = get_comps_paired(read1,read2,k1mers2component)
 
                         for each_comp in assigned_comp:
                             read1_part_seq[each_comp].append('>'+ctr+'_1'+'\n')
-                            read1_part_seq[each_comp].append(line1)
+                            read1_part_seq[each_comp].append(read1 +'\n')
                             read2_part_seq[each_comp].append('>'+ctr+'_2'+'\n')
-                            read2_part_seq[each_comp].append(line2)
+                            read2_part_seq[each_comp].append(read2+'\n')
 
             if not inMem: 
                 for comp in new_components:
