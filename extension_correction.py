@@ -69,7 +69,7 @@ def load_kmers_parallel(infile, double_stranded,  polyA_del=True, nJobs = 1):
     kmers={}
     with open(infile) as f:
         lines = f.readlines()
-    chunk = int(math.ceil(len(a)/float(nJobs)))
+    chunk = int(math.ceil(len(lines)/float(nJobs)))
     out_q = multiprocessing.Queue()
     procs = [multiprocessing.Process(target=par_load,args=(lines[x*chunk:(x+1)*chunk],double_stranded, polyA_del, out_q)) for x in range(nJobs)]
     for p in procs:
