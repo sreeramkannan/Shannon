@@ -26,7 +26,7 @@ class Counter():
 c1 = Counter("Loading", 10**6)
 c2 = Counter("Correction", 10**6)
 
-reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
+reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A','N':'N'}[B] for B in x][::-1])
 '''def reverse_complement(bases):
     replacements = [('A', 't'), ('T', 'a'), ('C', 'g'), ('G', 'c')]
     for ch1, ch2 in replacements:
