@@ -88,8 +88,8 @@ def par_read(reads_files,double_stranded, nJobs, out_q):
                 reads.extend(temp_q.get())
             for p in procs:
                 p.join()
-            #r1 = [r[0] for r in reads]; r2 = [r[1] for r in reads]
-            #reads = [r1,r2]    
+            r1 = [r[0] for r in reads]; r2 = [r[1] for r in reads]
+            reads = [r1,r2]    
         out_q.put(reads)
     else:
         out_q.put([])
@@ -493,7 +493,6 @@ def extension_correction(arguments,inMem=False):
             reads_files.append(arguments[8])
     else:
         reads_files = []
-
 
     #pdb.set_trace()
     allowed_kmer_dict, reads = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold, True, inMem, nJobs, reads_files)

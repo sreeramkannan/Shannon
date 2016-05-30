@@ -219,27 +219,13 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             read_part_seq = {}   
             for comp in new_components:
                 read_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w')
-            with open(reads_files[0]) as readfile:
-                for line in readfile:
-                    if line.split()[0][0] == ">":
-                        read_line = line
-                    else:
-                        read = line.split()[0]
-                        if read.strip('ACTG'): continue #Contains characters other than ACTG
-                        assigned_comp = get_comps(read,k1mers2component)
-                        for each_comp in assigned_comp:
-                            read_part_seq[each_comp].append(read_line)
-                            read_part_seq[each_comp].append(line)
-
-                            
-                        
-                        if double_stranded:
-                            rc_read = reverse_complement(read); 
-                            assigned_comp = get_comps(rc_read,k1mers2component)
-                            for each_comp in assigned_comp:
-                                reversed_read_name=read_line.split()[0]+'_reversed'+'\t' +'\t'.join(read_line.split()[1:])
-                                read_part_seq[each_comp].append(reversed_read_name+'\n')
-                                read_part_seq[each_comp].append(rc_read+'\n')                            
+            ctr = 0
+            for read in reads:
+                ctr +=1
+                assigned_comp = get_comps(read,k1mers2component)
+                for each_comp in assigned_comp:
+                    read_part_seq[each_comp].append('>'+str(ctr)+'\n')
+                    read_part_seq[each_comp].append(read)
             if not inMem: 
                 for comp in new_components:
                     read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
@@ -259,43 +245,24 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                 read2_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+"_2.fasta", 'w')
             comp2reads = {}
 
-            comp2reads_reversed = {}
-            readfile1 = open(reads_files[0], 'r')
-            readfile2 = open(reads_files[1], 'r')
-            read_line1 = ''; read_line2 = ''
-            with open(reads_files[0]) as readfile1, open(reads_files[1]) as readfile2:
-                for line1,line2 in zip(readfile1,readfile2):
-                    if line1.split()[0][0] == ">":
-                        assert line2.split()[0][0] == ">"
-                        read_line1 = line1
-                        read_line2 = line2
-                    else:
-                        assert line2.split()[0][0] != ">"
-                        read1 = line1.split()[0]
-                        read2 = line2.split()[0]
-                        if read1.strip('ACTG') or read2.strip('ACTG'): continue #Dont write 'N' reads
-                        read1_reversed = reverse_complement(read1)
-                        read2_reversed = reverse_complement(read2)
-                        
+            #comp2reads_reversed = {}
+            #readfile1 = open(reads_files[0], 'r')
+            #readfile2 = open(reads_files[1], 'r')
+            #read_line1 = ''; read_line2 = ''
+            #with open(reads_files[0]) as readfile1, open(reads_files[1]) as readfile2:
+            ctr = 0
+            if 1:
+                for read1,read2 in zip(reads[0],reads[1]):                        
+                        ctr+=1
                         #First process (read1, read2_reversed)
-                        assigned_comp = get_comps_paired(read1,read2_reversed,k1mers2component)
+                        assigned_comp = get_comps_paired(read1,read2,k1mers2component)
 
                         for each_comp in assigned_comp:
-                            read1_part_seq[each_comp].append(read_line1)
+                            read1_part_seq[each_comp].append('>'+ctr+'_1'+'\n')
                             read1_part_seq[each_comp].append(line1)
-                            read2_part_seq[each_comp].append(read_line2)
+                            read2_part_seq[each_comp].append('>'+ctr+'_2'+'\n')
                             read2_part_seq[each_comp].append(line2)
 
-                        if double_stranded:
-                            #Now process (read1_reversed, read2)
-                            assigned_comp = get_comps_paired(read1_reversed, read2, k1mers2component)
-                            for each_comp in assigned_comp:
-                                reversed_read1_name=read_line1.split()[0]+'_reversed'+'\t'+'\t'.join(read_line1.split()[1:])
-                                reversed_read2_name=read_line2.split()[0]+'_reversed'+'\t'+'\t'.join(read_line2.split()[1:])
-                                read1_part_seq[each_comp].append(reversed_read1_name+'\n')
-                                read1_part_seq[each_comp].append(read1_reversed+'\n')
-                                read2_part_seq[each_comp].append(reversed_read2_name+'\n')
-                                read2_part_seq[each_comp].append(read2_reversed+'\n')
             if not inMem: 
                 for comp in new_components:
                     read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'w')
