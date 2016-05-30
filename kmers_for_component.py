@@ -31,7 +31,7 @@ reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for
     return bases[::-1].upper()'''
 
 
-def kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, directory_name, contig_file_extension, get_partition_k1mers, double_stranded = True, paired_end = False, repartition = False,  partition_size = 500, overload = 1.5, K = 24, gpmetis_path = 'gpmetis', penalty = 5, only_reads = False, inMem = False):
+def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, directory_name, contig_file_extension, get_partition_k1mers, double_stranded = True, paired_end = False, repartition = False,  partition_size = 500, overload = 1.5, K = 24, gpmetis_path = 'gpmetis', penalty = 5, only_reads = False, inMem = False):
     """This fuction runs gpmetis on the components above a threshold size.  It then creates a dictionary called 
     k1mers2component {k1mer : component}.  It then sends any reads that share a kmer with a component to that component.
     It then cycles through the k1mer file and outputs the k1mers along with their weights to a file for each component.
