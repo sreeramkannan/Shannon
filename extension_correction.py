@@ -198,6 +198,8 @@ def trim_polyA(contig):
 
         
 def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold, polyA_del=True, inMem = False,  nJobs =1, reads_files = []):
+    print('nJobs:' + str(nJobs))
+    print('reads_files:' + ' '.join(reads_files))
     f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
     #pdb.set_trace()
     print "{:s}: Starting Kmer error correction..".format(time.asctime())
