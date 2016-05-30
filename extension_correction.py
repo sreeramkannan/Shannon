@@ -3,6 +3,7 @@ import sys
 import re
 import pdb,math
 import numpy
+import multiprocessing
 
 BASES = ['A', 'G', 'C', 'T']
 correct_errors = True
@@ -54,6 +55,37 @@ def argmax(lst, key):
         if key(x) > key(best):
             best = x
     return best
+
+def par_load(lines,ds, polyA_del, out_q):
+    reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
+    d = {}
+    for (i,line) in enumerate(lines):
+        line=line.strip().split(None,1)
+        d[line[0]] = d.get(line[0],0) + float(line[1])
+        if ds: rc = reverse_complement(line[0]); d[rc]=d.get(rc,0)+float(line[1])
+    out_q.put(d)
+
+def load_kmers_parallel(infile, double_stranded,  polyA_del=True, nJobs = 1):
+    kmers={}
+    with open(infile) as f:
+        lines = f.readlines()
+    chunk = int(math.ceil(len(a)/float(nJobs)))
+    out_q = multiprocessing.Queue()
+    procs = [multiprocessing.Process(target=par_load,args=(lines[x*chunk:(x+1)*chunk],double_stranded, polyA_del, out_q)) for x in range(nJobs)]
+    for p in procs:
+        p.start()
+    K_set = False
+    for i in range(P):
+        par_dict = out_q.get()
+        for key in par_dict:
+            if not K_set: K = len(key); K_set = True
+            kmers[key] = kmers.get(key,0)+par_dict[key]
+
+    for p in procs:
+        p.join()
+    print(len(kmers))
+    return kmers,K
+
 
 def load_kmers(infile, double_stranded, polyA_del=True):
     """Loads the list of K-mers and copycounts and determines K.
@@ -164,12 +196,16 @@ def trim_polyA(contig):
         
 
         
-def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold, polyA_del=True, inMem = False):
+def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold, polyA_del=True, inMem = False, nJobs =1):
     f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
     #pdb.set_trace()
     print "{:s}: Starting Kmer error correction..".format(time.asctime())
     f_log.write("{:s}: Starting..".format(time.asctime()) + "\n")
-    kmers, K = load_kmers(infile, double_stranded,polyA_del)
+    if nJobs==1: 
+        kmers, K = load_kmers(infile, double_stranded,polyA_del)
+    elif nJobs>1:
+        kmers, K = load_kmers_parallel(infile, double_stranded,polyA_del, nJobs)
+
     print "{:s}: {:d} K-mers loaded.".format(time.asctime(), len(kmers))
     f_log.write("{:s}: {:d} K-mers loaded.".format(time.asctime(), len(kmers)) + "\n")
 
@@ -371,9 +407,13 @@ def extension_correction(arguments,inMem=False):
         reads_files = arguments[6]
     else:
         reads_files = []
-    #pdb.set_trace()
 
-    allowed_kmer_dict = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold, True, inMem, reads_files)
+    nJobs = 1;
+    if len(arguments) >7:
+        nJobs = int(arguments[7])
+
+    #pdb.set_trace()
+    allowed_kmer_dict = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold, True, inMem, reads_files, nJobs)
     return allowed_kmer_dict
 
 if __name__ == '__main__':
