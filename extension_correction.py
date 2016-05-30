@@ -75,7 +75,7 @@ def load_kmers_parallel(infile, double_stranded,  polyA_del=True, nJobs = 1):
     for p in procs:
         p.start()
     K_set = False
-    for i in range(P):
+    for i in range(nJobs):
         par_dict = out_q.get()
         for key in par_dict:
             if not K_set: K = len(key); K_set = True
