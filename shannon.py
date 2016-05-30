@@ -520,7 +520,7 @@ run_cmd('mkdir '+ comp_directory_name + '/TEMP')
 run_cmd('mv ' + comp_directory_name + '/*_* ' + comp_directory_name + '/TEMP')
 run_cmd('mv ' + comp_directory_name + '/TEMP/before_sp_log.txt ' + comp_directory_name + '/log.txt')
 run_cmd('mv ' +  comp_directory_name + "/TEMP/" + sample_name + "allalgo_output/reconstructed.fasta " + comp_directory_name + '/shannon.fasta')
-run_cmd('more ' +  comp_directory_name + "/TEMP/*output.txt > " +comp_directory_name + '/terminal_output.txt') 
+#run_cmd('more ' +  comp_directory_name + "/TEMP/*output.txt > " +comp_directory_name + '/terminal_output.txt') 
 
 if compare_ans:
    run_cmd('mv ' +   comp_directory_name + "/TEMP/" + sample_name + "allalgo_output/reconstr_log.txt "  + comp_directory_name + '/compare_log.txt') 
