@@ -354,7 +354,7 @@ if run_extension_corr:
 	else: 
 		str_ec = ' '	
 	#run_cmd('python ' + shannon_dir + 'extension_correction.py ' + str_ec + sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold))
-	str_ec += sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold)
+	str_ec += sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold) + " " + str(nJobs) + " " + reads_files
 	dontWriteToFile = True
 	k1mer_dictionary = extension_correction(str_ec.split(),dontWriteToFile)
 

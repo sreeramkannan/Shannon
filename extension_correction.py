@@ -196,7 +196,7 @@ def trim_polyA(contig):
         
 
         
-def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold, polyA_del=True, inMem = False, nJobs =1):
+def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp_directory_name, comp_size_threshold, polyA_del=True, inMem = False,  nJobs =1, reads_files = []):
     f_log = open(comp_directory_name+"/before_sp_log.txt", 'w')
     #pdb.set_trace()
     print "{:s}: Starting Kmer error correction..".format(time.asctime())
@@ -404,16 +404,17 @@ def extension_correction(arguments,inMem=False):
     min_weight, min_length = int(arguments[2]), int(arguments[3])
     comp_directory_name, comp_size_threshold = arguments[4], int(arguments[5])
     if len(arguments)>6:
-        reads_files = arguments[6]
+        nJobs = int(arguments[6]) 
+    else:
+        nJobs  = 1;
+    if len(arguments) >7:
+        reads_files = arguments[7]
     else:
         reads_files = []
 
-    nJobs = 1;
-    if len(arguments) >7:
-        nJobs = int(arguments[7])
 
     #pdb.set_trace()
-    allowed_kmer_dict = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold, True, inMem, reads_files, nJobs)
+    allowed_kmer_dict = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold, True, inMem, nJobs, reads_files)
     return allowed_kmer_dict
 
 if __name__ == '__main__':
