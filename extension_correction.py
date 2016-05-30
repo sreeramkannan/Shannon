@@ -4,6 +4,7 @@ import re
 import pdb,math
 import numpy
 import multiprocessing
+import copy
 
 BASES = ['A', 'G', 'C', 'T']
 correct_errors = True
