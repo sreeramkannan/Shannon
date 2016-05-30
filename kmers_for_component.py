@@ -262,9 +262,9 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                         assigned_comp = get_comps_paired(read1,read2,k1mers2component)
 
                         for each_comp in assigned_comp:
-                            read1_part_seq[each_comp].append('>'+ctr+'_1'+'\n')
+                            read1_part_seq[each_comp].append('>'+str(ctr)+'_1'+'\n')
                             read1_part_seq[each_comp].append(read1 +'\n')
-                            read2_part_seq[each_comp].append('>'+ctr+'_2'+'\n')
+                            read2_part_seq[each_comp].append('>'+str(ctr)+'_2'+'\n')
                             read2_part_seq[each_comp].append(read2+'\n')
 
             if not inMem: 
