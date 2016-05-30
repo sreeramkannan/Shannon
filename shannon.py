@@ -355,7 +355,8 @@ if run_extension_corr:
 		str_ec = ' '	
 	#run_cmd('python ' + shannon_dir + 'extension_correction.py ' + str_ec + sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold))
 	str_ec += sample_name_input+'algo_input/k1mer.dict_org ' +sample_name_input+'algo_input/k1mer.dict ' + str(hyp_min_weight) + ' ' + str(hyp_min_length) + ' ' + comp_directory_name + " " + str(comp_size_threshold)
-	k1mer_dictionary = extension_correction(str_ec.split(),inMem)
+	dontWriteToFile = True
+	k1mer_dictionary = extension_correction(str_ec.split(),dontWriteToFile)
 
 # Gets kmers from k1mers
 '''if run_jellyfish or run_extension_corr:
@@ -365,7 +366,8 @@ if run_extension_corr:
 # Gets k1mers, kmers, and reads for each partition
 [components_broken, new_components, contig_weights, rps] = kmers_for_component(k1mer_dictionary,kmer_directory, reads_files, base_directory_name, contig_file_extension, get_partition_kmers, double_stranded, paired_end, use_second_iteration, partition_size, overload, K, gpmetis_path, penalty, only_reads, inMem)
 
-del k1mer_dictionary
+k1mer_dictionary.clear() #Delete in memory
+components_broken.clear()
 # This counts remaining and non-remaining partitions for log.
 num_remaining = 0
 num_non_remaining = 0 
@@ -407,7 +409,6 @@ for comp in new_components:
 		run_cmd("mv " + base_directory_name + "/component" + str(comp)  + "k1mers_allowed.dict " + dir_base + "algo_input/k1mer.dict")
 	main_server_parameter_string = main_server_parameter_string + dir_base + " " 
 
-if 0:
 	child_names = [x[0][:-10] for x in os.walk(comp_directory_name) if x[0].endswith('algo_input') and not x[0].endswith('_algo_input') and not x[0].endswith('allalgo_input')]
 	main_server_parameter_string = ' '.join(child_names)
 

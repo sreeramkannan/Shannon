@@ -102,7 +102,7 @@ def extend_left(start, traversed, kmers, K):
     return extend(start, lambda last, b: b + last, lambda kmer: kmer[:K - 1],
         traversed, kmers, K)
 
-def duplicate_check(contig, r = 12, f = 0.5):
+def duplicate_check(contig, r = 15, f = 0.5):
     # To add: if rmer in the contig multiple times, only increment the dup-contig once for each time its in dup-contig
     dup_count = {}
     max_till_now = 0; max_contig_index = -1
@@ -195,7 +195,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
         contig = ''.join(reversed(left_extension)) + start_kmer + ''.join(right_extension)
         #contig = trim_polyA(contig)
 
-        r = 12
+        r = 15
         duplicate_suspect = duplicate_check(contig, r) #Check whether this contig is significantly represented in a earlier contig. 
         #pdb.set_trace()
         # The line below is the hyperbola error correction.
@@ -367,8 +367,13 @@ def extension_correction(arguments,inMem=False):
     infile, outfile = arguments[:2]
     min_weight, min_length = int(arguments[2]), int(arguments[3])
     comp_directory_name, comp_size_threshold = arguments[4], int(arguments[5])
+    if len(arguments)>6:
+        reads_files = arguments[6]
+    else:
+        reads_files = []
     #pdb.set_trace()
-    allowed_kmer_dict = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold, True, inMem)
+
+    allowed_kmer_dict = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold, True, inMem, reads_files)
     return allowed_kmer_dict
 
 if __name__ == '__main__':

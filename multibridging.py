@@ -360,15 +360,18 @@ def main(arguments,inMem=False,contigs=[],weights=[],rps=[]):
     log("Starting Multibridging.")
     print(inMem)
     if inMem:
-        load_kmers_inMem(contigs,weights)
+        load_kmers_inMem(contigs,weights);
+        del contigs[:], weights[:]
         no_kmers = len(Node.nodes);
         FACTOR = 10
         no_reads_cutoff = no_kmers*FACTOR;
 
         if len(rps)==1:
             load_reads_inMem(rps[0],double_stranded,no_reads_cutoff)
+            del rps[0][:]
         elif len(rps)==2:
             load_mated_reads_inMem(rps[0],rps[1],double_stranded,no_reads_cutoff)
+            del rps[0][:], rps[1][:]
     else:    
         setup(read_files[0])
         if cpp:
