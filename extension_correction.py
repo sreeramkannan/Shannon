@@ -409,6 +409,8 @@ def extension_correction(arguments,inMem=False):
         nJobs  = 1;
     if len(arguments) >7:
         reads_files = arguments[7]
+        if len(arguments) > 8:
+            reads_files.append(arguments[8])
     else:
         reads_files = []
 
