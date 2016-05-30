@@ -61,6 +61,7 @@ def par_load(lines,ds, polyA_del, out_q):
     d = {}
     for (i,line) in enumerate(lines):
         line=line.strip().split(None,1)
+        if polyA_del and polyA(line[0]): continue
         d[line[0]] = d.get(line[0],0) + float(line[1])
         if ds: rc = reverse_complement(line[0]); d[rc]=d.get(rc,0)+float(line[1])
     out_q.put(d)
