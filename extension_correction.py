@@ -128,33 +128,6 @@ def par_load(lines,ds, polyA_del, out_q):
         if ds: rc = reverse_complement(line[0]); d[rc]=d.get(rc,0)+float(line[1])
     out_q.put(d)
 
-def rc(lines,out_q):
-        reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
-        nl = copy.deepcopy(lines)
-        for (i,line) in enumerate(lines):
-                nl[i]=(reverse_complement(line.strip())+'\n')
-        #lines.extend(nl)
-        out_q.put(nl)
-
-
-def par_read(reads_files,double_stranded, nJobs, out_q):
-    reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
-    if len(reads_files)==1:
-        with open(reads_files[0]) as f:
-            lines = f.readlines()
-        #names = lines[::2]
-        reads = lines[1::2]
-        if double_stranded:
-            chunk = int(math.ceil(len(reads)/float(nJobs)));
-            temp_q = multiprocessing.Queue()
-            procs = [multiprocessing.Process(target=rc,args=(reads[x*chunk:(x+1)*chunk],temp_q)) for x in range(nJobs)]
-            for p in procs:
-                p.start()
-            for i in range(nJobs):
-                reads.extend(temp_q.get())
-            for p in procs:
-                p.join()
-        out_q.put(reads)
 
 
 def load_kmers_parallel(infile, double_stranded,  polyA_del=True, nJobs = 1):
