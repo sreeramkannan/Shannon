@@ -152,6 +152,18 @@ if '--strand_specific' in n_inp:
 	print('OPTIONS --strand_specific: Single-stranded mode enabled')
 
 
+if '--inMem' in n_inp:
+	ind1 = n_inp.index('--inMem')
+	inMem = True; inDisk= False
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
+	print('OPTIONS --inMem: In Memory mode enabled')
+
+if '--inDisk' in n_inp:
+	ind1 = n_inp.index('--inDisk')
+	inMem = False; inDisk = True
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
+	print('OPTIONS --inDisk: In Memory mode disabled')	
+
 
 
 if '--ss' in n_inp:
