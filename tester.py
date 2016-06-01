@@ -145,10 +145,10 @@ def analyzer_blat_noExp(Repeats_File,Dest_File,exp_file,N):
         tokens = line.split()
         org = tokens[9]; #need to select for the tokens[9][29:]  when having larger prefix
         rec = tokens[13]; rec_len = int(tokens[0]); tr_len = int(tokens[10])
-        tr_ab = 0; #tr_abundance.get(org,0)
+        rec_tr_len = int(tokens[14]); #tr_abundance.get(org,0)
         z = best_rec_dict.get(org,[None,0]);                
         if rec_len>z[1]:
-            best_rec_dict[org] = [rec,rec_len,tr_len,tr_ab/tr_len];
+            best_rec_dict[org] = [rec,rec_len,tr_len,rec_tr_len];
     perf = 0
     sum_ret = 0
     no_tr_rec = 0 

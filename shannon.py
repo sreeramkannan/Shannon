@@ -151,6 +151,11 @@ if '--strand_specific' in n_inp:
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 	print('OPTIONS --strand_specific: Single-stranded mode enabled')
 
+if '--filter_FP' in n_inp:
+	ind1 = n_inp.index('--filter_FP')
+	filter_FP_flag = True
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
+	print('OPTIONS --filter_FP: False-positive filtering enabled')
 
 if '--inMem' in n_inp:
 	ind1 = n_inp.index('--inMem')
@@ -431,21 +436,25 @@ mb_sf_param_string = " "
 	mb_sf_param_string += "  --ds " '''
 if only_reads:
 	mb_sf_param_string += "  --only_reads "
+if filter_FP_flag:
+	mb_sf_param_string += "  --filter_FP "
 mb_sf_param_string += "  --nJobs "	+ str(nJobs) + " "
+
 
 if main_server_parameter_string and inDisk:
 	if run_parallel and nJobs > 1:
 		cmds = []
 		for param_str in main_server_parameter_string.split():
-			cmds.append(python_path + " " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon_dir " + shannon_dir + " --python_path " + python_path)
+			cmds.append(python_path + " " + shannon_dir + "run_MB_SF_fn.py " + param_str + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon_dir " + shannon_dir + " --python_path " + python_path)
 		cmds = tuple(cmds)
 		run_parallel_cmds.run_cmds(cmds,nJobs)
 		#run_cmd(gnu_parallel_path + " -j " + str(nJobs) + " " + python_path + " " + shannon_dir + "run_MB_SF.py {} --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " --shannon_dir " + shannon_dir + " --python_path " + python_path +  " ::: " + main_server_parameter_string)
 	else:
 		for param_str in main_server_parameter_string.split():
-				run_cmd(python_path + " " + shannon_dir + "run_MB_SF.py " + param_str + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon_dir " + shannon_dir + " --python_path " + python_path)
+				run_cmd(python_path + " " + shannon_dir + "run_MB_SF_fn.py " + param_str + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + param_str + " --shannon_dir " + shannon_dir + " --python_path " + python_path)
 elif inMem:
 	param_str={}; contig_size = {}
+
 	for comp in new_components:
 		dir_base = comp_directory_name + "/" + sample_name + str(comp)	
 		param_str[comp] = dir_base + " --run_alg " + mb_sf_param_string + " --kmer_size " + str(K)  + " " + paired_end_flag + " --dir_name " + comp_directory_name + " " + dir_base + " --shannon_dir " + shannon_dir + " --python_path " + python_path
@@ -518,7 +527,7 @@ else:
 # Compares reconstructed file against reference
 if compare_ans:
 	run_cmd("cp " + ref_file + ' ' +  dir_out + "/reference.fasta")
-	run_cmd(python_path + " " + shannon_dir + "run_MB_SF.py " + dir_base + " --compare --shannon_dir " + shannon_dir + " --python_path " + python_path)
+	run_cmd(python_path + " " + shannon_dir + "run_MB_SF_fn.py " + dir_base + " --compare --shannon_dir " + shannon_dir + " --python_path " + python_path)
 
 num_transcripts = 0
 with open(dir_out + "/" + "reconstructed.fasta", 'r') as reconstructed_transcripts:
