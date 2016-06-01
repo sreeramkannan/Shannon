@@ -496,7 +496,6 @@ def extension_correction(arguments,inMem=False):
 
     #pdb.set_trace()
     allowed_kmer_dict, reads = run_correction(infile, outfile, min_weight, min_length, double_stranded, comp_directory_name, comp_size_threshold, True, inMem, nJobs, reads_files)
-
     return allowed_kmer_dict, reads
 
 if __name__ == '__main__':
