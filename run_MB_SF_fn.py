@@ -273,8 +273,8 @@ def run_MB_SF(arguments,inMem=False,contigs=[],weights=[],rps=[]):
 		reads_1 = sample_name+'algo_input/reads_1.fasta'
 		reads_2 = sample_name+'algo_input/reads_2.fasta'
 		rec_fasta = sample_name+"algo_output/reconstructed.fasta"
-		rec_fasta = sample_name+"algo_output/"
-		filter_FP.filter_FP(rec_fasta, read_1, read_2, out_dir)
+		out_dir = sample_name+"algo_output/"
+		filter_FP.filter_FP(rec_fasta, reads_1, reads_2, out_dir)
 
 
 	timer['after_sp'] = time.time()
