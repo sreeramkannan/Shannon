@@ -65,6 +65,7 @@ nJobs = 1
 run_parallel = False
 compare_ans = False
 only_reads = False #Use only the reads from partitioning, not the kmers
+filter_FP_flag = False
 
 # Everything beyond this point does not need to be set
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
