@@ -41,7 +41,7 @@ def filter_FP(rec_fasta, read_1, read_2, out_dir, flags = '-f --ff'):
 	run_cmd(hisat_dir + 'hisat --no-spliced-alignment --no-discordant '+ flags + ' -x ' + out_dir + '/rec.hisat -1 ' + read_1 +  ' -2 ' + read_2 + ' -S ' + out_dir + '/rec.sam' )
 	
 	#Process SAM / BAM file to get depth information
-	run_cmd('samtools view -bS ' + out_dir + '/rec.sam > ' + out_dir + '/rec.bam')
+	run_cmd('samtools view -bS -f 0x2 ' + out_dir + '/rec.sam > ' + out_dir + '/rec.bam')
 	run_cmd('samtools sort '+  out_dir + '/rec.bam ' +  out_dir + '/rec_sort')
 	run_cmd('samtools depth ' +  out_dir + '/rec_sort.bam > ' +  out_dir + '/rec.depth')
 

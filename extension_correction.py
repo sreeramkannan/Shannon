@@ -52,6 +52,49 @@ def rc_mate_ds(reads_1,reads_2,ds, out_q):
         if ds: nr1.extend(nr2)
         out_q.put(nr1)
 
+
+def par_read_ns(reads_files,double_stranded, nJobs, ns):
+    reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
+    if len(reads_files)==1:
+        with open(reads_files[0]) as f:
+            lines = f.readlines()
+        #names = lines[::2]
+        reads = lines[1::2]
+        if double_stranded:
+            chunk = int(math.ceil(len(reads)/float(nJobs)));
+            temp_q = multiprocessing.Queue()
+            procs = [multiprocessing.Process(target=rc,args=(reads[x*chunk:(x+1)*chunk],temp_q)) for x in range(nJobs)]
+            for p in procs:
+                p.start()
+            for i in range(nJobs):
+                reads.extend(temp_q.get())
+            for p in procs:
+                p.join()
+        ns.x = reads
+    elif len(reads_files)==2:
+        with open(reads_files[0]) as f:
+            lines_1 = f.readlines()
+        with open(reads_files[1]) as f:
+            lines_2 = f.readlines()
+        assert len(lines_1)==len(lines_2)
+        reads_1 = lines_1[1::2]; reads_2 = lines_2[1::2]
+        if 1: #double_stranded:
+            chunk = int(math.ceil(len(reads_1)/float(nJobs)));
+            temp_q = multiprocessing.Queue()
+            procs = [multiprocessing.Process(target=rc_mate_ds,args=(reads_1[x*chunk:(x+1)*chunk],reads_2[x*chunk:(x+1)*chunk],double_stranded,temp_q)) for x in range(nJobs)]
+            for p in procs:
+                p.start()
+            reads = []
+            for i in range(nJobs):
+                reads.extend(temp_q.get())
+            for p in procs:
+                p.join()
+            r1 = [r[0] for r in reads]; r2 = [r[1] for r in reads]
+            reads = [r1,r2]    
+        ns.x = reads
+    else:
+        ns.x = []
+
 def par_read(reads_files,double_stranded, nJobs, out_q):
     reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
     if len(reads_files)==1:
@@ -278,8 +321,10 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
 
     f_log.write("{:s}: Reads loading in background process.".format(time.asctime()) + "\n")
 
-    out_q = multiprocessing.Queue()
-    read_proc = multiprocessing.Process(target=par_read,args=(reads_files,double_stranded, nJobs, out_q))
+    #out_q = multiprocessing.Queue()
+    manager = multiprocessing.Manager()
+    ns = manager.Namespace()
+    read_proc = multiprocessing.Process(target=par_read,args=(reads_files,double_stranded, nJobs, ns))
     read_proc.start()
 
 
@@ -467,8 +512,9 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     f_log.write(str(time.asctime()) + ": " + "Metis Input File Created " + "\n")
 
     f_log.write("{:s}: Read-loader in background process joinig back.".format(time.asctime()) + "\n")
-    reads = out_q.get()
+    #reads = out_q.get()
     read_proc.join()
+    reads = ns.x;
     f_log.write("{:s}: {:d} Reads loaded in background process.".format(time.asctime(),len(reads)) + "\n")
     f_log.close()
     return allowed_kmer_dict, reads
