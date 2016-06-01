@@ -324,7 +324,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     #out_q = multiprocessing.Queue()
     manager = multiprocessing.Manager()
     ns = manager.Namespace()
-    read_proc = multiprocessing.Process(target=par_read,args=(reads_files,double_stranded, nJobs, ns))
+    read_proc = multiprocessing.Process(target=par_read_ns,args=(reads_files,double_stranded, nJobs, ns))
     read_proc.start()
 
 
