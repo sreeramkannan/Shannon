@@ -170,6 +170,14 @@ if '--inDisk' in n_inp:
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 	print('OPTIONS --inDisk: In Memory mode disabled')	
 
+if '--filter_FP' in n_inp:
+	ind1 = n_inp.index('--filter_FP')
+	filter_FP_flag = True
+	n_inp = n_inp[:ind1]+n_inp[ind1+1:]  
+	if inDisk:  
+		print('OPTIONS --filter_FP: False-positive filtering enabled')
+	else:
+		print('OPTIONS --filter_FP: INCOMPATIBLE with inMem mode')
 
 
 if '--ss' in n_inp:
