@@ -5,6 +5,7 @@ import pdb,math
 import os
 import os.path
 import collections
+import copy
 import multiprocessing
 from collections import defaultdict
 from weight_updated_graph import weight_updated_graph
