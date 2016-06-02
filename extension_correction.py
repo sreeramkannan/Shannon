@@ -322,10 +322,10 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     f_log.write("{:s}: Reads loading in background process.".format(time.asctime()) + "\n")
 
     #out_q = multiprocessing.Queue()
-    manager = multiprocessing.Manager()
-    ns = manager.Namespace()
-    read_proc = multiprocessing.Process(target=par_read_ns,args=(reads_files,double_stranded, nJobs, ns))
-    read_proc.start()
+    #manager = multiprocessing.Manager()
+    #ns = manager.Namespace()
+    #read_proc = multiprocessing.Process(target=par_read_ns,args=(reads_files,double_stranded, nJobs, ns))
+    #read_proc.start()
 
 
 
@@ -513,8 +513,9 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
 
     f_log.write("{:s}: Read-loader in background process joinig back.".format(time.asctime()) + "\n")
     #reads = out_q.get()
-    read_proc.join()
-    reads = ns.x;
+    #read_proc.join()
+    #reads = ns.x;
+    reads = []
     f_log.write("{:s}: {:d} Reads loaded in background process.".format(time.asctime(),len(reads)) + "\n")
     f_log.close()
     return allowed_kmer_dict, reads
