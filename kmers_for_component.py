@@ -61,8 +61,10 @@ def par_read(reads_files,double_stranded, nJobs):
             chunk = min(1000000, len(reads))
             nProcs = int(math.ceil(len(reads)/float(chunk)))
             #chunk = int(math.ceil(len(reads)/float(nJobs)));
+            temp_q = multiprocessing.Queue()
             procs = [multiprocessing.Process(target=rc,args=(reads[x*chunk:(x+1)*chunk],temp_q)) for x in range(nProcs)]
             split_procs = []; 
+
             for i in range(int(math.ceil(nProcs/nJobs))):
                 split_procs.append(procs[(i)*nJobs:(i+1)*nJobs])
 
@@ -95,7 +97,6 @@ def par_read(reads_files,double_stranded, nJobs):
                 split_procs.append(procs[(i)*nJobs:(i+1)*nJobs])
             reads = []
             for curr_procs in split_procs:
-                temp_q = multiprocessing.Queue()
                 for p in curr_procs:
                     p.start()
                 for i in range(nJobs):
