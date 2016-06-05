@@ -296,6 +296,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
         # Assigns reads to components in the non paired end case
         if paired_end == False:  
             read_part_no = {}   
+            read_part_seq = {}
             for comp in new_components:
                 read_part_no[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w')
             #ctr = 0
@@ -321,7 +322,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
         # Assigns reads to components in the paired end case
         elif paired_end == True:
             read_part_no = {}
-            #read2_part_seq = {}
+            read1_part_seq = {}; read1_part_seq = {}
             for comp in new_components:
                 read_part_no[comp] = []; # open(directory_name+"/reads"+iter_tag+str(comp)+"_1.fasta", 'w')
                 #read2_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+"_2.fasta", 'w')
