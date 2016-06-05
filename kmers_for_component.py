@@ -323,8 +323,8 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             read1_part_seq = {}
             read2_part_seq = {}
             for comp in new_components:
-                read1_part_seq[comp] = []; # open(directory_name+"/reads"+iter_tag+str(comp)+"_1.fasta", 'w')
-                read2_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+"_2.fasta", 'w')
+                read_part_no[comp] = []; # open(directory_name+"/reads"+iter_tag+str(comp)+"_1.fasta", 'w')
+                #read2_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+"_2.fasta", 'w')
             comp2reads = {}
 
             #comp2reads_reversed = {}
