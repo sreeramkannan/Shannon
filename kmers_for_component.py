@@ -56,7 +56,7 @@ def par_read(reads_files,double_stranded, nJobs):
         with open(reads_files[0]) as f:
             lines = f.readlines()
         #names = lines[::2]
-        reads = lines[1::2]
+        reads = lines[1::2] 
         if double_stranded:
             chunk = min(1000000, len(reads))
             nProcs = int(math.ceil(len(reads)/float(chunk)))
@@ -65,14 +65,14 @@ def par_read(reads_files,double_stranded, nJobs):
             procs = [multiprocessing.Process(target=rc,args=(reads[x*chunk:(x+1)*chunk],temp_q)) for x in range(nProcs)]
             split_procs = []; 
 
-            for i in range(int(math.ceil(nProcs/nJobs))):
+            for i in range(int(math.ceil(float(nProcs)/nJobs))):
                 split_procs.append(procs[(i)*nJobs:(i+1)*nJobs])
 
+
             for curr_procs in split_procs:
-                temp_q = multiprocessing.Queue()
                 for p in curr_procs:
                     p.start()
-                for i in range(nJobs):
+                for i in range(len(curr_procs)):
                     reads.extend(temp_q.get())
                 for p in curr_procs:
                     p.join()
@@ -93,16 +93,17 @@ def par_read(reads_files,double_stranded, nJobs):
             temp_q = multiprocessing.Queue()
             procs = [multiprocessing.Process(target=rc_mate_ds,args=(reads_1[x*chunk:(x+1)*chunk],reads_2[x*chunk:(x+1)*chunk],double_stranded,temp_q)) for x in range(nProcs)]
             split_procs = []; 
-            for i in range(int(math.ceil(nProcs/nJobs))):
+            for i in range(int(math.ceil(float(nProcs)/nJobs))):
                 split_procs.append(procs[(i)*nJobs:(i+1)*nJobs])
             reads = []
             for curr_procs in split_procs:
                 for p in curr_procs:
                     p.start()
-                for i in range(nJobs):
+                for i in range(len(curr_procs)):
                     reads.extend(temp_q.get())
                 for p in curr_procs:
                     p.join()
+            print(str(len(reads)) + ' Reads loaded')
             r1 = [r[0] for r in reads]; r2 = [r[1] for r in reads]
             reads = [r1,r2]    
         return reads
@@ -287,10 +288,6 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             for contig in new_components[comp]:
                 temp += len(contig)
             no_kmers_in_comp[comp] = temp'''
-        
-
-                            
-
         '''iter_tag = "_c"
         if second_iteration:
             iter_tag = "_r2_c"'''
@@ -298,22 +295,23 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
         
         # Assigns reads to components in the non paired end case
         if paired_end == False:  
-            read_part_seq = {}   
+            read_part_no = {}   
             for comp in new_components:
-                read_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w')
-            ctr = 0
-            for read in reads:
+                read_part_no[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w')
+            #ctr = 0
+            for (no,read) in enumerate(reads):
                 read = read.strip()
                 if read.strip('ACTG'): continue
-                ctr +=1
+                
                 assigned_comp = get_comps(read,k1mers2component)
                 for each_comp in assigned_comp:
-                    read_part_seq[each_comp].append('>'+str(ctr)+'\n')
-                    read_part_seq[each_comp].append(read+'\n')
+                    read_part_no[each_comp].append(no)
+                    #read_part_seq[each_comp].append('>'+str(ctr)+'\n')
+                    #read_part_seq[each_comp].append(read+'\n')
             if not inMem: 
                 for comp in new_components:
                     read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
-                    read_part_file.write("".join(read_part_seq[comp]))
+                    read_part_file.write("\n>1\n".join(read[read_part_no[comp]]))
                     read_part_file.close()
             elif inMem:
                 for comp in new_components:
