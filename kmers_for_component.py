@@ -311,7 +311,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             if not inMem: 
                 for comp in new_components:
                     read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
-                    read_part_file.write("".join(['>' + str(e) + '\n' + reads[i] for (e,i) in enumerate(read_part_no[each_comp])]))
+                    read_part_file.write("".join(['>' + str(e) + '\n' + reads[i] for (e,i) in enumerate(read_part_no[comp])]))
                     read_part_file.close()
             elif inMem:
                 for comp in new_components:
@@ -350,14 +350,14 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                 for comp in new_components:
                     read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'w')
                     read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'w')
-                    read1_part_file.write("".join(['>' + str(e) + '_1\n' + reads[0][i] for (e,i) in enumerate(read_part_no[each_comp])]))
-                    read2_part_file.write("".join(['>' + str(e) + '_2\n' + reads[1][i] for (e,i) in enumerate(read_part_no[each_comp])]))
+                    read1_part_file.write("".join(['>' + str(e) + '_1\n' + reads[0][i] for (e,i) in enumerate(read_part_no[comp])]))
+                    read2_part_file.write("".join(['>' + str(e) + '_2\n' + reads[1][i] for (e,i) in enumerate(read_part_no[comp])]))
                     read1_part_file.close()
                     read2_part_file.close()
             elif inMem:
                 for comp in new_components:
-                    rps1 = read1_part_seq[comp][1::2] #Keep only the reads, not the names
-                    rps2 = read2_part_seq[comp][1::2]
+                    rps1 = [reads[0][i] for i in read_part_no[comp]] #read1_part_seq[comp][1::2] #Keep only the reads, not the names
+                    rps2 = [reads[1][i] for i in read_part_no[comp]] #read2_part_seq[comp][1::2]
                     read1_part_seq[comp] = rps1
                     read2_part_seq[comp] = rps2
         
