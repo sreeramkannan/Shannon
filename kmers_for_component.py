@@ -315,7 +315,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                     read_part_file.close()
             elif inMem:
                 for comp in new_components:
-                    rps = read_part_seq[comp][1::2]
+                    rps = [reads[i] for i in read_part_no[comp]]
                     read_part_seq[comp] = rps
 
         # Assigns reads to components in the paired end case
@@ -332,27 +332,26 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             #readfile2 = open(reads_files[1], 'r')
             #read_line1 = ''; read_line2 = ''
             #with open(reads_files[0]) as readfile1, open(reads_files[1]) as readfile2:
-            ctr = 0
             if 1:
-                for read1,read2 in zip(reads[0],reads[1]): 
+                for no,(read1,read2) in enumerate(zip(reads[0],reads[1])): 
                         read1 = read1.strip(); read2 = read2.strip()
                         if read1.strip('ACTG') or read2.strip('ACTG'): continue
-                        ctr+=1
                         #First process (read1, read2_reversed)
                         assigned_comp = get_comps_paired(read1,read2,k1mers2component)
 
                         for each_comp in assigned_comp:
-                            read1_part_seq[each_comp].append('>'+str(ctr)+'_1'+'\n')
-                            read1_part_seq[each_comp].append(read1 +'\n')
-                            read2_part_seq[each_comp].append('>'+str(ctr)+'_2'+'\n')
-                            read2_part_seq[each_comp].append(read2+'\n')
+                            read_part_no[each_comp].append(no)
+                            #read1_part_seq[each_comp].append('>'+str(ctr)+'_1'+'\n')
+                            #read1_part_seq[each_comp].append(read1 +'\n')
+                            #read2_part_seq[each_comp].append('>'+str(ctr)+'_2'+'\n')
+                            #read2_part_seq[each_comp].append(read2+'\n')
 
             if not inMem: 
                 for comp in new_components:
                     read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'w')
                     read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'w')
-                    read1_part_file.write("".join(read1_part_seq[comp]))
-                    read2_part_file.write("".join(read2_part_seq[comp]))
+                    read1_part_file.write("".join(['>' + str(e) + '_1\n' + reads[0][i] for (e,i) in enumerate(read_part_no[each_comp])]))
+                    read2_part_file.write("".join(['>' + str(e) + '_2\n' + reads[1][i] for (e,i) in enumerate(read_part_no[each_comp])]))
                     read1_part_file.close()
                     read2_part_file.close()
             elif inMem:
