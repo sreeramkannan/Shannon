@@ -311,7 +311,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             if not inMem: 
                 for comp in new_components:
                     read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
-                    read_part_file.write("\n".join(['>' + str(e) + '\n' + reads[i] for (e,i) in enumerate(read_part_no[each_comp])]))
+                    read_part_file.write("".join(['>' + str(e) + '\n' + reads[i] for (e,i) in enumerate(read_part_no[each_comp])]))
                     read_part_file.close()
             elif inMem:
                 for comp in new_components:
