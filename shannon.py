@@ -31,7 +31,7 @@ python_path = 'python'
 version = '0.0.1'
 	
 #Meta-option to choose whether parameters are passed in memory or in disk
-inMem = True
+inMem = False
 inDisk = not inMem
 
 # For jellyfish
