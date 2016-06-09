@@ -5,6 +5,7 @@ import pdb,math
 import numpy
 import multiprocessing
 import copy
+from operator import itemgetter
 
 BASES = ['A', 'G', 'C', 'T']
 correct_errors = True
@@ -329,8 +330,8 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
 
 
 
-    heaviest = sorted(kmers.items(), key=lambda kv: kv[1])
-    heaviest = [(k, w) for k, w in heaviest if w >= min_weight]
+    heaviest = sorted(kmers.items(), key=itemgetter(1))
+    #heaviest = [(k, w) for k, w in heaviest if w >= min_weight]
     traversed, allowed = set(), set()
     f1 = open(outfile+'_contig','w')
     contig_index = 0;
@@ -339,7 +340,8 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     contigs = ["buffer"]
     #pdb.set_trace()
     while len(heaviest) > 0:
-        start_kmer, _ = heaviest.pop()
+        start_kmer, w = heaviest.pop()
+        if w < min_weight: break #min_weight is used here
         if start_kmer in traversed: continue
         traversed.add(start_kmer)
 
@@ -515,7 +517,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     #reads = out_q.get()
     #read_proc.join()
     #reads = ns.x;
-    reads = []
+    reads = 
     f_log.write("{:s}: {:d} Reads loaded in background process.".format(time.asctime(),len(reads)) + "\n")
     f_log.close()
     return allowed_kmer_dict, reads
