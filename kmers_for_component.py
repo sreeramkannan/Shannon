@@ -123,7 +123,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
     directory_name: where files should be stored
     contig_file_extension: the contig files are in this extension
     """
-    
+    pdb.set_trace()
     if os.path.exists(directory_name+"/before_sp_log.txt"):
         f_log = open(directory_name+"/before_sp_log.txt", 'a')
     else:
@@ -295,7 +295,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
         read_line =''
         
         # Assigns reads to components in the non paired end case
-        NR = 100
+        NR=1000000
         if paired_end == False:  
             read_ctr = 0; offset = {}
             read_part_seq = {}   
@@ -303,7 +303,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                 read_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w')
                 offset[comp] = 0
             with open(reads_files[0]) as readfile:
-                for line in readfile:
+                for line in readfile:   
                     if line.split()[0][0] == ">":
                         read_line = line
                     else:
@@ -316,24 +316,25 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                             read_part_seq[each_comp].append(read)
                         if double_stranded:
                             rc_read = reverse_complement(read)
-                            read_ctr +=1
+                            #read_ctr +=1
                             assigned_comp = get_comps(rc_read,k1mers2component)
                             for each_comp in assigned_comp:
                                 #reversed_read_name=read_line.split()[0]+'_reversed'+'\t' +'\t'.join(read_line.split()[1:])
                                 #read_part_seq[each_comp].append(reversed_read_name+'\n')
                                 read_part_seq[each_comp].append(rc_read)   
-                    if (read_ctr % NR)==NR-1 and not inMem:
-                        print('Wriring again')
-                        for comp in new_components:
-                            read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
-                            read_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '\n' + read + '\n' for (e,read) in enumerate(read_part_seq[comp])]))
-                            read_part_file.close()  
-                            offset[comp] = offset.get(comp,0) + len(read_part_seq[comp]); 
-                            read_part_seq[comp][:] = []
+                        if ((read_ctr % NR)==0) and not inMem:
+                            #pdb.set_trace()
+                            print('Wriring again at ' + str(read_ctr))
+                            for comp in new_components:
+                                read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'a')
+                                read_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '\n' + read + '\n' for (e,read) in enumerate(read_part_seq[comp])]))
+                                read_part_file.close()  
+                                offset[comp] = offset.get(comp,0) + len(read_part_seq[comp]); 
+                                read_part_seq[comp][:] = []
 
             if not inMem and read_ctr>0:
                 for comp in new_components:
-                    read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
+                    read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'a')
                     #read_part_file.write("".join(read_part_seq[comp]))
                     read_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '\n' + read + '\n' for (e,read) in enumerate(read_part_seq[comp])]))
                     read_part_file.close()  
@@ -360,11 +361,11 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                         #read_line1 = line1
                         #read_line2 = line2
                     else:
-                        read_ctr += 1
                         assert line2.split()[0][0] != ">"
                         read1 = line1.split()[0]
                         read2 = line2.split()[0]
                         if read1.strip('ACTG') or read2.strip('ACTG'): continue #Dont write 'N' reads
+                        read_ctr+=1
                         read1_reversed = reverse_complement(read1)
                         read2_reversed = reverse_complement(read2)
                         
@@ -385,25 +386,26 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                                 read1_part_seq[each_comp].append(read2)
                                 #read2_part_seq[each_comp].append(reversed_read2_name+'\n')
                                 read2_part_seq[each_comp].append(read1_reversed)
-                    if (read_ctr % NR)==NR-1 and not inMem: 
-                        print('Wriring again')
-                        for comp in new_components:
-                            read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'w')
-                            read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'w')
-                            read1_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_1\n' + read + '\n' for (e,read) in enumerate(read1_part_seq[comp])]))
-                            read2_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_2\n' + read + '\n' for (e,read) in enumerate(read2_part_seq[comp])]))
-                            read1_part_file.close()
-                            read2_part_file.close()
-                            offset[comp] = offset.get(comp,0) + len(read1_part_seq[comp]); 
-                            read1_part_seq[comp][:] = []
-                            read2_part_seq[comp][:] = []
+
+                        if ((read_ctr % NR)==0) and not inMem: 
+                            print('Wriring again at ' + str(read_ctr))
+                            for comp in new_components:
+                                read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'a')
+                                read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'a')
+                                read1_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_1\n' + read + '\n' for (e,read) in enumerate(read1_part_seq[comp])]))
+                                read2_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_2\n' + read + '\n' for (e,read) in enumerate(read2_part_seq[comp])]))
+                                read1_part_file.close()
+                                read2_part_file.close()
+                                offset[comp] = offset.get(comp,0) + len(read1_part_seq[comp]); 
+                                read1_part_seq[comp][:] = []
+                                read2_part_seq[comp][:] = []
 
 
 
             if not inMem: 
                 for comp in new_components:
-                    read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'w')
-                    read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'w')
+                    read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'a')
+                    read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'a')
                     read1_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_1\n' + read + '\n' for (e,read) in enumerate(read1_part_seq[comp])]))
                     read2_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_2\n' + read + '\n' for (e,read) in enumerate(read2_part_seq[comp])]))
                     read1_part_file.close()
@@ -550,4 +552,5 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             else:
                 for comp in new_components:
                     rps[comp] = [read_part_seq[comp]]
+        pdb.set_trace()
         return [components_broken, new_comps, contig_weights, rps]
