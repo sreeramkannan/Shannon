@@ -517,7 +517,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     #reads = out_q.get()
     #read_proc.join()
     #reads = ns.x;
-    reads = 
+    reads = []
     f_log.write("{:s}: {:d} Reads loaded in background process.".format(time.asctime(),len(reads)) + "\n")
     f_log.close()
     return allowed_kmer_dict, reads
