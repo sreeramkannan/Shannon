@@ -130,7 +130,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
         f_log = open(directory_name+"/before_sp_log.txt", 'w')
     
     def write_log(s):
-    f_log.write(s + "\n"); print(s)
+        f_log.write(s + "\n"); print(s)
     
     # Counts number of components above size threshold
     Num_Components = 0
