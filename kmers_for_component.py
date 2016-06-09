@@ -10,6 +10,7 @@ import multiprocessing
 from collections import defaultdict
 from weight_updated_graph import weight_updated_graph
 
+
 def run_cmd(s1):
     print(s1); os.system(s1) 
 
