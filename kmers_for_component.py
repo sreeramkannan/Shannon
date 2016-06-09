@@ -551,5 +551,4 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             else:
                 for comp in new_components:
                     rps[comp] = [read_part_seq[comp]]
-        pdb.set_trace()
         return [components_broken, new_comps, contig_weights, rps]
