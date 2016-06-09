@@ -170,7 +170,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                 assigned_comp = set.union(*comp_list)
         else:
                 assigned_comp = set()
-    return assigned_comp
+        return assigned_comp
 
     def get_comps_paired(read1,read2,k1mers2component):
         return set.union(get_comps(read1,k1mers2component),get_comps(read2,k1mers2component))
@@ -322,11 +322,11 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                                 #reversed_read_name=read_line.split()[0]+'_reversed'+'\t' +'\t'.join(read_line.split()[1:])
                                 #read_part_seq[each_comp].append(reversed_read_name+'\n')
                                 read_part_seq[each_comp].append(rc_read)   
-                    if mod(read_ctr,NR)==NR-1 and not inMem:
+                    if (read_ctr % NR)==NR-1 and not inMem:
                         print('Wriring again')
                         for comp in new_components:
                             read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
-                            read_part_file.write("\n".join(['>' + str(e+offset.get(comp,0)) + '\n' + read for (e,read) in enumerate(read_part_seq[comp])]))
+                            read_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '\n' + read + '\n' for (e,read) in enumerate(read_part_seq[comp])]))
                             read_part_file.close()  
                             offset[comp] = offset.get(comp,0) + len(read_part_seq[comp]); 
                             read_part_seq[comp][:] = []
@@ -335,7 +335,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                 for comp in new_components:
                     read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'w')
                     #read_part_file.write("".join(read_part_seq[comp]))
-                    read_part_file.write("\n".join(['>' + str(e+offset.get(comp,0)) + '\n' + read for (e,read) in enumerate(read_part_seq[comp])]))
+                    read_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '\n' + read + '\n' for (e,read) in enumerate(read_part_seq[comp])]))
                     read_part_file.close()  
                     read_part_seq[comp][:] = []
             if inMem:
@@ -385,13 +385,13 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                                 read1_part_seq[each_comp].append(read2)
                                 #read2_part_seq[each_comp].append(reversed_read2_name+'\n')
                                 read2_part_seq[each_comp].append(read1_reversed)
-                    if mod(read_ctr,NR)==NR-1 and not inMem: 
+                    if (read_ctr % NR)==NR-1 and not inMem: 
                         print('Wriring again')
                         for comp in new_components:
                             read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'w')
                             read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'w')
-                            read1_part_file.write("\n".join(['>' + str(e+offset.get(comp,0)) + '_1\n' + read for (e,read) in enumerate(read1_part_seq[comp])]))
-                            read2_part_file.write("\n".join(['>' + str(e+offset.get(comp,0)) + '_2\n' + read for (e,read) in enumerate(read2_part_seq[comp])]))
+                            read1_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_1\n' + read + '\n' for (e,read) in enumerate(read1_part_seq[comp])]))
+                            read2_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_2\n' + read + '\n' for (e,read) in enumerate(read2_part_seq[comp])]))
                             read1_part_file.close()
                             read2_part_file.close()
                             offset[comp] = offset.get(comp,0) + len(read1_part_seq[comp]); 
@@ -404,8 +404,8 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                 for comp in new_components:
                     read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'w')
                     read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'w')
-                    read1_part_file.write("\n".join(['>' + str(e+offset.get(comp,0)) + '_1\n' + read for (e,read) in enumerate(read1_part_seq[comp])]))
-                    read2_part_file.write("\n".join(['>' + str(e+offset.get(comp,0)) + '_2\n' + read for (e,read) in enumerate(read2_part_seq[comp])]))
+                    read1_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_1\n' + read + '\n' for (e,read) in enumerate(read1_part_seq[comp])]))
+                    read2_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_2\n' + read + '\n' for (e,read) in enumerate(read2_part_seq[comp])]))
                     read1_part_file.close()
                     read2_part_file.close()
                     offset[comp] = offset.get(comp,0) + len(read1_part_seq[comp]); 
