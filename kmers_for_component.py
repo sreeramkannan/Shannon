@@ -123,7 +123,6 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
     directory_name: where files should be stored
     contig_file_extension: the contig files are in this extension
     """
-    pdb.set_trace()
     if os.path.exists(directory_name+"/before_sp_log.txt"):
         f_log = open(directory_name+"/before_sp_log.txt", 'a')
     else:
