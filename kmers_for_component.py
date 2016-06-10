@@ -311,14 +311,11 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             for contig in new_components[comp]:
                 temp += len(contig)
             no_kmers_in_comp[comp] = temp'''
-        
-
-                            
 
         '''iter_tag = "_c"
         if second_iteration:
             iter_tag = "_r2_c"'''
-        read_line =''
+        read_line =''   
         
         # Assigns reads to components in the non paired end case
         NR=100000
