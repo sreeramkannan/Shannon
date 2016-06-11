@@ -318,7 +318,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
         read_line =''   
         
         # Assigns reads to components in the non paired end case
-        NR=100000
+        NR=10000000
         if paired_end == False:  
             read_ctr = 0; offset = {}
             read_part_seq = {}   
