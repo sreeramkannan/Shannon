@@ -7,7 +7,7 @@ def run_cmd(s1):
 def write_filtered_tr(depth_file, in_tr_file, out_tr_file, log_file):
         import sys, pdb
         tr_hits = {}
-        THRESH = 0.5
+        THRESH = 0.9
         for a in open(depth_file): # as depth_file:
                 #a=depth_file.readlines()
                 fields = a.strip().split()
