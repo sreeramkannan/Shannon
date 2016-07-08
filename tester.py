@@ -313,7 +313,7 @@ def false_positive(Rec_fasta,LongReads_rec_per,Dest_File):
     with open(Dest_File,'w') as write_file:
         for (tName,val) in tr_dict.iteritems():
             #write_file.write(tName+'\t'+str(val[0])+'\t'+str(val[1])+'\n')
-            write_file.write(tName+'\t'+str(tr_attributes[tName][0])+'\t'+str(tr_attributes[tName][1])+ '\t' + str(tr_attributes[tName][2]) + '\t' + str(tr_attributes[tName][3])+'\n'+'\t'+str(tr_att2[tName][0])+'\t'+str(tr_att2[tName][1])+ '\t' + str(tr_att2[tName][2]) + '\t' + str(tr_att2[tName][3])+'\n')
+            write_file.write(tName+'\t'+str(tr_attributes[tName][0])+'\t'+str(tr_attributes[tName][1])+ '\t' + str(tr_attributes[tName][2]) + '\t' + str(tr_attributes[tName][3])+'\t'+str(tr_att2[tName][0])+'\t'+str(tr_att2[tName][1])+ '\t' + str(tr_att2[tName][2]) + '\t' + str(tr_att2[tName][3])+'\n')
 
 
 def performance_plot(reconstr_log,trinity_log,plot_file,L,S,N):
