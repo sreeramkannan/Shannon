@@ -297,8 +297,9 @@ def false_positive(Rec_fasta,LongReads_rec_per,Dest_File):
             tr_matches[tName] = matchSize
             tr_attributes[tName] = [matchSize, qSize, tSize, qName]
 
-        if float(matchSize)/qSize >= tr_ratio.get(tName,0):
+        if float(matchSize)/float(qSize) >= tr_ratio.get(tName,0):
             tr_att2[tName] = [matchSize, qSize, tSize, qName]            
+            tr_ratio[tName] = float(matchSize)/float(qSize)
 
         if matchSize >= 0.9 * min(qSize,tSize):
             if tr_dict[tName][0] == 0:
