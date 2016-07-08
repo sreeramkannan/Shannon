@@ -269,6 +269,7 @@ def ab_performance(log_file,exp_file):
 def false_positive(Rec_fasta,LongReads_rec_per,Dest_File):
     tr_dict = {}
     tr_matches = {}; tr_attributes = {}
+    tr_ratio = {}; tr_att2 = {}
     curr_name = ''
     tot = 0
     for lines in open(Rec_fasta):
@@ -280,6 +281,8 @@ def false_positive(Rec_fasta,LongReads_rec_per,Dest_File):
             tr_dict[curr_name] = [0,clen+len(tokens[0])]  #Code,Length
             tr_matches[curr_name] = 0
             tr_attributes[curr_name] = [0,0,clen+len(tokens[0]),'']  #matchSize, qSize, tSize, qName
+            tr_att2[curr_name] = [0,0,clen+len(tokens[0]),'']
+            tr_ratio[curr_name] = 0
             continue
         curr_name = tokens[0][1:]
         tot += 1
@@ -294,6 +297,9 @@ def false_positive(Rec_fasta,LongReads_rec_per,Dest_File):
             tr_matches[tName] = matchSize
             tr_attributes[tName] = [matchSize, qSize, tSize, qName]
 
+        if float(matchSize)/qSize >= tr_ratio.get(tName,0):
+            tr_att2[tName] = [matchSize, qSize, tSize, qName]            
+
         if matchSize >= 0.9 * min(qSize,tSize):
             if tr_dict[tName][0] == 0:
                 rec+=1
@@ -306,8 +312,8 @@ def false_positive(Rec_fasta,LongReads_rec_per,Dest_File):
     print(str(rec)+','+str(tot))
     with open(Dest_File,'w') as write_file:
         for (tName,val) in tr_dict.iteritems():
-            write_file.write(tName+'\t'+str(val[0])+'\t'+str(val[1])+'\n')
-            #write_file.write(tName+'\t'+str(tr_attributes[tName][0])+'\t'+str(tr_attributes[tName][1])+ '\t' + str(tr_attributes[tName][2]) + '\t' + str(tr_attributes[tName][3])+'\n')
+            #write_file.write(tName+'\t'+str(val[0])+'\t'+str(val[1])+'\n')
+            write_file.write(tName+'\t'+str(tr_attributes[tName][0])+'\t'+str(tr_attributes[tName][1])+ '\t' + str(tr_attributes[tName][2]) + '\t' + str(tr_attributes[tName][3])+'\n'+'\t'+str(tr_att2[tName][0])+'\t'+str(tr_att2[tName][1])+ '\t' + str(tr_att2[tName][2]) + '\t' + str(tr_att2[tName][3])+'\n')
 
 
 def performance_plot(reconstr_log,trinity_log,plot_file,L,S,N):
