@@ -519,7 +519,7 @@ dir_out = dir_base + "algo_output"
 run_cmd("mkdir " + dir_out)
 out_file = dir_out + "/" + "all_reconstructed.fasta"
 run_cmd("cat " + reconstructed_files + " > " + out_file)
-process_concatenated_fasta(out_file, dir_out + "/reconstructed_org.fasta")
+process_concatenated_fasta(out_file, dir_out + "/reconstructed_org.fasta",double_stranded)
 f_log.write(str(time.asctime()) + ': All partitions completed.\n')
 
 #run_cmd('cp ' + dir_out + "/reconstructed.fasta " + dir_out + "/reconstructed_org.fasta")
