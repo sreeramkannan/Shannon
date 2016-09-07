@@ -741,6 +741,7 @@ class Node(object):
                                 edge.copy_count = ec/max(Read.L - edge.weight - 1, 1)
                         else:
                                 edge.copy_count = edge.copy_count #keep approximate cc
+                node.copy_count = sum([e.copy_count for e in node.out_edges]) 
 
 
     @staticmethod
