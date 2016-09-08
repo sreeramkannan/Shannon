@@ -411,7 +411,7 @@ class Graph(object):    ## Graph object (used universally)
 
                         incoming_edge_attributes = {}  ## A dictionay that contains the overlap and normalization information for each in edge.
                         outgoing_edge_attributes = {}  ## A dictionay that contains the overlap and normalization information for each out edge.
-                    if len(node.in_edges) == 0:
+                        if len(node.in_edges) == 0:
                             #print('Hanging Node!'); 
                             node.in_edges.append([self.start, 0, node.weight, 0])
                             self.start.out_edges.append([node, 0, node.weight, 0])
@@ -435,7 +435,7 @@ class Graph(object):    ## Graph object (used universally)
                             outedge_cc.append(float(in_edge[3]))
                             outgoing_edge_attributes[out_edge[0]] = [out_edge[1], out_edge[3]]
             
-            P = matrix(0.,(len(node.in_edges), len(node.out_edges)))
+                        P = matrix(0.,(len(node.in_edges), len(node.out_edges)))
             
                         #  This section of code determines which known paths will be considered when decomposing this node
                         path_bridge_dict = {}
