@@ -777,9 +777,9 @@ def filter_copycounts_inc_nodes(graph):
         G_l1 = sparse([[G, I, G], [0*I, G, G]])
         print('Generated the matrices, running the solver:')
         if use_GLPK:
-        sol = solvers.lp(c_l1, G_l1, h_l1, A_l1, b_l1,solver='glpk')
+            sol = solvers.lp(c_l1, G_l1, h_l1, A_l1, b_l1,solver='glpk')
         else:
-        sol = solvers.lp(c_l1, G_l1, h_l1, A_l1, b_l1)
+            sol = solvers.lp(c_l1, G_l1, h_l1, A_l1, b_l1)
 
         print('Solver finished')
         x_l1 = sol['x']
