@@ -236,7 +236,7 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
         new_components = {}
         k1mers2component = {}
         kmers2component = {}
-        
+                
         # Builds k1mer2component dictionary
         for i in components_broken:
             with open(directory_name+"/component" + str(i+1) + contig_file_extension, 'r') as f_contigs:

@@ -412,13 +412,13 @@ class Graph(object):    ## Graph object (used universally)
                         incoming_edge_attributes = {}  ## A dictionay that contains the overlap and normalization information for each in edge.
                         outgoing_edge_attributes = {}  ## A dictionay that contains the overlap and normalization information for each out edge.
                     if len(node.in_edges) == 0:
-                print('Hanging Node!'); 
+                            #print('Hanging Node!'); 
                             node.in_edges.append([self.start, 0, node.weight, 0])
                             self.start.out_edges.append([node, 0, node.weight, 0])
                             self.start.weight += float(node.weight)
 
                         if len(node.out_edges) == 0:
-                            print('Hanging Node!'); 
+                            #print('Hanging Node!'); 
                             node.out_edges.append([self.end, 0, node.weight, 0])
                             self.end.in_edges.append([node, 0, node.weight, 0])
                             self.end.weight += float(node.weight)
