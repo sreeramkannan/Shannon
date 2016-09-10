@@ -14,19 +14,29 @@ def cut_file(in_name,out_name,line_start,line_end):
 
 def rc_gnu(infile,tempfile,outfile,nCPU,python_path='python ',shannon_dir=''):
     chunks = nCPU
+    if chunks ==1: 
+        run_cmd(python_path + ' ' + shannon_dir + 'rc_s.py ' + infile + ' ' + outfile); 
+        return
+
+
     file_length = float(subprocess.check_output('grep -c \'>\' ' + infile,shell=True))
     split_size = int(math.ceil(float(file_length)/chunks))
     infile_piece = open(tempfile+'_1','w'); piece_no = 1;  curr_seqs = []
     for line in open(infile):
 	curr_seqs.append(line); 
-	if len(curr_seqs)==split_size*2: 
+	if len(curr_seqs)==split_size*2:
+                infile_piece = open(tempfile+'_'+str(piece_no),'w') 
 		infile_piece.write(''.join(curr_seqs))
 		infile_piece.close()
 		piece_no +=1
-		infile_piece = open(tempfile+'_'+str(piece_no),'w')
 	        curr_seqs = []; 
-    infile_piece.write(''.join(curr_seqs))
-    infile_piece.close()
+    if curr_seqs:
+        infile_piece = open(tempfile+'_'+str(piece_no),'w') 
+        infile_piece.write(''.join(curr_seqs))
+        infile_piece.close()
+    else:
+        piece_no-=1
+
 
 
     '''for n in range(chunks):
