@@ -370,7 +370,7 @@ if not paired_end:
 		rc_read_file = kmer_directory + '/rc.fasta'
 		new_reads_file = kmer_directory + '/reads.fasta'
 		rc_gnu.rc_gnu(reads_files[0],temp_read_file,rc_read_file,nJobs,python_path,shannon_dir)
-		run_cmd('cat ' + reads_files[0] + rc_read_file + ' '   + ' > ' + new_read_file)
+		run_cmd('cat ' + reads_files[0] + rc_read_file + ' '   + ' > ' + new_reads_file)
 		run_cmd('rm ' + rc_read_file)
 		reads_files = [new_reads_file]
 else:
