@@ -36,13 +36,18 @@ def rc_gnu(infile,tempfile,outfile,nCPU,python_path='python ',shannon_dir=''):
     chunks = piece_no; c_range = range(chunks)
     x = [int(i)+1 for i in c_range]
     c_str = " ".join(map(str,x))
-    os.system('parallel ' + python_path + ' ' + shannon_dir + 'rc_s.py ' + tempfile + '_{} ' + outfile + '_{} ' + ' ::: ' + c_str  )
+    cmds = []
+    for i in range(chunks):
+        cmds.append(python_path + ' ' + shannon_dir + 'rc_s.py ' + tempfile + '_' + str(i+1) + ' ' + outfile + '_' + str(i+1))
+    run_parallel_cmds.run_cmds(cmds,chunks)
+
+    #os.system('parallel --bibtex ' + python_path + ' ' + shannon_dir + 'rc_s.py ' + tempfile + '_{} ' + outfile + '_{} ' + ' ::: ' + c_str  )
 
     file_list = ' '.join([outfile+'_'+str(i+1) for i in range(chunks)])
 
-    os.system('cat ' + file_list+' > ' + outfile)
-    os.system('rm ' + outfile+'_* ')
-    os.system('rm ' + tempfile+'_*  ')
+    run_cmd('cat ' + file_list+' > ' + outfile)
+    run_cmd('rm ' + outfile+'_* ')
+    run_cmd('rm ' + tempfile+'_*  ')
 
 
 

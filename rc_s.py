@@ -8,13 +8,14 @@ def reverse_complement_serial(infile,outfile):
     reads = []
     if 1: #with open(outfile,'w') as of:
         for line in open(infile):
+            if not line.strip(): continue
             fields = line.strip().split()
             if fields[0][0]=='>': 
-                continue
+                reads.append(line.strip())
             else:
                 reads.append(reverse_complement(fields[0]))
     with open(outfile,'w') as of:
-        of.write('>N/A\n' + '\n>N/A\n'.join(reads) + '\n')
+        of.write('\n'.join(reads) + '\n')
 
 
 def main():
