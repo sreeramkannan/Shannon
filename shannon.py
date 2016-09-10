@@ -383,7 +383,7 @@ else:
 	else:
 		temp_read_file_1 = kmer_directory + '/t_1.fasta'
 		rc_read_file_1 = kmer_directory + '/rc_1.fasta'
-		rc_gnu.main(reads_files[0],temp_read_file_1,rc_read_file_1,nJobs)
+		rc_gnu.rc_gnu(reads_files[0],temp_read_file_1,rc_read_file_1,nJobs)
 		temp_read_file_2 = kmer_directory + '/t_2.fasta'
 		rc_read_file_2 = kmer_directory + '/rc_2.fasta'
 		rc_gnu.rc_gnu(reads_files[1],temp_read_file_2,rc_read_file_2,nJobs)
