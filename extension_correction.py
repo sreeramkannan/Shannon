@@ -144,7 +144,7 @@ def polyA(k):
     #allA='A'*len(k);allT='T'*len(k)
     nonA = sum(c != 'A' for c in k); 
     nonT = sum(c != 'T' for c in k); 
-    return nonA<=2 or nonT<=2
+    return nonA<=1 or nonT<=1
     '''noA = 0; noT = 0;
     for i in range(len(k)):
         noA += (k[i]=='A');

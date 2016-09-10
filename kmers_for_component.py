@@ -380,7 +380,8 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                     if (read_ctr % NR) == (0) or (not read_1): break
                 if double_stranded: reads = par_PE_rc(reads_1,reads_2,double_stranded,nJobs)
                 if not double_stranded: reads = [[reads_1[i],reads_2[i]] for i in range(len(reads_1))]
-                
+                del reads_1, reads_2
+
                 for read in reads:
                     assigned_comp = get_comps_paired(read[0],read[1],k1mers2component)
 
