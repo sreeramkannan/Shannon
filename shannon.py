@@ -311,6 +311,8 @@ elif len(reads_files) == 2:
 	paired_end = True
 
 
+
+
 if run_parallel:
 	test_install_gnu_parallel()
 
@@ -343,6 +345,11 @@ run_cmd('mkdir ' + comp_directory_name)
 run_cmd('mkdir ' + sample_name_input+ "algo_input")
 
 
+
+
+
+
+
 #Run Quorum now
 if run_quorum:
 	print "{:s}: Running Quorum for read error correction with quality scores..".format(time.asctime())
@@ -352,8 +359,41 @@ if run_quorum:
 	else:
 		reads_files = [comp_directory_name + '/corrected_reads.fa']
 
-reads_string = ' '.join(reads_files)    
+true_ds = double_stranded
+#----Create Reverse Complement of read files--------
 
+if not paired_end:
+	if double_stranded:
+		temp_read_file = kmer_directory + '/t.fasta'
+		rc_read_file = kmer_directory + '/rc.fasta'
+		new_reads_file = kmer_directory + '/reads.fasta'
+		rc_gnu.main(reads_files[0],temp_read_file,rc_read_file,nJobs)
+		run_cmd('cat ' + reads_files[0] + rc_read_file + ' '   + ' > ' + new_read_file)
+		run_cmd('rm ' + rc_read_file)
+		reads_files = [new_reads_file]
+else:
+	if not double_stranded:
+		temp_read_file = kmer_directory + '/t_2.fasta'
+		rc_read_file = kmer_directory + '/rc_2.fasta'
+		rc_gnu.main(reads_files[1],temp_read_file,rc_read_file,nJobs)
+		reads_files = [reads_files[0],rc_read_file]
+	else:
+		temp_read_file_1 = kmer_directory + '/t_1.fasta'
+		rc_read_file_1 = kmer_directory + '/rc_1.fasta'
+		rc_gnu.main(reads_files[0],temp_read_file_1,rc_read_file_1,nJobs)
+		temp_read_file_2 = kmer_directory + '/t_2.fasta'
+		rc_read_file_2 = kmer_directory + '/rc_2.fasta'
+		rc_gnu.main(reads_files[1],temp_read_file_2,rc_read_file_2,nJobs)
+		new_reads_file_1 = kmer_directory + '/reads_1.fasta'
+		new_reads_file_2 = kmer_directory + '/reads_2.fasta'
+		run_cmd('cat ' + reads_files[0] + rc_read_file_2 + ' '   + ' > ' + new_reads_file_1)
+		run_cmd('cat ' + rc_read_file_1 + reads_files[1] + ' '   + ' > ' + new_reads_file_2)
+		run_cmd('rm ' + rc_read_file_1 + ' ' + rc_read_file_2 )
+		reads_files = [new_reads_file_1,new_reads_file_2]
+double_stranded = False
+#----------------------
+
+reads_string = ' '.join(reads_files)    
 # Runs Jellyfish
 if run_jellyfish:
 	print "{:s}: Starting Jellyfish to extract Kmers from Reads..".format(time.asctime())
@@ -519,7 +559,7 @@ dir_out = dir_base + "algo_output"
 run_cmd("mkdir " + dir_out)
 out_file = dir_out + "/" + "all_reconstructed.fasta"
 run_cmd("cat " + reconstructed_files + " > " + out_file)
-process_concatenated_fasta(out_file, dir_out + "/reconstructed_org.fasta",double_stranded)
+process_concatenated_fasta(out_file, dir_out + "/reconstructed_org.fasta",true_ds)
 f_log.write(str(time.asctime()) + ': All partitions completed.\n')
 
 #run_cmd('cp ' + dir_out + "/reconstructed.fasta " + dir_out + "/reconstructed_org.fasta")
