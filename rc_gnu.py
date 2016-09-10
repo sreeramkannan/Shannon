@@ -11,7 +11,7 @@ def cut_file(in_name,out_name,line_start,line_end):
     os.system('awk \'NR > ' + str(line_end) + ' { exit } NR >= ' + str(line_start) +  '\' '+ in_name + ' > ' + out_name )
 
 
-def rc_gnu(infile,tempfile,outfile,nCPU):
+def rc_gnu(infile,tempfile,outfile,nCPU,python_path='python ',shannon_dir=''):
     chunks = nCPU
     file_length = float(subprocess.check_output('grep -c \'>\' ' + infile,shell=True))
     split_size = int(math.ceil(float(file_length)/chunks))
@@ -36,7 +36,7 @@ def rc_gnu(infile,tempfile,outfile,nCPU):
     chunks = piece_no; c_range = range(chunks)
     x = [int(i)+1 for i in c_range]
     c_str = " ".join(map(str,x))
-    os.system('parallel python rc_s.py ' + tempfile + '_{} ' + outfile + '_{} ' + ' ::: ' + c_str  )
+    os.system('parallel ' + python_path + ' ' + shannon_dir + 'rc_s.py ' + tempfile + '_{} ' + outfile + '_{} ' + ' ::: ' + c_str  )
 
     file_list = ' '.join([outfile+'_'+str(i+1) for i in range(chunks)])
 
