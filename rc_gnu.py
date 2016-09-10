@@ -5,7 +5,7 @@ reverse_complement = lambda x: ''.join([D[B] for B in x][::-1])
 
 def run_cmd(cmd):
     print(cmd)
-    os.system(cmd)
+    #os.system(cmd)
 
 
 def cut_file(in_name,out_name,line_start,line_end):
