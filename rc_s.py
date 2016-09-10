@@ -14,7 +14,7 @@ def reverse_complement_serial(infile,outfile):
             else:
                 reads.append(reverse_complement(fields[0]))
     with open(outfile,'w') as of:
-        of.write('>1\n' + '\n>1\n'.join(reads) + '\n')
+        of.write('>N/A\n' + '\n>N/A\n'.join(reads) + '\n')
 
 
 def main():

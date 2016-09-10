@@ -371,7 +371,7 @@ if not paired_end:
 		rc_read_file = kmer_directory + '/rc.fasta'
 		new_reads_file = kmer_directory + '/reads.fasta'
 		rc_gnu.rc_gnu(reads_files[0],temp_read_file,rc_read_file,nJobs,python_path,shannon_dir)
-		run_cmd('cat ' + reads_files[0] + rc_read_file + ' '   + ' > ' + new_reads_file)
+		run_cmd('cat ' + reads_files[0] + ' '   + rc_read_file + ' > ' + new_reads_file)
 		run_cmd('rm ' + rc_read_file)
 		reads_files = [new_reads_file]
 else:
@@ -389,8 +389,8 @@ else:
 		rc_gnu.main(reads_files[1],temp_read_file_2,rc_read_file_2,nJobs)
 		new_reads_file_1 = kmer_directory + '/reads_1.fasta'
 		new_reads_file_2 = kmer_directory + '/reads_2.fasta'
-		run_cmd('cat ' + reads_files[0] + rc_read_file_2 + ' '   + ' > ' + new_reads_file_1)
-		run_cmd('cat ' + rc_read_file_1 + reads_files[1] + ' '   + ' > ' + new_reads_file_2)
+		run_cmd('cat ' + reads_files[0] + ' '+ rc_read_file_2    + ' > ' + new_reads_file_1)
+		run_cmd('cat ' + rc_read_file_1 + ' '+ reads_files[1] + ' '   + ' > ' + new_reads_file_2)
 		run_cmd('rm ' + rc_read_file_1 + ' ' + rc_read_file_2 )
 		reads_files = [new_reads_file_1,new_reads_file_2]
 double_stranded = False
