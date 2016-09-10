@@ -9,9 +9,11 @@ import tester
 from filter_trans import filter_trans
 import test_suite
 import subprocess
+
 import run_MB_SF_fn
 import multiprocessing as mp
 import run_parallel_cmds
+import rc_gnu 
 
 from kmers_for_component import kmers_for_component
 from process_concatenated_fasta import process_concatenated_fasta
@@ -367,7 +369,7 @@ if not paired_end:
 		temp_read_file = kmer_directory + '/t.fasta'
 		rc_read_file = kmer_directory + '/rc.fasta'
 		new_reads_file = kmer_directory + '/reads.fasta'
-		rc_gnu.main(reads_files[0],temp_read_file,rc_read_file,nJobs)
+		rc_gnu.main(reads_files[0],temp_read_file,rc_read_file,nJobs,python_path)
 		run_cmd('cat ' + reads_files[0] + rc_read_file + ' '   + ' > ' + new_read_file)
 		run_cmd('rm ' + rc_read_file)
 		reads_files = [new_reads_file]
