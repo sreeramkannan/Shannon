@@ -215,7 +215,6 @@ def load_kmers(infile, double_stranded, polyA_del=True):
             kmers[kmer] = kmers.get(kmer,0)+weight
             if double_stranded:
                 kmers[reverse_complement(kmer)] = kmers.get(reverse_complement(kmer),0)+weight
-
     K = len(kmers.keys()[0])
     return kmers, K
 

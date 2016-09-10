@@ -362,6 +362,7 @@ if run_quorum:
 		reads_files = [comp_directory_name + '/corrected_reads.fa']
 
 true_ds = double_stranded
+
 #----Create Reverse Complement of read files--------
 
 if not paired_end:
