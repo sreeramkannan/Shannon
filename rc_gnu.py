@@ -1,4 +1,5 @@
 import os, subprocess, sys,pdb,time, math, multiprocessing, copy
+import run_parallel_cmds
 D={'A':'T','C':'G','G':'C','T':'A','N':'N'}
 reverse_complement = lambda x: ''.join([D[B] for B in x][::-1])
 
