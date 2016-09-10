@@ -312,7 +312,7 @@ def run_correction(infile, outfile, min_weight, min_length,double_stranded, comp
     #pdb.set_trace()
     print "{:s}: Starting Kmer error correction..".format(time.asctime())
     f_log.write("{:s}: Starting..".format(time.asctime()) + "\n")
-    if nJobs==1: 
+    if 1: #nJobs==1: 
         kmers, K = load_kmers(infile, double_stranded,polyA_del)
     elif nJobs>1:
         kmers, K = load_kmers_parallel(infile, double_stranded,polyA_del, nJobs)

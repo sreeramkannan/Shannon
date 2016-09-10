@@ -51,6 +51,9 @@ def rc_mate_ds(reads_1,reads_2,ds, out_q):
         if ds: nr1.extend(nr2)
         out_q.put(nr1)
 
+
+
+
 def par_read(reads_files,double_stranded, nJobs):
     reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
     if len(reads_files)==1:
@@ -375,7 +378,9 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                     reads_1.append(read_1); reads_2.append(read_2)
                     last_read = read_1
                     if (read_ctr % NR) == (0) or (not read_1): break
-                reads = par_PE_rc(reads_1,reads_2,double_stranded,nJobs)
+                if double_stranded: reads = par_PE_rc(reads_1,reads_2,double_stranded,nJobs)
+                if not double_stranded: reads = [[reads_1[i],reads_2[i]] for i in range(len(reads_1))]
+                
                 for read in reads:
                     assigned_comp = get_comps_paired(read[0],read[1],k1mers2component)
 
