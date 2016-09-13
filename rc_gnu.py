@@ -22,14 +22,18 @@ def rc_gnu(infile,tempfile,outfile,nCPU,python_path='python ',shannon_dir=''):
     file_length = float(subprocess.check_output('grep -c \'>\' ' + infile,shell=True))
     split_size = int(math.ceil(float(file_length)/chunks))
     infile_piece = open(tempfile+'_1','w'); piece_no = 1;  curr_seqs = []
+    read_tot = 0; no_reads = 0
     for line in open(infile):
-	curr_seqs.append(line); 
+	curr_seqs.append(line);
+        fields = line.strip().split();
+        if fields and fields[0][0]!='>': read_tot+=len(fields[0]); no_reads+=1
 	if len(curr_seqs)==split_size*2:
                 infile_piece = open(tempfile+'_'+str(piece_no),'w') 
 		infile_piece.write(''.join(curr_seqs))
 		infile_piece.close()
 		piece_no +=1
-	        curr_seqs = []; 
+	        curr_seqs = [];  
+
     if curr_seqs:
         infile_piece = open(tempfile+'_'+str(piece_no),'w') 
         infile_piece.write(''.join(curr_seqs))
@@ -38,7 +42,7 @@ def rc_gnu(infile,tempfile,outfile,nCPU,python_path='python ',shannon_dir=''):
         piece_no-=1
 
 
-
+    N=no_reads; L= float(read_tot)/ max(N,1)
     '''for n in range(chunks):
         if n==chunks-1:
             cut_file(infile,infile+'_'+str(n+1),2*(n)*split_size+1,2*file_length)
@@ -59,6 +63,7 @@ def rc_gnu(infile,tempfile,outfile,nCPU,python_path='python ',shannon_dir=''):
     run_cmd('cat ' + file_list+' > ' + outfile)
     run_cmd('rm ' + outfile+'_* ')
     run_cmd('rm ' + tempfile+'_*  ')
+    return (N,L)
 
 
 

@@ -361,16 +361,17 @@ if run_quorum:
 	else:
 		reads_files = [comp_directory_name + '/corrected_reads.fa']
 
-true_ds = double_stranded
+#----Backup parameters--------
+original_ds = double_stranded
+original_reads_files = copy.deepcopy(reads_files)
 
 #----Create Reverse Complement of read files--------
-
 if not paired_end:
 	if double_stranded:
 		temp_read_file = kmer_directory + '/t.fasta'
 		rc_read_file = kmer_directory + '/rc.fasta'
 		new_reads_file = kmer_directory + '/reads.fasta'
-		rc_gnu.rc_gnu(reads_files[0],temp_read_file,rc_read_file,nJobs,python_path,shannon_dir)
+		(N,L) = rc_gnu.rc_gnu(reads_files[0],temp_read_file,rc_read_file,nJobs,python_path,shannon_dir)
 		run_cmd('cat ' + reads_files[0] + ' '   + rc_read_file + ' > ' + new_reads_file)
 		run_cmd('rm ' + rc_read_file)
 		reads_files = [new_reads_file]
@@ -378,21 +379,23 @@ else:
 	if not double_stranded:
 		temp_read_file = kmer_directory + '/t_2.fasta'
 		rc_read_file = kmer_directory + '/rc_2.fasta'
-		rc_gnu.rc_gnu(reads_files[1],temp_read_file,rc_read_file,nJobs)
+		(N,L) = rc_gnu.rc_gnu(reads_files[1],temp_read_file,rc_read_file,nJobs)
 		reads_files = [reads_files[0],rc_read_file]
 	else:
 		temp_read_file_1 = kmer_directory + '/t_1.fasta'
 		rc_read_file_1 = kmer_directory + '/rc_1.fasta'
-		rc_gnu.rc_gnu(reads_files[0],temp_read_file_1,rc_read_file_1,nJobs)
+		(N,L) = rc_gnu.rc_gnu(reads_files[0],temp_read_file_1,rc_read_file_1,nJobs)
 		temp_read_file_2 = kmer_directory + '/t_2.fasta'
 		rc_read_file_2 = kmer_directory + '/rc_2.fasta'
-		rc_gnu.rc_gnu(reads_files[1],temp_read_file_2,rc_read_file_2,nJobs)
+		(N,L) = rc_gnu.rc_gnu(reads_files[1],temp_read_file_2,rc_read_file_2,nJobs)
 		new_reads_file_1 = kmer_directory + '/reads_1.fasta'
 		new_reads_file_2 = kmer_directory + '/reads_2.fasta'
 		run_cmd('cat ' + reads_files[0] + ' '+ rc_read_file_2    + ' > ' + new_reads_file_1)
 		run_cmd('cat ' + rc_read_file_1 + ' '+ reads_files[1] + ' '   + ' > ' + new_reads_file_2)
 		run_cmd('rm ' + rc_read_file_1 + ' ' + rc_read_file_2 )
 		reads_files = [new_reads_file_1,new_reads_file_2]
+
+print "Processed No of reads:" + str(N) + ", Avg. Read length: " + str(L)
 double_stranded = False
 #----------------------
 
