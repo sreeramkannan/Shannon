@@ -29,6 +29,7 @@ jellyfish_path = 'jellyfish'
 gnu_parallel_path = 'parallel'
 quorum_path = 'quorum'
 python_path = 'python'
+kallisto_path = 'kallisto'
 
 
 #For version
@@ -121,6 +122,14 @@ def test_install_gnu_parallel():
 	else:
 		print('ERROR: GNU Parallel not found in path. If you need to run multi-threaded, GNU Parallel is needed. Set variable gnu_parallel_path correctly'); exit_now = True
 
+def test_install_kallisto():
+	if test_suite.which(kallisto_path):
+		print('Using Kallisto in ') + test_suite.which(kallisto_path)
+		return True
+	else:
+		print('ERROR: Kallisto not found in path ' + test_suite.which(kallisto_path))
+		print('Kallisto filtering DISABLED.')
+		return False
 
 
 def print_message():
@@ -333,6 +342,8 @@ elif len(reads_files) == 2:
 if run_parallel:
 	test_install_gnu_parallel()
 
+if run_kallisto:
+	test_install_kallisto()
 	
 paired_end_flag = ""
 if paired_end:
@@ -598,7 +609,7 @@ else:
 #------Filter using Kallisto-------#
 if run_kallisto:
 	run_cmd('mv ' + dir_out+"/reconstructed.fasta " + dir_out+"/rec_before_kallisto.fasta")
-	kal_ab_file=filter_kallisto.run_kallisto(dir_out+"/rec_before_kallisto.fasta",dir_out + "/kallisto",original_reads_files,original_ds,kallisto_dir,nJobs)
+	kal_ab_file=filter_kallisto.run_kallisto(dir_out+"/rec_before_kallisto.fasta",dir_out + "/kallisto",original_reads_files,original_ds,kallisto_path,nJobs)
 	L = L*len(original_reads_files); #Multiply L by 2 if paired ended to get effective read length of fragment.
 	filter_kallisto.filter_using_kallisto(dir_out+"/rec_before_kallisto.fasta",kal_ab_file,dir_out+"/reconstructed.fasta",kallisto_cutoff,L)
 	
