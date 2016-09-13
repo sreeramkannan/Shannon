@@ -5,7 +5,7 @@ def run_cmd(s1):
         os.system(s1) # + '>> temp_out.txt')
 
 
-def filter_using_Kallisto(rec_file, ab_file, out_file,COV_CUTOFF,L):
+def filter_using_kallisto(rec_file, ab_file, out_file,COV_CUTOFF,L):
     accepted_trans = set()
     with open(ab_file) as f:
         f.readline()
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     out_dir = arguments[1]
     reads_files = arguments[2:]
     kal_file = run_kallisto(reconstr_file,out_dir,reads_files,ds)
-    filter_using_Kallisto(reconstr_file,kal_file,reconstr_file+'_kal',COV_CUTOFF,L)
+    filter_using_kallisto(reconstr_file,kal_file,reconstr_file+'_kal',COV_CUTOFF,L)
 
 
 

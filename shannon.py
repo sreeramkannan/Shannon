@@ -611,7 +611,7 @@ if run_kallisto:
 	run_cmd('mv ' + dir_out+"/reconstructed.fasta " + dir_out+"/rec_before_kallisto.fasta")
 	kal_ab_file=filter_kallisto.run_kallisto(dir_out+"/rec_before_kallisto.fasta",dir_out + "/kallisto",original_reads_files,original_ds,kallisto_path,nJobs)
 	L = L*len(original_reads_files); #Multiply L by 2 if paired ended to get effective read length of fragment.
-	filter_kallisto.filter_using_Kallisto(dir_out+"/rec_before_kallisto.fasta",kal_ab_file,dir_out+"/reconstructed.fasta",kallisto_cutoff,L)
+	filter_kallisto.filter_using_kallisto(dir_out+"/rec_before_kallisto.fasta",kal_ab_file,dir_out+"/reconstructed.fasta",kallisto_cutoff,L)
 	
 
 
