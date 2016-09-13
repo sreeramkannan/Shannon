@@ -69,7 +69,9 @@ run_parallel = False
 compare_ans = False
 only_reads = False #Use only the reads from partitioning, not the kmers
 filter_FP_flag = False
-
+fastq = False
+run_quorum  = False
+run_kallisto = False
 # Everything beyond this point does not need to be set
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
@@ -274,9 +276,9 @@ else:
 #         reads_files.append(n_inp[3])
 # else:
 
-run_quorum = False
 if reads_files[0][-1] == 'q': #Fastq mode
 	print('OPTIONS: File extension detected as fastq.')
+	fastq = True
 	run_quorum = True
 	#test_install_quorum()
 
@@ -284,15 +286,25 @@ if reads_files[0][-1] == 'q': #Fastq mode
 if '--fastq' in n_inp:
 	ind1 = n_inp.index('--fastq')
 	run_quorum = True
+	fastq = True
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 	print('OPTIONS --fastq: Input is fastq format')
 
 if '--fasta' in n_inp:
 	ind1 = n_inp.index('--fasta')
-	run_quorum = False
+	run_quorum = False; fastq=False
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 	print('OPTIONS --fasta: Input is fasta format')
 
+
+if '--kallisto_cutoff' in n_inp:
+	ind1 = n_inp.index('--kallisto_cutoff')
+	if fastq:
+		run_kallisto = True
+		kallisto_cutoff = float(n_inp[ind1+1])
+		n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
+		print('OPTIONS --kallisto_cutoff: Kallisto will be run to filter low expression transcripts below ' + str(kallisto_cutoff))
+	print('OPTIONS --kallisto_cutoff NOT enabled. Option only works with fastq input.')
 
 if n_inp:
 	print('OPTIONS WARNING: Following options not parsed: ' + " ".join(n_inp))
@@ -348,6 +360,9 @@ run_cmd('mkdir ' + comp_directory_name)
 run_cmd('mkdir ' + sample_name_input+ "algo_input")
 
 
+#----Backup parameters--------
+original_ds = double_stranded
+original_reads_files = copy.deepcopy(reads_files)
 
 
 
@@ -362,9 +377,6 @@ if run_quorum:
 	else:
 		reads_files = [comp_directory_name + '/corrected_reads.fa']
 
-#----Backup parameters--------
-original_ds = double_stranded
-original_reads_files = copy.deepcopy(reads_files)
 
 #----Create Reverse Complement of read files--------
 if not paired_end:
@@ -581,6 +593,15 @@ if find_reps:
 else:	
 	run_cmd('mv '  + dir_out + "/reconstructed_org.fasta " + dir_out + "/reconstructed.fasta ")
 
+#------Filter using Kallisto-------#
+if run_kallisto:
+	run_cmd('mv ' + dir_out+"/reconstructed.fasta " + dir_out+"/rec_before_kallisto.fasta")
+	kal_ab_file=run_kallisto.run_kallisto(dir_out+"/rec_before_kallisto.fasta",dir_out + "/kallisto",original_reads_files,original_ds,kallisto_dir,nJobs)
+	L = L*len(original_reads_files); #Multiply L by 2 if paired ended to get effective read length of fragment.
+	run_kallisto.filter_using_kallisto(dir_out+"/rec_before_kallisto.fasta",kal_ab_file,dir_out+"/reconstructed.fasta",kallisto_cutoff,L)
+	
+
+
 
 # Compares reconstructed file against reference
 if compare_ans:
@@ -594,12 +615,20 @@ f_log.write(str(time.asctime()) + ": " +"All partitions completed: " + str(num_t
 print(str(time.asctime()) + ": " +"All partitions completed: " + str(num_transcripts) + " transcripts reconstructed" + "\n")
 f_log.close()
 
+
+
+
 # Creates final output
 run_cmd('mkdir '+ comp_directory_name + '/TEMP')
 run_cmd('mv ' + comp_directory_name + '/*_* ' + comp_directory_name + '/TEMP')
 run_cmd('mv ' + comp_directory_name + '/TEMP/before_sp_log.txt ' + comp_directory_name + '/log.txt')
 run_cmd('mv ' +  comp_directory_name + "/TEMP/" + sample_name + "allalgo_output/reconstructed.fasta " + comp_directory_name + '/shannon.fasta')
 #run_cmd('more ' +  comp_directory_name + "/TEMP/*output.txt > " +comp_directory_name + '/terminal_output.txt') 
+
+
+
+
+
 
 if compare_ans:
    run_cmd('mv ' +   comp_directory_name + "/TEMP/" + sample_name + "allalgo_output/reconstr_log.txt "  + comp_directory_name + '/compare_log.txt') 
