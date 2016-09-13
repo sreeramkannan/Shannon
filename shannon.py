@@ -15,6 +15,7 @@ import run_MB_SF_fn
 import multiprocessing as mp
 import run_parallel_cmds
 import rc_gnu 
+import filter_kallisto
 
 from kmers_for_component import kmers_for_component
 from process_concatenated_fasta import process_concatenated_fasta
@@ -304,7 +305,8 @@ if '--kallisto_cutoff' in n_inp:
 		kallisto_cutoff = float(n_inp[ind1+1])
 		n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
 		print('OPTIONS --kallisto_cutoff: Kallisto will be run to filter low expression transcripts below ' + str(kallisto_cutoff))
-	print('OPTIONS --kallisto_cutoff NOT enabled. Option only works with fastq input.')
+	else:
+		print('OPTIONS --kallisto_cutoff NOT enabled. Option only works with fastq input.')
 
 if n_inp:
 	print('OPTIONS WARNING: Following options not parsed: ' + " ".join(n_inp))
@@ -596,9 +598,9 @@ else:
 #------Filter using Kallisto-------#
 if run_kallisto:
 	run_cmd('mv ' + dir_out+"/reconstructed.fasta " + dir_out+"/rec_before_kallisto.fasta")
-	kal_ab_file=run_kallisto.run_kallisto(dir_out+"/rec_before_kallisto.fasta",dir_out + "/kallisto",original_reads_files,original_ds,kallisto_dir,nJobs)
+	kal_ab_file=filter_kallisto.run_kallisto(dir_out+"/rec_before_kallisto.fasta",dir_out + "/kallisto",original_reads_files,original_ds,kallisto_dir,nJobs)
 	L = L*len(original_reads_files); #Multiply L by 2 if paired ended to get effective read length of fragment.
-	run_kallisto.filter_using_kallisto(dir_out+"/rec_before_kallisto.fasta",kal_ab_file,dir_out+"/reconstructed.fasta",kallisto_cutoff,L)
+	filter_kallisto.filter_using_kallisto(dir_out+"/rec_before_kallisto.fasta",kal_ab_file,dir_out+"/reconstructed.fasta",kallisto_cutoff,L)
 	
 
 
