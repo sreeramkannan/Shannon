@@ -9,6 +9,7 @@ import tester
 from filter_trans import filter_trans
 import test_suite
 import subprocess
+import copy
 
 import run_MB_SF_fn
 import multiprocessing as mp
@@ -375,6 +376,8 @@ if not paired_end:
 		run_cmd('cat ' + reads_files[0] + ' '   + rc_read_file + ' > ' + new_reads_file)
 		run_cmd('rm ' + rc_read_file)
 		reads_files = [new_reads_file]
+	else:
+		(N,L) = rc_gnu.find_L(reads_files[0])
 else:
 	if not double_stranded:
 		temp_read_file = kmer_directory + '/t_2.fasta'
@@ -565,7 +568,7 @@ dir_out = dir_base + "algo_output"
 run_cmd("mkdir " + dir_out)
 out_file = dir_out + "/" + "all_reconstructed.fasta"
 run_cmd("cat " + reconstructed_files + " > " + out_file)
-process_concatenated_fasta(out_file, dir_out + "/reconstructed_org.fasta",true_ds)
+process_concatenated_fasta(out_file, dir_out + "/reconstructed_org.fasta",original_ds)
 f_log.write(str(time.asctime()) + ': All partitions completed.\n')
 
 #run_cmd('cp ' + dir_out + "/reconstructed.fasta " + dir_out + "/reconstructed_org.fasta")

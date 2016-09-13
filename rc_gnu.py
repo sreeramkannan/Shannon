@@ -12,11 +12,19 @@ def cut_file(in_name,out_name,line_start,line_end):
     os.system('awk \'NR > ' + str(line_end) + ' { exit } NR >= ' + str(line_start) +  '\' '+ in_name + ' > ' + out_name )
 
 
+def find_L(readfile):
+        N = 0; L = 0; even_line = False
+        for line in open(readfile):
+                if even_line: N+=1; L+=len(line)-1
+                even_line = not even_line
+        return (N,float(L)/N)
+
+
 def rc_gnu(infile,tempfile,outfile,nCPU,python_path='python ',shannon_dir=''):
     chunks = nCPU
     if chunks ==1: 
         run_cmd(python_path + ' ' + shannon_dir + 'rc_s.py ' + infile + ' ' + outfile); 
-        return
+        return find_L(infile)
 
 
     file_length = float(subprocess.check_output('grep -c \'>\' ' + infile,shell=True))
@@ -42,7 +50,7 @@ def rc_gnu(infile,tempfile,outfile,nCPU,python_path='python ',shannon_dir=''):
         piece_no-=1
 
 
-    N=no_reads; L= float(read_tot)/ max(N,1)
+    N=no_reads; L= (read_tot)/ max(N,1)
     '''for n in range(chunks):
         if n==chunks-1:
             cut_file(infile,infile+'_'+str(n+1),2*(n)*split_size+1,2*file_length)
@@ -63,6 +71,7 @@ def rc_gnu(infile,tempfile,outfile,nCPU,python_path='python ',shannon_dir=''):
     run_cmd('cat ' + file_list+' > ' + outfile)
     run_cmd('rm ' + outfile+'_* ')
     run_cmd('rm ' + tempfile+'_*  ')
+    print(N); print(L)
     return (N,L)
 
 
