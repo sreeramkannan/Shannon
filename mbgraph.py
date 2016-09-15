@@ -734,13 +734,16 @@ class Node(object):
     @staticmethod
     def find_copy_counts():
         for node in Node.nodes:
+                tot_node = 0
                 for edge in node.out_edges:
                         np=tuple([edge.in_node,edge.out_node])
-                        ec = Read.known_edges.get(np,0)
+                        ec = Read.known_edges.get(np,0);
+                        tot_node += ec
                         if 1: #ec>0 or edge.weight <= Read.K-1: 
                                 edge.copy_count = ec/max(Read.L - edge.weight - 1, 1)
                         else:
                                 edge.copy_count = edge.copy_count #keep approximate cc
+                node.copy_count = tot_node
 
 
     @staticmethod

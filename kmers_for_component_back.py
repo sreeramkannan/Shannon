@@ -37,7 +37,7 @@ def rc(lines,out_q):
         #reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
         nl = copy.deepcopy(lines)
         for (i,line) in enumerate(lines):
-                nl[i]=(reverse_complement(line.strip()))
+                nl[i]=(reverse_complement(line.strip())+'\n')
         #lines.extend(nl)
         out_q.put(nl)
 
@@ -46,13 +46,10 @@ def rc_mate_ds(reads_1,reads_2,ds, out_q):
         nr1 = copy.deepcopy(reads_1);
         if ds: nr2 = copy.deepcopy(reads_2)
         for (i,read_1) in enumerate(reads_1):
-                nr1[i]=[reads_1[i],reverse_complement(reads_2[i].strip())]
-                if ds: nr2[i]=[reads_2[i],reverse_complement(reads_1[i].strip())]
+                nr1[i]=[reads_1[i],reverse_complement(reads_2[i].strip())+'\n']
+                if ds: nr2[i]=[reads_2[i],reverse_complement(reads_1[i].strip())+'\n']
         if ds: nr1.extend(nr2)
         out_q.put(nr1)
-
-
-
 
 def par_read(reads_files,double_stranded, nJobs):
     reverse_complement = lambda x: ''.join([{'A':'T','C':'G','G':'C','T':'A'}[B] for B in x][::-1])
@@ -113,32 +110,6 @@ def par_read(reads_files,double_stranded, nJobs):
         return reads
     else:
         return []
-
-def par_SE_rc(reads,nJobs):
-    chunk = int(math.ceil(len(reads)/float(nJobs)));
-    temp_q = multiprocessing.Queue()
-    procs = [multiprocessing.Process(target=rc,args=(reads[x*chunk:(x+1)*chunk],temp_q)) for x in range(nJobs)]
-    for proc in procs:
-        proc.start()
-    for proc in procs:
-        reads.extend(temp_q.get())
-    for p in procs:
-        p.join()
-    return reads
-
-def par_PE_rc(reads_1,reads_2,double_stranded,nJobs):
-    chunk = int(math.ceil(len(reads_1)/float(nJobs)));
-    temp_q = multiprocessing.Queue()
-    procs = [multiprocessing.Process(target=rc_mate_ds,args=(reads_1[x*chunk:(x+1)*chunk],reads_2[x*chunk:(x+1)*chunk],double_stranded,temp_q)) for x in range(nJobs)]
-    reads = []
-    for proc in procs:
-        proc.start()
-    for proc in procs:
-        reads.extend(temp_q.get())
-    for p in procs:
-        p.join()
-
-    return reads
 
 
 def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, directory_name, contig_file_extension, get_partition_k1mers, double_stranded = True, paired_end = False, repartition = False,  partition_size = 500, overload = 1.5, K = 24, gpmetis_path = 'gpmetis', penalty = 5, only_reads = False, inMem = False, nJobs =1):
@@ -239,7 +210,9 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
         new_components = {}
         k1mers2component = {}
         kmers2component = {}
-                
+
+
+        
         # Builds k1mer2component dictionary
         for i in components_broken:
             with open(directory_name+"/component" + str(i+1) + contig_file_extension, 'r') as f_contigs:
@@ -312,47 +285,64 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
             for contig in new_components[comp]:
                 temp += len(contig)
             no_kmers_in_comp[comp] = temp'''
+        
+
+                            
 
         '''iter_tag = "_c"
         if second_iteration:
             iter_tag = "_r2_c"'''
-        read_line =''   
+        read_line =''
         
         # Assigns reads to components in the non paired end case
-        NR=10000000
+        NR=1000000
         if paired_end == False:  
             read_ctr = 0; offset = {}
             read_part_seq = {}   
             for comp in new_components:
                 read_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+".fasta", 'w')
                 offset[comp] = 0
-            f = open(reads_files[0],'r')
-            while 1:
-                reads = []
-                while 1:
-                    readname = f.readline()[:-1]
-                    if not readname: last_read = readname; break
-                    read = f.readline()[:-1]
-                    if read.strip('ACTG'): continue
-                    read_ctr +=1;
-                    reads.append(read); last_read = read
-                    if (read_ctr % NR) == (0) or (not read): break
-                
-                if double_stranded: reads = par_SE_rc(reads,nJobs)
-                #pdb.set_trace()
-                for read in reads:   
+            with open(reads_files[0]) as readfile:
+                for line in readfile:   
+                    if line.split()[0][0] == ">":
+                        read_line = line
+                    else:
+                        read = line.split()[0]
+                        read_ctr += 1
+                        if read.strip('ACTG'): continue #Contains characters other than ACTG
                         assigned_comp = get_comps(read,k1mers2component)
                         for each_comp in assigned_comp:
+                            #read_part_seq[each_comp].append(read_line)
                             read_part_seq[each_comp].append(read)
-                if not inMem:
-                    #pdb.set_trace()
-                    for comp in new_components:
-                        read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'a')
-                        read_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '\n' + read + '\n' for (e,read) in enumerate(read_part_seq[comp])]))
-                        read_part_file.close()  
-                        offset[comp] = offset.get(comp,0) + len(read_part_seq[comp]); 
-                        read_part_seq[comp][:] = []
-                if not last_read: break
+                        if double_stranded:
+                            rc_read = reverse_complement(read)
+                            #read_ctr +=1
+                            assigned_comp = get_comps(rc_read,k1mers2component)
+                            for each_comp in assigned_comp:
+                                #reversed_read_name=read_line.split()[0]+'_reversed'+'\t' +'\t'.join(read_line.split()[1:])
+                                #read_part_seq[each_comp].append(reversed_read_name+'\n')
+                                read_part_seq[each_comp].append(rc_read)   
+                        if ((read_ctr % NR)==0) and not inMem:
+                            #pdb.set_trace()
+                            print('Wriring again at ' + str(read_ctr))
+                            for comp in new_components:
+                                read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'a')
+                                read_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '\n' + read + '\n' for (e,read) in enumerate(read_part_seq[comp])]))
+                                read_part_file.close()  
+                                offset[comp] = offset.get(comp,0) + len(read_part_seq[comp]); 
+                                read_part_seq[comp][:] = []
+
+            if not inMem and read_ctr>0:
+                for comp in new_components:
+                    read_part_file = open(directory_name+"/reads"+str(comp)+".fasta", 'a')
+                    #read_part_file.write("".join(read_part_seq[comp]))
+                    read_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '\n' + read + '\n' for (e,read) in enumerate(read_part_seq[comp])]))
+                    read_part_file.close()  
+                    read_part_seq[comp][:] = []
+            if inMem:
+                for comp in new_components:
+                    rps = read_part_seq[comp]
+                    read_part_seq[comp] = rps
 
         # Assigns reads to components in the paired end case
         elif paired_end == True:
@@ -364,44 +354,51 @@ def kmers_for_component(k1mer_dictionary,kmer_directory, reads, reads_files, dir
                 read2_part_seq[comp] = []; #open(directory_name+"/reads"+iter_tag+str(comp)+"_2.fasta", 'w')
                 offset[comp] = 0
             #read_line1 = ''; read_line2 = ''
-            f1= open(reads_files[0],'r') 
-            f2 = open(reads_files[1],'r')
-            while 1:
-                reads_1 = []; reads_2 = []
-                while 1:
-                    readname_1 = f1.readline()[:-1]; readname_2 = f2.readline()[:-1]
-                    if not readname_1: last_read = readname_1; break
-                    read_1 = f1.readline()[:-1]
-                    read_2 = f2.readline()[:-1]
-                    if read_1.strip('ACTG') or read_2.strip('ACTG'): continue
-                    read_ctr +=1;
-                    reads_1.append(read_1); reads_2.append(read_2)
-                    last_read = read_1
-                    if (read_ctr % NR) == (0) or (not read_1): break
-                if double_stranded: reads = par_PE_rc(reads_1,reads_2,double_stranded,nJobs)
-                if not double_stranded: reads = [[reads_1[i],reads_2[i]] for i in range(len(reads_1))]
-                del reads_1, reads_2
+            with open(reads_files[0]) as readfile1, open(reads_files[1]) as readfile2:
+                for line1,line2 in zip(readfile1,readfile2):
+                    if line1.split()[0][0] == ">":
+                        assert line2.split()[0][0] == ">"
+                        #read_line1 = line1
+                        #read_line2 = line2
+                    else:
+                        assert line2.split()[0][0] != ">"
+                        read1 = line1.split()[0]
+                        read2 = line2.split()[0]
+                        if read1.strip('ACTG') or read2.strip('ACTG'): continue #Dont write 'N' reads
+                        read_ctr+=1
+                        read1_reversed = reverse_complement(read1)
+                        read2_reversed = reverse_complement(read2)
+                        
+                        #First process (read1, read2_reversed)
+                        assigned_comp = get_comps_paired(read1,read2_reversed,k1mers2component)
 
-                for read in reads:
-                    assigned_comp = get_comps_paired(read[0],read[1],k1mers2component)
+                        for each_comp in assigned_comp:
+                            #read1_part_seq[each_comp].append(read_line1)
+                            read1_part_seq[each_comp].append(read1)
+                            #read2_part_seq[each_comp].append(read_line2)
+                            read2_part_seq[each_comp].append(read2_reversed)
 
-                    for each_comp in assigned_comp:
-                        read1_part_seq[each_comp].append(read[0])
-                        read2_part_seq[each_comp].append(read[1])
+                        if double_stranded:
+                            #Now process (read1_reversed, read2)
+                            assigned_comp = get_comps_paired(read1_reversed, read2, k1mers2component)
+                            for each_comp in assigned_comp:
+                                #read1_part_seq[each_comp].append(reversed_read1_name+'\n')
+                                read1_part_seq[each_comp].append(read2)
+                                #read2_part_seq[each_comp].append(reversed_read2_name+'\n')
+                                read2_part_seq[each_comp].append(read1_reversed)
 
-                if not inMem: 
-                    for comp in new_components:
-                        read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'a')
-                        read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'a')
-                        read1_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_1\n' + read + '\n' for (e,read) in enumerate(read1_part_seq[comp])]))
-                        read2_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_2\n' + read + '\n' for (e,read) in enumerate(read2_part_seq[comp])]))
-                        read1_part_file.close()
-                        read2_part_file.close()
-                        offset[comp] = offset.get(comp,0) + len(read1_part_seq[comp]); 
-                        read1_part_seq[comp][:] = []
-                        read2_part_seq[comp][:] = []
-                if not last_read: break
-
+                        if ((read_ctr % NR)==0) and not inMem: 
+                            print('Wriring again at ' + str(read_ctr))
+                            for comp in new_components:
+                                read1_part_file = open(directory_name+"/reads"+str(comp)+"_1.fasta", 'a')
+                                read2_part_file = open(directory_name+"/reads"+str(comp)+"_2.fasta", 'a')
+                                read1_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_1\n' + read + '\n' for (e,read) in enumerate(read1_part_seq[comp])]))
+                                read2_part_file.write("".join(['>' + str(e+offset.get(comp,0)) + '_2\n' + read + '\n' for (e,read) in enumerate(read2_part_seq[comp])]))
+                                read1_part_file.close()
+                                read2_part_file.close()
+                                offset[comp] = offset.get(comp,0) + len(read1_part_seq[comp]); 
+                                read1_part_seq[comp][:] = []
+                                read2_part_seq[comp][:] = []
 
 
 
