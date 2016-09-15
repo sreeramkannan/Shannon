@@ -33,7 +33,7 @@ kallisto_path = 'kallisto'
 
 
 #For version
-version = '0.0.1'
+version = '0.0.2'
 	
 #Meta-option to choose whether parameters are passed in memory or in disk
 inMem = False
@@ -306,7 +306,6 @@ if '--fasta' in n_inp:
 	n_inp = n_inp[:ind1]+n_inp[ind1+1:]    
 	print('OPTIONS --fasta: Input is fasta format')
 
-
 if '--kallisto_cutoff' in n_inp:
 	ind1 = n_inp.index('--kallisto_cutoff')
 	if fastq:
@@ -315,7 +314,8 @@ if '--kallisto_cutoff' in n_inp:
 		n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
 		print('OPTIONS --kallisto_cutoff: Kallisto will be run to filter low expression transcripts below ' + str(kallisto_cutoff))
 	else:
-		print('OPTIONS --kallisto_cutoff NOT enabled. Option only works with fastq input.')
+		n_inp = n_inp[:ind1]+n_inp[ind1+2:] 
+		print('OPTIONS WARNING: --kallisto_cutoff NOT enabled. Option only works with fastq input.')
 
 if n_inp:
 	print('OPTIONS WARNING: Following options not parsed: ' + " ".join(n_inp))
