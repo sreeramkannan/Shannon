@@ -139,12 +139,14 @@ def par_read(reads_files,double_stranded, nJobs, out_q):
         out_q.put([])
 
 
-def polyA(k):
+def lowComplexity(kmer):
     #Input: kmer k, Output: whether the kmer is within hamming distance of 2 from all A or all T
     #allA='A'*len(k);allT='T'*len(k)
-    nonA = sum(c != 'A' for c in k); 
-    nonT = sum(c != 'T' for c in k); 
-    return nonA<=1 or nonT<=1
+    nA = sum(c == 'A' for c in kmer); 
+    nT = sum(c == 'T' for c in kmer); 
+    nC = sum(c == 'C' for c in kmer);
+    nG = sum(c == 'G' for c in kmer);
+    return max(nA,nC,nG,nT)>=len(kmer)-2 # nA=1 or nonT<=1 or nonC<=1 or nonG<=1
     '''noA = 0; noT = 0;
     for i in range(len(k)):
         noA += (k[i]=='A');
@@ -168,7 +170,7 @@ def par_load(lines,ds, polyA_del, out_q):
     d = {}
     for (i,line) in enumerate(lines):
         line=line.strip().split(None,1)
-        if polyA_del and polyA(line[0]): continue
+        if polyA_del and lowComplexity(line[0]): continue
         d[line[0]] = d.get(line[0],0) + float(line[1])
         if ds: rc = reverse_complement(line[0]); d[rc]=d.get(rc,0)+float(line[1])
     out_q.put(d)
@@ -210,7 +212,7 @@ def load_kmers(infile, double_stranded, polyA_del=True):
             c1.increment()
             kmer, weight = line.split()
             kmer = kmer.upper()
-            if polyA_del and polyA(kmer): continue
+            if polyA_del and lowComplexity(kmer): continue
             weight = (float(weight))
             kmers[kmer] = kmers.get(kmer,0)+weight
             if double_stranded:
