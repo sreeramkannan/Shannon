@@ -407,15 +407,15 @@ else:
 	if not double_stranded:
 		temp_read_file = kmer_directory + '/t_2.fasta'
 		rc_read_file = kmer_directory + '/rc_2.fasta'
-		(N,L) = rc_gnu.rc_gnu(reads_files[1],temp_read_file,rc_read_file,nJobs)
+		(N,L) = rc_gnu.rc_gnu(reads_files[1],temp_read_file,rc_read_file,nJobs,python_path,shannon_dir)
 		reads_files = [reads_files[0],rc_read_file]
 	else:
 		temp_read_file_1 = kmer_directory + '/t_1.fasta'
 		rc_read_file_1 = kmer_directory + '/rc_1.fasta'
-		(N,L) = rc_gnu.rc_gnu(reads_files[0],temp_read_file_1,rc_read_file_1,nJobs)
+		(N,L) = rc_gnu.rc_gnu(reads_files[0],temp_read_file_1,rc_read_file_1,nJobs,python_path,shannon_dir)
 		temp_read_file_2 = kmer_directory + '/t_2.fasta'
 		rc_read_file_2 = kmer_directory + '/rc_2.fasta'
-		(N,L) = rc_gnu.rc_gnu(reads_files[1],temp_read_file_2,rc_read_file_2,nJobs)
+		(N,L) = rc_gnu.rc_gnu(reads_files[1],temp_read_file_2,rc_read_file_2,nJobs,python_path,shannon_dir)
 		new_reads_file_1 = kmer_directory + '/reads_1.fasta'
 		new_reads_file_2 = kmer_directory + '/reads_2.fasta'
 		run_cmd('cat ' + reads_files[0] + ' '+ rc_read_file_2    + ' > ' + new_reads_file_1)
